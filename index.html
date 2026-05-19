@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arquitetura de Cargos — Gerador v4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:       #0D1B2A;
+  --navy-800:   #132034;
+  --navy-700:   #1B2D47;
+  --navy-600:   #24395A;
+  --gold:       #C9A84C;
+  --gold-light: #E8C97A;
+  --gold-pale:  #F5EED8;
+  --slate:      #7A8FA4;
+  --slate-light:#AAB8C4;
+  --white:      #F8F6F0;
+  --divider:    rgba(201,168,76,0.18);
+  --border:     rgba(255,255,255,0.07);
+  --success:    #3D9970;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+/* ── HEADER ─────────────────────────────────── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 2.5rem;
+  border-bottom: 0.5px solid var(--border);
+  background: rgba(13,27,42,0.96);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+.logo { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+
+.logo-mark {
+  width: 30px; height: 30px;
+  border: 1.5px solid var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.logo-mark svg { width: 13px; height: 13px; }
+
+.logo-text {
+  font-family: 'DM Serif Display', serif;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+
+.logo-sub {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.header-right { display: flex; align-items: center; gap: 12px; }
+
+.badge-version {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--slate);
+  letter-spacing: 0.05em;
+  border: 0.5px solid rgba(138,153,170,0.25);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.btn-new {
+  background: transparent;
+  border: 0.5px solid rgba(201,168,76,0.3);
+  color: var(--gold);
+  padding: 5px 14px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.15s;
+  display: none;
+}
+.btn-new:hover { background: rgba(201,168,76,0.08); }
+.btn-new.visible { display: inline-block; }
+
+/* ── HERO ────────────────────────────────────── */
+#hero {
+  max-width: 700px;
+  margin: 5rem auto 0;
+  padding: 0 2rem;
+  text-align: center;
+  transition: opacity 0.3s;
+}
+
+.eyebrow {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.75rem;
+}
+
+#hero h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2.1rem, 4.5vw, 3.2rem);
+  line-height: 1.12;
+  color: var(--white);
+  margin-bottom: 1rem;
+}
+
+#hero h1 em { color: var(--gold-light); font-style: italic; }
+
+#hero p {
+  font-size: 14px;
+  color: var(--slate-light);
+  max-width: 430px;
+  margin: 0 auto 2.5rem;
+}
+
+.input-shell {
+  position: relative;
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+.input-shell input {
+  width: 100%;
+  background: var(--navy-800);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 8px;
+  padding: 1.05rem 1.5rem;
+  padding-right: 158px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  color: var(--white);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-shell input::placeholder { color: var(--slate); }
+
+.input-shell input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+}
+
+.btn-gen {
+  position: absolute;
+  right: 7px; top: 50%;
+  transform: translateY(-50%);
+  background: var(--gold);
+  color: var(--navy);
+  border: none;
+  border-radius: 5px;
+  padding: 0.55rem 1.1rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.btn-gen:hover { background: var(--gold-light); }
+.btn-gen:active { opacity: 0.9; }
+.btn-gen:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.chips {
+  display: flex; flex-wrap: wrap; gap: 7px;
+  justify-content: center; margin-top: 1.1rem;
+}
+
+.chip {
+  background: transparent;
+  border: 0.5px solid rgba(138,153,170,0.3);
+  border-radius: 20px;
+  padding: 4px 13px;
+  font-size: 11.5px;
+  color: var(--slate-light);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.chip:hover { border-color: var(--gold); color: var(--gold-light); }
+
+/* ── LOADING ─────────────────────────────────── */
+#loading {
+  display: none;
+  padding: 5rem 2rem;
+  text-align: center;
+}
+
+.ring {
+  width: 40px; height: 40px;
+  border: 2px solid rgba(201,168,76,0.15);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.85s linear infinite;
+  margin: 0 auto 1.25rem;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-msg {
+  font-size: 12.5px;
+  color: var(--slate);
+  letter-spacing: 0.06em;
+  font-family: 'DM Mono', monospace;
+}
+
+.loading-steps {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 1.25rem;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--slate);
+  opacity: 0.4;
+  transition: opacity 0.4s, color 0.4s;
+  font-family: 'DM Mono', monospace;
+}
+
+.step-item.active { opacity: 1; color: var(--gold-light); }
+.step-item.done   { opacity: 0.65; color: var(--success); }
+
+.step-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* ── ERROR ───────────────────────────────────── */
+#error {
+  display: none;
+  max-width: 520px;
+  margin: 3rem auto;
+  padding: 1.5rem 2rem;
+  background: rgba(255,80,80,0.06);
+  border: 0.5px solid rgba(255,80,80,0.25);
+  border-radius: 8px;
+  text-align: center;
+  color: #F09595;
+  font-size: 13.5px;
+}
+
+/* ── OUTPUT ──────────────────────────────────── */
+#output {
+  display: none;
+  max-width: 940px;
+  margin: 2.5rem auto 7rem;
+  padding: 0 2rem;
+}
+
+.doc-header {
+  border: 0.5px solid var(--divider);
+  border-radius: 10px 10px 0 0;
+  padding: 2.25rem 2.75rem;
+  background: var(--navy-800);
+  position: relative;
+  overflow: hidden;
+}
+
+.doc-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: linear-gradient(180deg, var(--gold) 0%, transparent 100%);
+}
+
+.doc-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.doc-meta-left { flex: 1; min-width: 0; }
+
+.doc-label {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+
+.doc-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  color: var(--white);
+  line-height: 1.1;
+}
+
+.pills-row {
+  display: flex; flex-wrap: wrap; gap: 7px;
+  margin-top: 1rem;
+}
+
+.pill {
+  font-size: 10.5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.pill-gold  { background: rgba(201,168,76,0.1);  color: var(--gold-light);    border: 0.5px solid rgba(201,168,76,0.3);  }
+.pill-slate { background: rgba(138,153,170,0.08); color: var(--slate-light);   border: 0.5px solid rgba(138,153,170,0.2); }
+.pill-green { background: rgba(61,153,112,0.12);  color: #6FCFA2;              border: 0.5px solid rgba(61,153,112,0.3); }
+
+.doc-ids {
+  display: flex; flex-direction: column;
+  align-items: flex-end; gap: 5px;
+  flex-shrink: 0;
+}
+
+.id-row { display: flex; gap: 8px; align-items: center; }
+
+.id-key {
+  font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--slate);
+}
+
+.id-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px; color: var(--slate-light);
+  background: rgba(255,255,255,0.05);
+  padding: 2px 8px; border-radius: 4px;
+}
+
+.doc-summary {
+  border-top: 0.5px solid var(--divider);
+  padding-top: 1.25rem;
+  font-size: 14.5px;
+  color: var(--slate-light);
+  line-height: 1.75;
+}
+
+/* ── SECTION CARDS ───────────────────────────── */
+.section-card {
+  background: var(--navy-800);
+  border: 0.5px solid var(--border);
+  border-top: none;
+  padding: 1.75rem 2.5rem;
+}
+
+.section-card:last-of-type {
+  border-radius: 0 0 10px 10px;
+}
+
+.section-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 0.5px solid var(--divider);
+}
+
+.s-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  color: var(--gold);
+  min-width: 22px;
+}
+
+.s-title {
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--slate-light);
+}
+
+/* ── SECTION 01: IDENT GRID ──────────────────── */
+.ident-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+  gap: 10px;
+}
+
+.ident-card {
+  background: rgba(255,255,255,0.025);
+  border: 0.5px solid rgba(255,255,255,0.06);
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+}
+
+.ident-label {
+  font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.17em; text-transform: uppercase;
+  color: var(--slate); margin-bottom: 5px;
+}
+
+.ident-value { font-size: 13px; font-weight: 500; color: var(--white); }
+
+/* ── SECTION 02: RESUMO ──────────────────────── */
+.summary-box {
+  background: rgba(201,168,76,0.04);
+  border: 0.5px solid rgba(201,168,76,0.14);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+/* ── SECTION 03: DIMENSÕES ───────────────────── */
+.dim-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 28px;
+}
+
+.dim-top { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.dim-name { font-size: 12px; font-weight: 500; color: var(--slate-light); }
+.dim-pct { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold); }
+
+.dim-bar-bg {
+  height: 5px; background: rgba(255,255,255,0.05);
+  border-radius: 3px; overflow: hidden; margin-bottom: 5px;
+}
+
+.dim-bar-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, rgba(201,168,76,0.4), var(--gold));
+  transition: width 0.9s cubic-bezier(.22,.61,.36,1);
+}
+
+.dim-desc { font-size: 11px; color: var(--slate); line-height: 1.45; }
+
+/* ── SECTION 04: RESPONSABILIDADES ──────────── */
+.resp-list { list-style: none; padding: 0; }
+
+.resp-list li {
+  display: flex; gap: 12px;
+  padding: 0.7rem 0;
+  border-bottom: 0.5px solid rgba(255,255,255,0.04);
+  font-size: 13.5px; color: var(--slate-light); line-height: 1.55;
+}
+
+.resp-list li:last-child { border-bottom: none; }
+
+.resp-icon {
+  width: 17px; height: 17px; min-width: 17px;
+  border: 0.5px solid var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 3px;
+}
+
+/* ── SECTION 05: COMPETÊNCIAS ────────────────── */
+.comp-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 2px;
+}
+
+.comp-col-title {
+  font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.19em; text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 0.5px solid var(--divider);
+}
+
+.comp-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 0.6rem 0;
+  border-bottom: 0.5px solid rgba(255,255,255,0.04);
+}
+
+.comp-item:last-child { border-bottom: none; }
+.comp-main { font-size: 12.5px; font-weight: 500; color: var(--white); }
+.comp-desc { font-size: 11px; color: var(--slate); margin-top: 2px; }
+
+.badge-level {
+  font-size: 9.5px; padding: 2px 8px;
+  border-radius: 12px; white-space: nowrap;
+  font-weight: 600; letter-spacing: 0.02em;
+  flex-shrink: 0; margin-top: 2px;
+}
+
+.lv-basico        { background: rgba(138,153,170,0.1); color: #8A99AA; border: 0.5px solid rgba(138,153,170,0.28); }
+.lv-intermediario { background: rgba(59,130,246,0.1);  color: #93C5FD; border: 0.5px solid rgba(59,130,246,0.28); }
+.lv-avancado      { background: rgba(201,168,76,0.1);  color: var(--gold-light); border: 0.5px solid rgba(201,168,76,0.28); }
+.lv-expert        { background: rgba(61,153,112,0.12); color: #6FCFA2; border: 0.5px solid rgba(61,153,112,0.28); }
+
+/* ── SECTION 06: REQUISITOS ──────────────────── */
+.req-cols {
+  display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px;
+}
+
+.req-table { width: 100%; border-collapse: collapse; }
+
+.req-table td {
+  padding: 0.55rem 0;
+  border-bottom: 0.5px solid rgba(255,255,255,0.05);
+  font-size: 13px; vertical-align: top;
+}
+
+.req-table tr:last-child td { border-bottom: none; }
+.req-key { color: var(--slate); width: 42%; font-weight: 500; }
+.req-val { color: var(--slate-light); }
+
+/* ── KPIs ────────────────────────────────────── */
+.kpi-list { list-style: none; padding: 0; }
+
+.kpi-list li {
+  display: flex; gap: 9px;
+  padding: 0.6rem 0;
+  border-bottom: 0.5px solid rgba(255,255,255,0.05);
+  font-size: 13px; align-items: flex-start;
+}
+
+.kpi-list li:last-child { border-bottom: none; }
+.kpi-bullet { color: var(--gold); font-weight: 700; min-width: 12px; margin-top: 2px; }
+.kpi-main { font-size: 12px; font-weight: 500; color: var(--white); display: block; margin-bottom: 2px; }
+.kpi-sub  { font-size: 11px; color: var(--slate); }
+
+/* ── SECTION 07: PROGRESSÃO ──────────────────── */
+.prog-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.prog-card {
+  background: rgba(255,255,255,0.025);
+  border: 0.5px solid rgba(255,255,255,0.06);
+  border-radius: 7px;
+  padding: 1rem 1.1rem;
+  position: relative;
+}
+
+.prog-card.current {
+  border-color: rgba(201,168,76,0.35);
+  background: rgba(201,168,76,0.04);
+}
+
+.prog-card.current::after {
+  content: 'ATUAL';
+  position: absolute;
+  top: 8px; right: 8px;
+  font-size: 7px; font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  border: 0.5px solid rgba(201,168,76,0.4);
+  padding: 1px 5px; border-radius: 10px;
+}
+
+.prog-cargo {
+  font-size: 12.5px; font-weight: 500; color: var(--white);
+  margin-bottom: 4px;
+}
+
+.prog-desc { font-size: 11px; color: var(--slate); line-height: 1.4; }
+.prog-arrow {
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(201,168,76,0.4);
+  font-size: 18px; margin-top: 14px;
+}
+
+/* ── FOOTER ──────────────────────────────────── */
+.doc-footer {
+  margin-top: 0;
+  border: 0.5px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  background: var(--navy-800);
+  padding: 0.9rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.footer-note { font-size: 10.5px; color: var(--slate); letter-spacing: 0.02em; }
+
+.footer-btns { display: flex; gap: 8px; }
+
+.btn-action {
+  background: transparent;
+  border: 0.5px solid rgba(201,168,76,0.3);
+  color: var(--gold);
+  padding: 5px 13px;
+  border-radius: 5px;
+  font-size: 11.5px; font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.15s;
+}
+
+.btn-action:hover { background: rgba(201,168,76,0.08); }
+
+/* ── RESPONSIVE ──────────────────────────────── */
+@media (max-width: 660px) {
+  header { padding: 1rem 1.25rem; }
+  #hero { margin-top: 2.5rem; }
+  .doc-header { padding: 1.5rem; }
+  .doc-meta { flex-direction: column; }
+  .doc-ids { align-items: flex-start; }
+  .section-card { padding: 1.25rem; }
+  .dim-grid, .comp-cols, .req-cols { grid-template-columns: 1fr; }
+  .comp-cols > div:first-child { border-right: none; padding-right: 0; border-bottom: 0.5px solid var(--border); padding-bottom: 1.25rem; margin-bottom: 0.5rem; }
+  .comp-cols > div:last-child { padding-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" onclick="resetUI()">
+    <div class="logo-mark">
+      <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M7 1L13 4.5V9.5L7 13L1 9.5V4.5L7 1Z" stroke="#C9A84C" stroke-width="1.2"/>
+        <path d="M7 4L10 5.8V9.2L7 11L4 9.2V5.8L7 4Z" fill="#C9A84C" fill-opacity="0.45"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">Arquitetura de Cargos</div>
+      <div class="logo-sub">Método Estruturado de Descrição</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="btn-new" id="btn-new" onclick="resetUI()">← Nova Pesquisa</button>
+    <div class="badge-version">v4.0 · Powered by Claude</div>
+  </div>
+</header>
+
+<div id="hero">
+  <div class="eyebrow">Arquitetura de Cargos &amp; Remuneração</div>
+  <h1>Descrição de Cargo<br><em>precisa, estruturada e auditável</em></h1>
+  <p>Digite o título do cargo e obtenha um documento no padrão das maiores consultorias de remuneração do mercado.</p>
+
+  <div class="input-shell">
+    <input type="text" id="cargo-input" placeholder="Ex: Analista de Remuneração Sênior…" autocomplete="off"/>
+    <button type="button" class="btn-gen" id="btn-gen" onclick="gerar()">Gerar Descrição →</button>
+  </div>
+
+  <div class="chips">
+    <span class="chip" onclick="setEx('Head of Engineering')">Head of Engineering</span>
+    <span class="chip" onclick="setEx('Product Manager Sênior')">PM Sênior</span>
+    <span class="chip" onclick="setEx('Tech Lead Backend')">Tech Lead</span>
+    <span class="chip" onclick="setEx('CTO')">CTO</span>
+    <span class="chip" onclick="setEx('Especialista de Remuneração')">Esp. Remuneração</span>
+    <span class="chip" onclick="setEx('Analista de People Analytics Pleno')">People Analytics</span>
+    <span class="chip" onclick="setEx('Head de Compensação e Benefícios')">Head C&amp;B</span>
+    <span class="chip" onclick="setEx('CISO')">CISO</span>
+    <span class="chip" onclick="setEx('Gerente de Recursos Humanos')">Gerente de RH</span>
+    <span class="chip" onclick="setEx('Data Scientist Sênior')">Data Scientist Sr</span>
+  </div>
+</div>
+
+<div id="loading">
+  <div class="ring"></div>
+  <div class="loading-msg" id="loading-msg">Inicializando…</div>
+  <div class="loading-steps" id="loading-steps"></div>
+</div>
+
+<div id="error"></div>
+<div id="output"></div>
+
+<script>
+const STEPS = [
+  "Classificando família e subfamília…",
+  "Calibrando grau de complexidade…",
+  "Mapeando dimensões do cargo…",
+  "Estruturando responsabilidades…",
+  "Definindo competências e requisitos…",
+  "Consolidando KPIs e progressão…",
+  "Montando documento final…"
+];
+
+const SYSTEM_PROMPT = `Você é um especialista sênior em Arquitetura de Cargos e Remuneração, com expertise nas metodologias Hay, Mercer, Willis Towers Watson e Korn Ferry. Gera descrições de cargos no padrão das maiores consultorias de RH do Brasil.
+
+Você deve retornar APENAS um JSON válido, sem nenhum texto antes ou depois, sem markdown, sem backticks. O JSON deve seguir exatamente esta estrutura:
+
+{
+  "cargo": "título exato do cargo",
+  "codigo": "código interno no formato FAM-NNN (ex: TEC-042)",
+  "versao": "1.0",
+  "data_referencia": "2025",
+  "familia": "nome da família de cargos (ex: Tecnologia, Finanças, Recursos Humanos)",
+  "subfamilia": "subfamília específica (ex: Engenharia de Software, Remuneração & Benefícios)",
+  "nivel": "Júnior | Pleno | Sênior | Especialista | Gerência | Diretoria | C-Level",
+  "grau": "Operacional | Tático | Estratégico | Estratégico Executivo",
+  "proposito": "parágrafo de 2-3 frases descrevendo o propósito central do cargo de forma precisa e objetiva",
+  "contribuicao_negocio": "frase única e poderosa descrevendo o impacto no negócio",
+  "dimensoes": [
+    { "nome": "nome da dimensão", "pct": 30, "descricao": "descrição do tempo/energia dedicado a essa dimensão" }
+  ],
+  "responsabilidades": [
+    { "area": "área/tema", "descricao": "responsabilidade específica e mensurável com verbo no infinitivo" }
+  ],
+  "competencias_tecnicas": [
+    { "nome": "competência técnica", "descricao": "descrição breve de aplicação", "nivel": "Básico | Intermediário | Avançado | Expert" }
+  ],
+  "competencias_comportamentais": [
+    { "nome": "competência comportamental", "descricao": "manifestação esperada no cargo", "nivel": "Básico | Intermediário | Avançado | Expert" }
+  ],
+  "requisitos": {
+    "formacao_minima": "formação mínima exigida",
+    "formacao_desejavel": "formação desejável / diferencial",
+    "experiencia_minima": "tempo e tipo de experiência mínima",
+    "experiencia_desejavel": "experiência diferencial desejável",
+    "idiomas": ["idioma e nível (ex: Inglês avançado)"],
+    "certificacoes": ["certificação 1", "certificação 2"]
+  },
+  "kpis": [
+    { "nome": "nome do KPI", "descricao": "como é medido e qual a meta de referência" }
+  ],
+  "progressao": [
+    { "cargo": "cargo anterior", "descricao": "perfil típico de quem vem deste cargo", "tipo": "origem" },
+    { "cargo": "cargo atual", "descricao": "posição em foco neste documento", "tipo": "atual" },
+    { "cargo": "cargo destino 1", "descricao": "progressão vertical típica", "tipo": "destino" },
+    { "cargo": "cargo destino 2", "descricao": "progressão lateral possível", "tipo": "destino" }
+  ]
+}
+
+Regras:
+- dimensoes: 4 a 6 itens, soma dos pct = 100
+- responsabilidades: 6 a 8 itens variados e específicos
+- competencias_tecnicas: 5 a 7 itens relevantes para o cargo
+- competencias_comportamentais: 4 a 6 itens
+- kpis: 4 a 6 indicadores mensuráveis
+- progressao: sempre 4 itens (1 origem, 1 atual, 2 destino)
+- Todo o conteúdo em português do Brasil
+- Use linguagem corporativa precisa, sem genéricos
+- Calibre o nível ao cargo informado (pleno ≠ sênior ≠ especialista)`;
+
+let loadingInterval, stepInterval, currentStepIndex = 0;
+let lastDocData = null;
+
+function setEx(v) {
+  document.getElementById('cargo-input').value = v;
+  document.getElementById('cargo-input').focus();
+}
+
+document.getElementById('cargo-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') gerar();
+});
+
+function startLoading(cargo) {
+  currentStepIndex = 0;
+  const stepsEl = document.getElementById('loading-steps');
+  stepsEl.innerHTML = STEPS.map((s,i) => `
+    <div class="step-item" id="step-${i}">
+      <div class="step-dot"></div>
+      <span>${s}</span>
+    </div>
+  `).join('');
+  document.getElementById('loading-msg').textContent = `Processando: ${cargo}`;
+  updateStep(0);
+  stepInterval = setInterval(() => {
+    if (currentStepIndex < STEPS.length - 1) {
+      document.getElementById(`step-${currentStepIndex}`).className = 'step-item done';
+      currentStepIndex++;
+      updateStep(currentStepIndex);
+    }
+  }, 1400);
+}
+
+function updateStep(i) {
+  const el = document.getElementById(`step-${i}`);
+  if (el) el.className = 'step-item active';
+}
+
+function stopLoading() {
+  clearInterval(stepInterval);
+  for (let i = 0; i < STEPS.length; i++) {
+    const el = document.getElementById(`step-${i}`);
+    if (el) el.className = 'step-item done';
+  }
+}
+
+function resetUI() {
+  document.getElementById('hero').style.display = 'block';
+  document.getElementById('output').style.display = 'none';
+  document.getElementById('error').style.display = 'none';
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('btn-new').classList.remove('visible');
+  document.getElementById('cargo-input').value = '';
+  document.getElementById('cargo-input').focus();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function gerar() {
+  const cargo = document.getElementById('cargo-input').value.trim();
+  if (!cargo) { document.getElementById('cargo-input').focus(); return; }
+
+  const apiKey = document.getElementById('api-key-input') && document.getElementById('api-key-input').value.trim();
+
+  document.getElementById('btn-gen').disabled = true;
+  document.getElementById('hero').style.opacity = '0.4';
+  document.getElementById('output').style.display = 'none';
+  document.getElementById('error').style.display = 'none';
+  document.getElementById('loading').style.display = 'block';
+  startLoading(cargo);
+
+  try {
+    const headers = { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01' };
+    if (apiKey) headers['x-api-key'] = apiKey;
+
+    const resp = await fetch('/api/generate', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ cargo })
+    });
+
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error?.message || data.error || 'Falha na API');
+
+    const doc = data;
+
+    stopLoading();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('hero').style.display = 'none';
+    document.getElementById('btn-new').classList.add('visible');
+    lastDocData = doc;
+    renderDoc(doc);
+
+  } catch (err) {
+    stopLoading();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('hero').style.opacity = '1';
+    document.getElementById('error').style.display = 'block';
+    document.getElementById('error').innerHTML = `
+      <p style="font-weight:500;margin-bottom:6px;">Não foi possível gerar a descrição</p>
+      <p style="font-size:12px;color:#a07070;">${esc(err.message)}</p>
+      <p style="font-size:11px;color:#888;margin-top:8px;">Verifique sua conexão e tente novamente.</p>
+    `;
+    console.error(err);
+  }
+
+  document.getElementById('btn-gen').disabled = false;
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function levelClass(n) {
+  const m = { 'Básico':'lv-basico','Intermediário':'lv-intermediario','Avançado':'lv-avancado','Expert':'lv-expert' };
+  return m[n] || 'lv-basico';
+}
+
+function renderDoc(d) {
+  const ts = Date.now().toString(36).toUpperCase();
+  const req = d.requisitos || {};
+  const grauPill = d.grau && d.grau.startsWith('Estr') ? 'pill-green' : 'pill-slate';
+
+  /* ── HEADER ── */
+  const idsPill = [d.nivel, d.familia, d.subfamilia, d.grau]
+    .filter(Boolean)
+    .map(v => `<span class="pill ${v === d.nivel ? 'pill-gold' : v === d.grau ? grauPill : 'pill-slate'}">${esc(v)}</span>`)
+    .join('');
+
+  /* ── DIMENSÕES ── */
+  const dimHtml = (d.dimensoes || []).map(dim => `
+    <div>
+      <div class="dim-top">
+        <span class="dim-name">${esc(dim.nome)}</span>
+        <span class="dim-pct">${dim.pct}%</span>
+      </div>
+      <div class="dim-bar-bg">
+        <div class="dim-bar-fill" style="width:0%" data-pct="${dim.pct}"></div>
+      </div>
+      <div class="dim-desc">${esc(dim.descricao)}</div>
+    </div>
+  `).join('');
+
+  /* ── RESPONSABILIDADES ── */
+  const respHtml = (d.responsabilidades || []).map(r => `
+    <li>
+      <div class="resp-icon">
+        <svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8">
+          <path d="M1.5 4L3.2 5.8L6.5 2"/>
+        </svg>
+      </div>
+      <div>
+        <span style="font-weight:500;color:#E8C97A;font-size:12.5px;">${esc(r.area)}</span>
+        <span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span>
+        <span>${esc(r.descricao)}</span>
+      </div>
+    </li>
+  `).join('');
+
+  /* ── COMPETÊNCIAS ── */
+  const compTec = (d.competencias_tecnicas || []).map(c => `
+    <div class="comp-item">
+      <div style="flex:1">
+        <div class="comp-main">${esc(c.nome)}</div>
+        <div class="comp-desc">${esc(c.descricao)}</div>
+      </div>
+      <span class="badge-level ${levelClass(c.nivel)}">${esc(c.nivel)}</span>
+    </div>
+  `).join('');
+
+  const compBeh = (d.competencias_comportamentais || []).map(c => `
+    <div class="comp-item">
+      <div style="flex:1">
+        <div class="comp-main">${esc(c.nome)}</div>
+        <div class="comp-desc">${esc(c.descricao)}</div>
+      </div>
+      <span class="badge-level ${levelClass(c.nivel)}">${esc(c.nivel)}</span>
+    </div>
+  `).join('');
+
+  /* ── REQUISITOS ── */
+  const certsHtml = (req.certificacoes || []).map(c =>
+    `<span class="pill pill-slate" style="margin:2px 2px 0 0">${esc(c)}</span>`
+  ).join('');
+
+  const idsHtml = (req.idiomas || []).map(i =>
+    `<span class="pill pill-green" style="margin:2px 2px 0 0">${esc(i)}</span>`
+  ).join('');
+
+  /* ── KPIs ── */
+  const kpiHtml = (d.kpis || []).map(k => `
+    <li>
+      <span class="kpi-bullet">◆</span>
+      <div>
+        <span class="kpi-main">${esc(k.nome)}</span>
+        <span class="kpi-sub">${esc(k.descricao)}</span>
+      </div>
+    </li>
+  `).join('');
+
+  /* ── PROGRESSÃO ── */
+  const progItems = (d.progressao || []);
+  const progHtml = progItems.map((p, i) => {
+    const isLast = i === progItems.length - 1;
+    const card = `
+      <div class="prog-card ${p.tipo === 'atual' ? 'current' : ''}">
+        <div class="prog-cargo">${esc(p.cargo)}</div>
+        <div class="prog-desc">${esc(p.descricao)}</div>
+      </div>
+    `;
+    if (!isLast) {
+      return card + `<div class="prog-arrow">→</div>`;
+    }
+    return card;
+  }).join('');
+
+  const html = `
+  <div class="doc-header">
+    <div class="doc-meta">
+      <div class="doc-meta-left">
+        <div class="doc-label">Descrição de Cargo — Documento Estruturado</div>
+        <div class="doc-title">${esc(d.cargo)}</div>
+        <div class="pills-row">${idsPill}</div>
+      </div>
+      <div class="doc-ids">
+        <div class="id-row"><span class="id-key">Código</span><span class="id-val">${esc(d.codigo)}</span></div>
+        <div class="id-row"><span class="id-key">Versão</span><span class="id-val">${esc(d.versao)}</span></div>
+        <div class="id-row"><span class="id-key">Ref.</span><span class="id-val">${esc(d.data_referencia)}</span></div>
+        <div class="id-row"><span class="id-key">Doc ID</span><span class="id-val">${ts}</span></div>
+      </div>
+    </div>
+    <div class="doc-summary">
+      <p style="margin-bottom:0.6rem;">${esc(d.proposito)}</p>
+      <p style="color:var(--gold-light);font-style:italic;font-size:14px;">${esc(d.contribuicao_negocio)}</p>
+    </div>
+  </div>
+
+  <!-- 01 IDENTIFICAÇÃO -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="s-num">01</span>
+      <span class="s-title">Identificação &amp; Enquadramento</span>
+    </div>
+    <div class="ident-grid">
+      <div class="ident-card"><div class="ident-label">Família</div><div class="ident-value">${esc(d.familia)}</div></div>
+      <div class="ident-card"><div class="ident-label">Sub-Família</div><div class="ident-value">${esc(d.subfamilia)}</div></div>
+      <div class="ident-card"><div class="ident-label">Grau de Complexidade</div><div class="ident-value">${esc(d.grau)}</div></div>
+      <div class="ident-card"><div class="ident-label">Nível</div><div class="ident-value">${esc(d.nivel)}</div></div>
+      <div class="ident-card"><div class="ident-label">Código Interno</div><div class="ident-value" style="font-family:'DM Mono',monospace;color:var(--gold-light)">${esc(d.codigo)}</div></div>
+      <div class="ident-card"><div class="ident-label">Referência de Mercado</div><div class="ident-value">${esc(d.data_referencia)}</div></div>
+    </div>
+  </div>
+
+  <!-- 02 RESUMO -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="s-num">02</span>
+      <span class="s-title">Descrição Sumária</span>
+    </div>
+    <div class="summary-box">
+      <p style="font-size:14.5px;color:var(--slate-light);line-height:1.75;margin-bottom:1rem;">${esc(d.proposito)}</p>
+      <div style="border-left:3px solid var(--gold);padding-left:1rem;">
+        <div style="font-size:8.5px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Contribuição ao Negócio</div>
+        <p style="font-size:14px;color:var(--gold-light);font-style:italic;line-height:1.6;">${esc(d.contribuicao_negocio)}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 DIMENSÕES -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="s-num">03</span>
+      <span class="s-title">Dimensões do Cargo</span>
+    </div>
+    <div class="dim-grid" id="dim-grid">${dimHtml}</div>
+  </div>
+
+  <!-- 04 RESPONSABILIDADES -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="s-num">04</span>
+      <span class="s-title">Responsabilidades e Entregas</span>
+    </div>
+    <ul class="resp-list">${respHtml}</ul>
+  </div>
+
+  <!-- 05 COMPETÊNCIAS -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="s-num">05</span>
+      <span class="s-title">Competências Técnicas e Comportamentais</span>
+    </div>
+    <div class="comp-cols">
+      <div style="padding-right:1.5rem;border-right:0.5px solid rgba(255,255,255,0.05);">
+        <div class="comp-col-title">Técnicas</div>
+        ${compTec}
+      </div>
+      <div style="padding-left:1.5rem;">
+        <div class="comp-col-title">Comportamentais</div>
+        ${compBeh}
+      </div>
+    </div>
+  </div>
+
+  <!-- 06 REQUISITOS -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="s-num">06</span>
+      <span class="s-title">Requisitos da Posição</span>
+    </div>
+    <div class="req-cols">
+      <div>
+        <table class="req-table">
+          <tr><td class="req-key">Formação Mínima</td><td class="req-val">${esc(req.formacao_minima)}</td></tr>
+          <tr><td class="req-key">Formação Desejável</td><td class="req-val">${esc(req.formacao_desejavel)}</td></tr>
+          <tr><td class="req-key">Exp. Mínima</td><td class="req-val">${esc(req.experiencia_minima)}</td></tr>
+          <tr><td class="req-key">Exp. Desejável</td><td class="req-val">${esc(req.experiencia_desejavel)}</td></tr>
+          <tr><td class="req-key">Idiomas</td><td class="req-val">${idsHtml || '—'}</td></tr>
+          <tr><td class="req-key">Certificações</td><td class="req-val">${certsHtml || '—'}</td></tr>
+        </table>
+      </div>
+      <div>
+        <div style="font-size:8.5px;font-weight:700;letter-spacing:0.19em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:0.5px solid var(--divider);">KPIs de Referência</div>
+        <ul class="kpi-list">${kpiHtml}</ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 07 PROGRESSÃO -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="s-num">07</span>
+      <span class="s-title">Trilha de Progressão</span>
+    </div>
+    <div class="prog-cards" style="align-items:start;">${progHtml}</div>
+  </div>
+
+  <div class="doc-footer">
+    <div class="footer-note">
+      Gerado por Arquitetura de Cargos v4 · Claude AI · Referência Brasil ${esc(d.data_referencia)} · Uso interno e confidencial
+    </div>
+    <div class="footer-btns">
+      <button class="btn-action" onclick="copiarJSON()">Copiar JSON</button>
+      <button class="btn-action" onclick="imprimirDoc()">Imprimir / PDF</button>
+    </div>
+  </div>
+  `;
+
+  const out = document.getElementById('output');
+  out.innerHTML = html;
+  out.style.display = 'block';
+  out._docData = d;
+
+  /* animate bars after paint */
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      document.querySelectorAll('.dim-bar-fill').forEach(el => {
+        el.style.width = el.dataset.pct + '%';
+      });
+    }, 80);
+  });
+
+  out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copiarJSON() {
+  const d = document.getElementById('output')._docData;
+  if (!d) return;
+  navigator.clipboard.writeText(JSON.stringify(d, null, 2)).then(() => {
+    const btns = document.querySelectorAll('.btn-action');
+    btns.forEach(b => { if (b.textContent.includes('Copiar')) { b.textContent = '✓ Copiado!'; setTimeout(() => b.textContent = 'Copiar JSON', 2000); } });
+  });
+}
+
+function imprimirDoc() {
+  window.print();
+}
+</script>
+</body>
+</html>
