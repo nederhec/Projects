@@ -11,17 +11,17 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --navy:       #0D1B2A;
-  --navy-800:   #132034;
-  --navy-700:   #1B2D47;
-  --navy-600:   #24395A;
-  --gold:       #C9A84C;
-  --gold-light: #E8C97A;
-  --gold-pale:  #F5EED8;
-  --slate:      #7A8FA4;
-  --slate-light:#AAB8C4;
-  --white:      #F8F6F0;
-  --divider:    rgba(201,168,76,0.18);
+  --navy:       #0D0A0B;
+  --navy-800:   #170C0E;
+  --navy-700:   #231114;
+  --navy-600:   #35181C;
+  --gold:       #CC1226;
+  --gold-light: #E8354A;
+  --gold-pale:  #FFE8EA;
+  --slate:      #9AA4AB;
+  --slate-light:#BFC8CE;
+  --white:      #F8F5F5;
+  --divider:    rgba(204,18,38,0.2);
   --border:     rgba(255,255,255,0.07);
   --success:    #3D9970;
 }
@@ -42,7 +42,7 @@ header {
   justify-content: space-between;
   padding: 1.25rem 2.5rem;
   border-bottom: 0.5px solid var(--border);
-  background: rgba(13,27,42,0.96);
+  background: rgba(13,10,11,0.96);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -89,7 +89,7 @@ header {
 
 .btn-new {
   background: transparent;
-  border: 0.5px solid rgba(201,168,76,0.3);
+  border: 0.5px solid rgba(204,18,38,0.35);
   color: var(--gold);
   padding: 5px 14px;
   border-radius: 5px;
@@ -100,7 +100,7 @@ header {
   transition: background 0.15s;
   display: none;
 }
-.btn-new:hover { background: rgba(201,168,76,0.08); }
+.btn-new:hover { background: rgba(204,18,38,0.08); }
 .btn-new.visible { display: inline-block; }
 
 /* ── HERO ────────────────────────────────────── */
@@ -149,7 +149,7 @@ header {
 .input-shell input {
   width: 100%;
   background: var(--navy-800);
-  border: 1px solid rgba(201,168,76,0.3);
+  border: 1px solid rgba(204,18,38,0.35);
   border-radius: 8px;
   padding: 1.05rem 1.5rem;
   font-family: 'DM Sans', sans-serif;
@@ -163,7 +163,7 @@ header {
 
 .input-shell input:focus {
   border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+  box-shadow: 0 0 0 3px rgba(204,18,38,0.1);
 }
 
 .input-row2 {
@@ -245,7 +245,7 @@ header {
 
 .ring {
   width: 40px; height: 40px;
-  border: 2px solid rgba(201,168,76,0.15);
+  border: 2px solid rgba(204,18,38,0.15);
   border-top-color: var(--gold);
   border-radius: 50%;
   animation: spin 0.85s linear infinite;
@@ -371,7 +371,7 @@ header {
   display: inline-block;
 }
 
-.pill-gold  { background: rgba(201,168,76,0.1);  color: var(--gold-light);    border: 0.5px solid rgba(201,168,76,0.3);  }
+.pill-gold  { background: rgba(204,18,38,0.1);   color: var(--gold-light);    border: 0.5px solid rgba(204,18,38,0.35);  }
 .pill-slate { background: rgba(138,153,170,0.08); color: var(--slate-light);   border: 0.5px solid rgba(138,153,170,0.2); }
 .pill-green { background: rgba(61,153,112,0.12);  color: #6FCFA2;              border: 0.5px solid rgba(61,153,112,0.3); }
 
@@ -512,7 +512,7 @@ header {
 
 .lv-basico        { background: rgba(138,153,170,0.1); color: #8A99AA; border: 0.5px solid rgba(138,153,170,0.28); }
 .lv-intermediario { background: rgba(59,130,246,0.1);  color: #93C5FD; border: 0.5px solid rgba(59,130,246,0.28); }
-.lv-avancado      { background: rgba(201,168,76,0.1);  color: var(--gold-light); border: 0.5px solid rgba(201,168,76,0.28); }
+.lv-avancado      { background: rgba(204,18,38,0.1);  color: var(--gold-light); border: 0.5px solid rgba(204,18,38,0.3); }
 .lv-expert        { background: rgba(61,153,112,0.12); color: #6FCFA2; border: 0.5px solid rgba(61,153,112,0.28); }
 
 /* ── SECTION 03: REQUISITOS ──────────────────── */
@@ -541,14 +541,14 @@ header {
 .cx-label {
   font-size: 13px;
   font-weight: 500;
-  color: #E8824A;
+  color: #E8354A;
 }
 
 .cx-pct {
   font-family: 'DM Mono', monospace;
   font-size: 13px;
   font-weight: 600;
-  color: #E8824A;
+  color: #E8354A;
 }
 
 .cx-bar-bg {
@@ -561,14 +561,14 @@ header {
 .cx-bar-fill {
   height: 100%;
   border-radius: 4px;
-  background: linear-gradient(90deg, #1B2D6B 0%, #C0392B 55%, #E67E22 100%);
+  background: linear-gradient(90deg, #3D0410 0%, #900018 45%, #CC1226 100%);
   transition: width 0.9s cubic-bezier(.22,.61,.36,1);
   width: 0%;
 }
 
 /* ── SECTION 05: AVALIAÇÃO DE RISCO ─────────── */
 .var-header {
-  background: linear-gradient(90deg, #C0392B 0%, #E67E22 100%);
+  background: linear-gradient(90deg, #7A000F 0%, #CC1226 100%);
   border-radius: 5px;
   padding: 0.75rem 1.25rem;
   text-align: center;
@@ -655,7 +655,7 @@ header {
 
 .btn-action {
   background: transparent;
-  border: 0.5px solid rgba(201,168,76,0.3);
+  border: 0.5px solid rgba(204,18,38,0.35);
   color: var(--gold);
   padding: 5px 13px;
   border-radius: 5px;
@@ -665,7 +665,7 @@ header {
   transition: background 0.15s;
 }
 
-.btn-action:hover { background: rgba(201,168,76,0.08); }
+.btn-action:hover { background: rgba(204,18,38,0.08); }
 
 /* ── RESPONSIVE ──────────────────────────────── */
 @media (max-width: 660px) {
