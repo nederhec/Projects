@@ -11,19 +11,19 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --navy:       #0D0A0B;
-  --navy-800:   #170C0E;
-  --navy-700:   #231114;
-  --navy-600:   #35181C;
+  --navy:       #FFF5F5;
+  --navy-800:   #FFFFFF;
+  --navy-700:   #FFF0F0;
+  --navy-600:   #FFE5E5;
   --gold:       #CC1226;
   --gold-light: #E8354A;
   --gold-pale:  #FFE8EA;
-  --slate:      #9AA4AB;
-  --slate-light:#BFC8CE;
-  --white:      #F8F5F5;
-  --divider:    rgba(204,18,38,0.2);
-  --border:     rgba(255,255,255,0.07);
-  --success:    #3D9970;
+  --slate:      #7A6870;
+  --slate-light:#9A8890;
+  --white:      #1C1010;
+  --divider:    rgba(204,18,38,0.15);
+  --border:     rgba(0,0,0,0.09);
+  --success:    #2D7A55;
 }
 
 body {
@@ -42,11 +42,12 @@ header {
   justify-content: space-between;
   padding: 1.25rem 2.5rem;
   border-bottom: 0.5px solid var(--border);
-  background: rgba(13,10,11,0.96);
+  background: rgba(255,245,245,0.97);
   position: sticky;
   top: 0;
   z-index: 100;
   backdrop-filter: blur(8px);
+  box-shadow: 0 1px 0 var(--border);
 }
 
 .logo { display: flex; align-items: center; gap: 12px; cursor: pointer; }
@@ -82,7 +83,7 @@ header {
   font-size: 10px;
   color: var(--slate);
   letter-spacing: 0.05em;
-  border: 0.5px solid rgba(138,153,170,0.25);
+  border: 0.5px solid rgba(0,0,0,0.15);
   padding: 3px 10px;
   border-radius: 20px;
 }
@@ -180,7 +181,7 @@ header {
 
 .btn-gen {
   background: var(--gold);
-  color: var(--navy);
+  color: #FFFFFF;
   border: none;
   border-radius: 5px;
   padding: 0.55rem 1.25rem;
@@ -322,6 +323,7 @@ header {
   background: var(--navy-800);
   position: relative;
   overflow: hidden;
+  box-shadow: 0 2px 12px rgba(204,18,38,0.07);
 }
 
 .doc-header::before {
@@ -392,7 +394,7 @@ header {
 .id-val {
   font-family: 'DM Mono', monospace;
   font-size: 10.5px; color: var(--slate-light);
-  background: rgba(255,255,255,0.05);
+  background: rgba(0,0,0,0.06);
   padding: 2px 8px; border-radius: 4px;
 }
 
@@ -410,6 +412,7 @@ header {
   border: 0.5px solid var(--border);
   border-top: none;
   padding: 1.75rem 2.5rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
 
 .section-card:last-of-type {
@@ -444,8 +447,8 @@ header {
 }
 
 .ident-card {
-  background: rgba(255,255,255,0.025);
-  border: 0.5px solid rgba(255,255,255,0.06);
+  background: rgba(204,18,38,0.03);
+  border: 0.5px solid rgba(0,0,0,0.08);
   border-radius: 6px;
   padding: 0.85rem 1rem;
 }
@@ -464,7 +467,7 @@ header {
 .resp-list li {
   display: flex; gap: 12px;
   padding: 0.7rem 0;
-  border-bottom: 0.5px solid rgba(255,255,255,0.04);
+  border-bottom: 0.5px solid rgba(0,0,0,0.06);
   font-size: 13.5px; color: var(--slate-light); line-height: 1.55;
 }
 
@@ -497,7 +500,7 @@ header {
 .comp-item {
   display: flex; align-items: center; gap: 10px;
   padding: 0.5rem 0;
-  border-bottom: 0.5px solid rgba(255,255,255,0.04);
+  border-bottom: 0.5px solid rgba(0,0,0,0.06);
 }
 
 .comp-item:last-child { border-bottom: none; }
@@ -520,7 +523,7 @@ header {
 
 .req-table td {
   padding: 0.6rem 0;
-  border-bottom: 0.5px solid rgba(255,255,255,0.05);
+  border-bottom: 0.5px solid rgba(0,0,0,0.06);
   font-size: 13px; vertical-align: top;
 }
 
@@ -553,7 +556,7 @@ header {
 
 .cx-bar-bg {
   height: 7px;
-  background: rgba(255,255,255,0.05);
+  background: rgba(0,0,0,0.06);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -584,7 +587,7 @@ header {
 
 .var-table td {
   padding: 0.65rem 0.5rem;
-  border-bottom: 0.5px solid rgba(255,255,255,0.05);
+  border-bottom: 0.5px solid rgba(0,0,0,0.06);
   font-size: 13px;
   vertical-align: middle;
 }
@@ -602,7 +605,7 @@ header {
   color: var(--slate);
   text-align: center;
   padding-bottom: 0.75rem;
-  border-bottom: 0.5px solid rgba(255,255,255,0.07);
+  border-bottom: 0.5px solid rgba(0,0,0,0.07);
 }
 
 .var-check { text-align: center; width: 12%; }
@@ -995,7 +998,7 @@ function renderDoc(d) {
         <svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg>
       </div>
       <div>
-        <span style="font-weight:500;color:#E8C97A;font-size:12.5px;">${esc(r.area)}</span>
+        <span style="font-weight:500;color:#CC1226;font-size:12.5px;">${esc(r.area)}</span>
         <span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span>
         <span>${esc(r.descricao)}</span>
       </div>
@@ -1068,7 +1071,7 @@ function renderDoc(d) {
   <div class="section-card">
     <div class="section-header"><span class="s-num">02</span><span class="s-title">Competências Técnicas e Comportamentais</span></div>
     <div class="comp-cols">
-      <div style="padding-right:1.5rem;border-right:0.5px solid rgba(255,255,255,0.05);">
+      <div style="padding-right:1.5rem;border-right:0.5px solid rgba(0,0,0,0.06);">
         <div class="comp-col-title">Técnicas</div>${compTec}
       </div>
       <div style="padding-left:1.5rem;">
@@ -1101,7 +1104,7 @@ function renderDoc(d) {
     <table class="var-table">
       <thead>
         <tr>
-          <td style="padding-bottom:0.75rem;border-bottom:0.5px solid rgba(255,255,255,0.07);font-size:12.5px;color:var(--slate-light);">
+          <td style="padding-bottom:0.75rem;border-bottom:0.5px solid rgba(0,0,0,0.07);font-size:12.5px;color:var(--slate-light);">
             Avaliação de Risco: mapeamento do nível de exposição ao risco das atividades inerentes à função.
           </td>
           <td class="var-col-head">SIM</td>

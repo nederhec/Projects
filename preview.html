@@ -10,13 +10,13 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --navy: #0D0A0B; --navy-800: #170C0E; --gold: #CC1226; --gold-light: #E8354A;
-  --slate: #9AA4AB; --slate-light: #AAB8C4; --white: #F8F6F0;
-  --divider: rgba(204,18,38,0.2); --border: rgba(255,255,255,0.07); --success: #3D9970;
+  --navy: #FFF5F5; --navy-800: #FFFFFF; --gold: #CC1226; --gold-light: #E8354A;
+  --slate: #7A6870; --slate-light: #9A8890; --white: #1C1010;
+  --divider: rgba(204,18,38,0.15); --border: rgba(0,0,0,0.09); --success: #3D9970;
 }
 body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: var(--white); min-height: 100vh; font-size: 15px; line-height: 1.65; }
 
-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2.5rem; border-bottom: 0.5px solid var(--border); background: rgba(13,27,42,0.96); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px); }
+header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2.5rem; border-bottom: 0.5px solid var(--border); background: rgba(255,245,245,0.97); box-shadow: 0 1px 0 var(--border); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px); }
 .logo { display: flex; align-items: center; gap: 12px; }
 .logo-mark { width: 30px; height: 30px; border: 1.5px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 .logo-mark svg { width: 13px; height: 13px; }
@@ -32,7 +32,7 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 
 #output { max-width: 940px; margin: 2.5rem auto 7rem; padding: 0 2rem; }
 
-.doc-header { border: 0.5px solid var(--divider); border-radius: 10px 10px 0 0; padding: 2.25rem 2.75rem; background: var(--navy-800); position: relative; overflow: hidden; }
+.doc-header { border: 0.5px solid var(--divider); box-shadow: 0 2px 12px rgba(204,18,38,0.07); border-radius: 10px 10px 0 0; padding: 2.25rem 2.75rem; background: var(--navy-800); position: relative; overflow: hidden; }
 .doc-header::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: linear-gradient(180deg, var(--gold) 0%, transparent 100%); }
 .doc-meta { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem; margin-bottom: 1.5rem; }
 .doc-meta-left { flex: 1; min-width: 0; }
@@ -46,7 +46,7 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .doc-ids { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
 .id-row { display: flex; gap: 8px; align-items: center; }
 .id-key { font-size: 8.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--slate); }
-.id-val { font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--slate-light); background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px; }
+.id-val { font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--slate-light); background: rgba(0,0,0,0.06); padding: 2px 8px; border-radius: 4px; }
 .doc-summary { border-top: 0.5px solid var(--divider); padding-top: 1.25rem; font-size: 14.5px; color: var(--slate-light); line-height: 1.75; }
 
 .section-card { background: var(--navy-800); border: 0.5px solid var(--border); border-top: none; padding: 1.75rem 2.5rem; }
@@ -56,13 +56,13 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .s-title { font-size: 9.5px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--slate-light); }
 
 .resp-list { list-style: none; padding: 0; }
-.resp-list li { display: flex; gap: 12px; padding: 0.7rem 0; border-bottom: 0.5px solid rgba(255,255,255,0.04); font-size: 13.5px; color: var(--slate-light); line-height: 1.55; }
+.resp-list li { display: flex; gap: 12px; padding: 0.7rem 0; border-bottom: 0.5px solid rgba(0,0,0,0.06); font-size: 13.5px; color: var(--slate-light); line-height: 1.55; }
 .resp-list li:last-child { border-bottom: none; }
 .resp-icon { width: 17px; height: 17px; min-width: 17px; border: 0.5px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: 3px; }
 
 .comp-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 2px; }
 .comp-col-title { font-size: 8.5px; font-weight: 700; letter-spacing: 0.19em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 0.5px solid var(--divider); }
-.comp-item { display: flex; align-items: center; gap: 10px; padding: 0.5rem 0; border-bottom: 0.5px solid rgba(255,255,255,0.04); }
+.comp-item { display: flex; align-items: center; gap: 10px; padding: 0.5rem 0; border-bottom: 0.5px solid rgba(0,0,0,0.06); }
 .comp-item:last-child { border-bottom: none; }
 .comp-main { font-size: 12.5px; font-weight: 500; color: var(--white); flex: 1; }
 .badge-level { font-size: 9.5px; padding: 2px 8px; border-radius: 12px; white-space: nowrap; font-weight: 600; letter-spacing: 0.02em; flex-shrink: 0; }
@@ -72,7 +72,7 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .lv-expert        { background: rgba(61,153,112,0.12); color: #6FCFA2; border: 0.5px solid rgba(61,153,112,0.28); }
 
 .req-table { width: 100%; border-collapse: collapse; }
-.req-table td { padding: 0.6rem 0; border-bottom: 0.5px solid rgba(255,255,255,0.05); font-size: 13px; vertical-align: top; }
+.req-table td { padding: 0.6rem 0; border-bottom: 0.5px solid rgba(0,0,0,0.06); font-size: 13px; vertical-align: top; }
 .req-table tr:last-child td { border-bottom: none; }
 .req-key { color: var(--slate); width: 32%; font-weight: 500; }
 .req-val { color: var(--slate-light); }
@@ -82,17 +82,17 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .cx-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
 .cx-label { font-size: 13px; font-weight: 500; color: #E8354A; }
 .cx-pct { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 600; color: #E8354A; }
-.cx-bar-bg { height: 7px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+.cx-bar-bg { height: 7px; background: rgba(0,0,0,0.06); border-radius: 4px; overflow: hidden; }
 .cx-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #3D0410 0%, #900018 45%, #CC1226 100%); transition: width 0.9s cubic-bezier(.22,.61,.36,1); }
 
 /* AVALIAÇÃO DE RISCO */
 .var-header { background: linear-gradient(90deg, #7A000F 0%, #CC1226 100%); border-radius: 5px; padding: 0.75rem 1.25rem; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #fff; margin-bottom: 1rem; }
 .var-table { width: 100%; border-collapse: collapse; }
-.var-table td { padding: 0.65rem 0.5rem; border-bottom: 0.5px solid rgba(255,255,255,0.05); font-size: 13px; vertical-align: middle; }
+.var-table td { padding: 0.65rem 0.5rem; border-bottom: 0.5px solid rgba(0,0,0,0.06); font-size: 13px; vertical-align: middle; }
 .var-table tr:last-child td { border-bottom: none; }
 .var-q { color: var(--slate-light); width: 76%; padding-left: 0; }
 .var-q strong { color: var(--white); }
-.var-col-head { font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--slate); text-align: center; padding-bottom: 0.75rem; border-bottom: 0.5px solid rgba(255,255,255,0.07); }
+.var-col-head { font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--slate); text-align: center; padding-bottom: 0.75rem; border-bottom: 0.5px solid rgba(0,0,0,0.07); }
 .var-check { text-align: center; width: 12%; }
 .var-box { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 3px; }
 .var-box.checked    { background: rgba(61,153,112,0.15); border-color: #3D9970; color: #6FCFA2; }
@@ -174,27 +174,27 @@ header { display: flex; align-items: center; justify-content: space-between; pad
     <ul class="resp-list">
       <li>
         <div class="resp-icon"><svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
-        <div><span style="font-weight:500;color:#E8C97A;font-size:12.5px;">Previsão de Demanda</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Desenvolver e manter modelos de forecast de vendas por SKU, loja e canal, com horizonte de 4 a 12 semanas, atingindo erro MAPE abaixo de 12%.</span></div>
+        <div><span style="font-weight:500;color:#CC1226;font-size:12.5px;">Previsão de Demanda</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Desenvolver e manter modelos de forecast de vendas por SKU, loja e canal, com horizonte de 4 a 12 semanas, atingindo erro MAPE abaixo de 12%.</span></div>
       </li>
       <li>
         <div class="resp-icon"><svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
-        <div><span style="font-weight:500;color:#E8C97A;font-size:12.5px;">Modelagem de Comportamento</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Construir modelos de propensão de compra, churn e segmentação de clientes para campanhas de CRM e personalização de ofertas.</span></div>
+        <div><span style="font-weight:500;color:#CC1226;font-size:12.5px;">Modelagem de Comportamento</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Construir modelos de propensão de compra, churn e segmentação de clientes para campanhas de CRM e personalização de ofertas.</span></div>
       </li>
       <li>
         <div class="resp-icon"><svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
-        <div><span style="font-weight:500;color:#E8C97A;font-size:12.5px;">MLOps &amp; Deploy</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Colocar modelos em produção utilizando práticas de MLOps, garantindo monitoramento de drift, versionamento e SLAs de latência.</span></div>
+        <div><span style="font-weight:500;color:#CC1226;font-size:12.5px;">MLOps &amp; Deploy</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Colocar modelos em produção utilizando práticas de MLOps, garantindo monitoramento de drift, versionamento e SLAs de latência.</span></div>
       </li>
       <li>
         <div class="resp-icon"><svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
-        <div><span style="font-weight:500;color:#E8C97A;font-size:12.5px;">Precificação Dinâmica</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Colaborar com as equipes de pricing na construção de algoritmos de elasticidade de preço e otimização de margem por categoria.</span></div>
+        <div><span style="font-weight:500;color:#CC1226;font-size:12.5px;">Precificação Dinâmica</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Colaborar com as equipes de pricing na construção de algoritmos de elasticidade de preço e otimização de margem por categoria.</span></div>
       </li>
       <li>
         <div class="resp-icon"><svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
-        <div><span style="font-weight:500;color:#E8C97A;font-size:12.5px;">Qualidade de Dados</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Identificar e corrigir problemas de qualidade nos pipelines de dados, definindo contratos de dados com as equipes de engenharia.</span></div>
+        <div><span style="font-weight:500;color:#CC1226;font-size:12.5px;">Qualidade de Dados</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Identificar e corrigir problemas de qualidade nos pipelines de dados, definindo contratos de dados com as equipes de engenharia.</span></div>
       </li>
       <li>
         <div class="resp-icon"><svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
-        <div><span style="font-weight:500;color:#E8C97A;font-size:12.5px;">Pesquisa Aplicada</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Avaliar e incorporar avanços da literatura acadêmica e do mercado em técnicas de ML aplicadas ao contexto de varejo.</span></div>
+        <div><span style="font-weight:500;color:#CC1226;font-size:12.5px;">Pesquisa Aplicada</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Avaliar e incorporar avanços da literatura acadêmica e do mercado em técnicas de ML aplicadas ao contexto de varejo.</span></div>
       </li>
     </ul>
   </div>
@@ -203,7 +203,7 @@ header { display: flex; align-items: center; justify-content: space-between; pad
   <div class="section-card">
     <div class="section-header"><span class="s-num">02</span><span class="s-title">Competências Técnicas e Comportamentais</span></div>
     <div class="comp-cols">
-      <div style="padding-right:1.5rem;border-right:0.5px solid rgba(255,255,255,0.05);">
+      <div style="padding-right:1.5rem;border-right:0.5px solid rgba(0,0,0,0.06);">
         <div class="comp-col-title">Técnicas</div>
         <div class="comp-item"><div class="comp-main">Python para Ciência de Dados</div><span class="badge-level lv-expert">Expert</span></div>
         <div class="comp-item"><div class="comp-main">Modelagem Estatística &amp; ML</div><span class="badge-level lv-expert">Expert</span></div>
@@ -266,7 +266,7 @@ header { display: flex; align-items: center; justify-content: space-between; pad
     <table class="var-table">
       <thead>
         <tr>
-          <td style="padding-bottom:0.75rem;border-bottom:0.5px solid rgba(255,255,255,0.07);font-size:12.5px;color:var(--slate-light);">
+          <td style="padding-bottom:0.75rem;border-bottom:0.5px solid rgba(0,0,0,0.07);font-size:12.5px;color:var(--slate-light);">
             Avaliação de Risco: mapeamento do nível de exposição ao risco das atividades inerentes à função.
           </td>
           <td class="var-col-head">SIM</td>
