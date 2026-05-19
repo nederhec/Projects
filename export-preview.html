@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Descrição de Cargo — Exportação · Cientista de Dados Sênior</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --red:    #CC1226;
+  --red2:   #E8354A;
+  --dark:   #1C1010;
+  --mid:    #5A4A50;
+  --light:  #8A7880;
+  --bg:     #FFFFFF;
+  --rule:   rgba(204,18,38,0.18);
+}
+
+/* ── SCREEN WRAPPER ─────────────────────────── */
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #F0ECEC;
+  color: var(--dark);
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 2rem 1rem 4rem;
+}
+
+/* ── TOOLBAR (screen only) ───────────────────── */
+.toolbar {
+  max-width: 800px;
+  margin: 0 auto 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.toolbar-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--red);
+  font-family: 'DM Mono', monospace;
+}
+
+.toolbar-btns { display: flex; gap: 8px; }
+
+.btn-export {
+  background: var(--red);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 6px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+}
+.btn-export:hover { background: var(--red2); }
+
+.btn-outline {
+  background: transparent;
+  border: 0.5px solid rgba(204,18,38,0.4);
+  color: var(--red);
+  border-radius: 5px;
+  padding: 6px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn-outline:hover { background: rgba(204,18,38,0.06); }
+
+/* ── PAGE SHEET ──────────────────────────────── */
+.page {
+  width: 800px;
+  max-width: 100%;
+  margin: 0 auto;
+  background: var(--bg);
+  border: 0.5px solid rgba(0,0,0,0.12);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+}
+
+/* ── PAGE HEADER ─────────────────────────────── */
+.page-header {
+  background: var(--red);
+  padding: 1.5rem 2.5rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1.5rem;
+}
+
+.ph-left { flex: 1; }
+
+.ph-org {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.65);
+  margin-bottom: 6px;
+}
+
+.ph-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.7rem;
+  color: #fff;
+  line-height: 1.1;
+}
+
+.ph-subtitle {
+  font-size: 10.5px;
+  color: rgba(255,255,255,0.55);
+  margin-top: 5px;
+  letter-spacing: 0.04em;
+}
+
+.ph-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.ph-meta-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 9px;
+  font-family: 'DM Mono', monospace;
+}
+
+.ph-meta-key {
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ph-meta-val {
+  color: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.1);
+  padding: 1px 7px;
+  border-radius: 3px;
+}
+
+.ph-pills {
+  display: flex;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.ph-pill {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 12px;
+  letter-spacing: 0.04em;
+  border: 0.5px solid rgba(255,255,255,0.3);
+  color: #fff;
+}
+
+.ph-pill-nivel  { background: rgba(255,255,255,0.15); }
+.ph-pill-seg    { background: rgba(61,153,112,0.35); border-color: rgba(61,153,112,0.5); }
+
+/* ── PROPOSITO BAND ──────────────────────────── */
+.proposito-band {
+  background: #FFF5F5;
+  border-bottom: 0.5px solid var(--rule);
+  padding: 1rem 2.5rem;
+}
+
+.proposito-text {
+  font-size: 12.5px;
+  color: var(--mid);
+  line-height: 1.7;
+  margin-bottom: 0.35rem;
+}
+
+.contribuicao-text {
+  font-size: 12px;
+  color: var(--red2);
+  font-style: italic;
+}
+
+/* ── CONTENT AREA ────────────────────────────── */
+.content { padding: 0; }
+
+/* ── SECTION ─────────────────────────────────── */
+.sec {
+  border-bottom: 0.5px solid rgba(0,0,0,0.07);
+  padding: 1.25rem 2.5rem;
+}
+
+.sec:last-child { border-bottom: none; }
+
+.sec-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 0.5px solid var(--rule);
+}
+
+.sec-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 8.5px;
+  color: var(--red);
+  min-width: 18px;
+}
+
+.sec-title {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--light);
+}
+
+/* ── RESPONSABILIDADES ───────────────────────── */
+.resp-list { list-style: none; padding: 0; }
+
+.resp-item {
+  display: flex;
+  gap: 10px;
+  padding: 0.5rem 0;
+  border-bottom: 0.5px solid rgba(0,0,0,0.05);
+  font-size: 12.5px;
+  color: var(--mid);
+  line-height: 1.55;
+}
+
+.resp-item:last-child { border-bottom: none; }
+
+.resp-dot {
+  width: 14px; height: 14px; min-width: 14px;
+  border: 0.5px solid var(--red);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.resp-area {
+  font-weight: 600;
+  color: var(--red);
+  font-size: 11.5px;
+}
+
+/* ── COMPETÊNCIAS ────────────────────────────── */
+.comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+.comp-col-title {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 0.5px solid var(--rule);
+}
+
+.comp-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.comp-tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(204,18,38,0.05);
+  border: 0.5px solid rgba(204,18,38,0.2);
+  color: var(--dark);
+  line-height: 1.4;
+}
+
+/* ── REQUISITOS ──────────────────────────────── */
+.req-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+.req-col-title {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--mid);
+  margin-bottom: 6px;
+}
+
+.req-text {
+  font-size: 12.5px;
+  color: var(--mid);
+  line-height: 1.65;
+}
+
+.req-text em { color: var(--light); font-style: normal; }
+
+/* ── COMPLEXIDADE ────────────────────────────── */
+.cx-list { display: flex; flex-direction: column; gap: 10px; }
+
+.cx-row { }
+
+.cx-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.cx-label { font-size: 11.5px; font-weight: 500; color: var(--dark); }
+
+.cx-pct {
+  font-family: 'DM Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--red);
+}
+
+.cx-bar-bg {
+  height: 5px;
+  background: rgba(0,0,0,0.07);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.cx-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #7A000F 0%, #CC1226 100%);
+}
+
+/* ── AVALIAÇÃO DE RISCO ──────────────────────── */
+.var-band {
+  background: var(--red);
+  border-radius: 3px;
+  padding: 0.25rem 0.85rem;
+  text-align: center;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 0.75rem;
+}
+
+.var-table { width: 100%; border-collapse: collapse; }
+
+.var-table th {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--light);
+  text-align: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 0.5px solid rgba(0,0,0,0.08);
+}
+
+.var-table th:first-child { text-align: left; }
+
+.var-table td {
+  font-size: 11.5px;
+  padding: 0.35rem 0.25rem;
+  border-bottom: 0.5px solid rgba(0,0,0,0.05);
+  vertical-align: middle;
+  color: var(--mid);
+}
+
+.var-table tr:last-child td { border-bottom: none; }
+
+.var-table td:first-child { padding-left: 0; }
+
+.var-key { font-weight: 700; color: var(--dark); margin-right: 4px; }
+
+.var-check { text-align: center; width: 10%; }
+
+.check-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px; height: 15px;
+  border: 1px solid rgba(0,0,0,0.18);
+  border-radius: 2px;
+}
+
+.check-box.yes { background: rgba(61,153,112,0.12); border-color: #3D9970; }
+.check-box.no  { background: rgba(192,57,43,0.08); border-color: #C0392B; }
+
+.var-footnote {
+  margin-top: 0.75rem;
+  font-size: 10px;
+  color: var(--light);
+  font-style: italic;
+}
+
+/* ── PAGE FOOTER ─────────────────────────────── */
+.page-footer {
+  border-top: 1px solid var(--rule);
+  padding: 0.7rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #FFF5F5;
+}
+
+.pf-note {
+  font-size: 9px;
+  color: var(--light);
+  letter-spacing: 0.03em;
+}
+
+.pf-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 10.5px;
+  color: var(--red);
+  letter-spacing: 0.05em;
+}
+
+/* ── PRINT / PDF ─────────────────────────────── */
+@media print {
+  body { background: #fff; padding: 0; }
+  .toolbar { display: none; }
+  .page {
+    width: 100%;
+    max-width: 100%;
+    box-shadow: none;
+    border: none;
+  }
+  .sec { page-break-inside: avoid; }
+  @page { size: A4; margin: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOOLBAR (screen only) -->
+<div class="toolbar">
+  <div class="toolbar-label">⬡ Extração PDF / DOCX — Prévia</div>
+  <div class="toolbar-btns">
+    <button class="btn-outline" onclick="window.print()">Imprimir / Salvar PDF</button>
+    <button class="btn-export" onclick="copiarTexto()">Copiar Texto (DOCX)</button>
+  </div>
+</div>
+
+<!-- PAGE -->
+<div class="page" id="page-content">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="ph-org">Descrição de Cargo — Bradesco Seguros</div>
+      <div class="ph-title">Cientista de Dados Sênior</div>
+      <div class="ph-pills">
+        <span class="ph-pill ph-pill-nivel">Sênior</span>
+        <span class="ph-pill ph-pill-seg">Varejo</span>
+      </div>
+    </div>
+    <div class="ph-right">
+      <div class="ph-meta-row"><span class="ph-meta-key">Código</span><span class="ph-meta-val">DAD-031</span></div>
+      <div class="ph-meta-row"><span class="ph-meta-key">Versão</span><span class="ph-meta-val">1.0</span></div>
+      <div class="ph-meta-row"><span class="ph-meta-key">Ref.</span><span class="ph-meta-val">2025</span></div>
+    </div>
+  </div>
+
+  <!-- PROPÓSITO -->
+  <div class="proposito-band">
+    <p class="proposito-text">Responsável por desenvolver modelos preditivos e soluções analíticas avançadas que suportem decisões estratégicas nas áreas de pricing, sortimento, demanda e comportamento do consumidor no varejo. Atua como referência técnica na equipe de dados, orientando projetos de alto impacto e assegurando a qualidade e escalabilidade das soluções entregues.</p>
+    <p class="contribuicao-text">Transforma volumes massivos de dados de comportamento de consumo em inteligência acionável que impulsiona receita, margem e experiência do cliente.</p>
+  </div>
+
+  <div class="content">
+
+    <!-- 01 RESPONSABILIDADES -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">Responsabilidades e Entregas</span></div>
+      <ul class="resp-list">
+        <li class="resp-item">
+          <div class="resp-dot"><svg viewBox="0 0 8 8" fill="none" stroke="#CC1226" stroke-width="1.4" stroke-linecap="round" width="7" height="7"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
+          <div><span class="resp-area">Previsão de Demanda</span> — Desenvolver e manter modelos de forecast de vendas por SKU, loja e canal, com horizonte de 4 a 12 semanas, atingindo erro MAPE abaixo de 12%.</div>
+        </li>
+        <li class="resp-item">
+          <div class="resp-dot"><svg viewBox="0 0 8 8" fill="none" stroke="#CC1226" stroke-width="1.4" stroke-linecap="round" width="7" height="7"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
+          <div><span class="resp-area">Modelagem de Comportamento</span> — Construir modelos de propensão de compra, churn e segmentação de clientes para campanhas de CRM e personalização de ofertas.</div>
+        </li>
+        <li class="resp-item">
+          <div class="resp-dot"><svg viewBox="0 0 8 8" fill="none" stroke="#CC1226" stroke-width="1.4" stroke-linecap="round" width="7" height="7"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
+          <div><span class="resp-area">MLOps &amp; Deploy</span> — Colocar modelos em produção utilizando práticas de MLOps, garantindo monitoramento de drift, versionamento e SLAs de latência.</div>
+        </li>
+        <li class="resp-item">
+          <div class="resp-dot"><svg viewBox="0 0 8 8" fill="none" stroke="#CC1226" stroke-width="1.4" stroke-linecap="round" width="7" height="7"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
+          <div><span class="resp-area">Precificação Dinâmica</span> — Colaborar com as equipes de pricing na construção de algoritmos de elasticidade de preço e otimização de margem por categoria.</div>
+        </li>
+        <li class="resp-item">
+          <div class="resp-dot"><svg viewBox="0 0 8 8" fill="none" stroke="#CC1226" stroke-width="1.4" stroke-linecap="round" width="7" height="7"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
+          <div><span class="resp-area">Qualidade de Dados</span> — Identificar e corrigir problemas de qualidade nos pipelines de dados, definindo contratos de dados com as equipes de engenharia.</div>
+        </li>
+        <li class="resp-item">
+          <div class="resp-dot"><svg viewBox="0 0 8 8" fill="none" stroke="#CC1226" stroke-width="1.4" stroke-linecap="round" width="7" height="7"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
+          <div><span class="resp-area">Pesquisa Aplicada</span> — Avaliar e incorporar avanços da literatura acadêmica e do mercado em técnicas de ML aplicadas ao contexto de varejo.</div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- 02 COMPETÊNCIAS -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">02</span><span class="sec-title">Competências Técnicas e Comportamentais</span></div>
+      <div class="comp-grid">
+        <div>
+          <div class="comp-col-title">Técnicas</div>
+          <div class="comp-tags">
+            <span class="comp-tag">Python para Ciência de Dados</span>
+            <span class="comp-tag">Modelagem Estatística &amp; ML</span>
+            <span class="comp-tag">SQL &amp; Processamento Distribuído</span>
+            <span class="comp-tag">MLOps &amp; Cloud</span>
+            <span class="comp-tag">Experimentação &amp; Causalidade</span>
+          </div>
+        </div>
+        <div style="border-left:0.5px solid rgba(0,0,0,0.07);padding-left:1.5rem;">
+          <div class="comp-col-title">Comportamentais</div>
+          <div class="comp-tags">
+            <span class="comp-tag">Orientação a Resultado</span>
+            <span class="comp-tag">Comunicação Analítica</span>
+            <span class="comp-tag">Colaboração Interfuncional</span>
+            <span class="comp-tag">Pensamento Sistêmico</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 REQUISITOS -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">03</span><span class="sec-title">Requisitos da Posição</span></div>
+      <div class="req-grid">
+        <div>
+          <div class="req-col-title">Formação</div>
+          <p class="req-text">Graduação em Ciência da Computação, Estatística, Matemática ou Engenharia. <em>Desejável:</em> Pós-graduação ou Mestrado em áreas quantitativas; especialização em ML aplicado.</p>
+        </div>
+        <div style="border-left:0.5px solid rgba(0,0,0,0.07);padding-left:1.5rem;">
+          <div class="req-col-title">Experiência</div>
+          <p class="req-text">5 anos em ciência de dados, com ao menos 2 anos em ambiente de varejo ou e-commerce. <em>Desejável:</em> Experiência com modelos em produção de alta escala e projetos de pricing ou CRM.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 COMPLEXIDADE -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">04</span><span class="sec-title">Complexidade</span></div>
+      <div class="cx-list">
+        <div class="cx-row">
+          <div class="cx-top"><span class="cx-label">Profundidade Analítica e Diagnóstica</span><span class="cx-pct">82%</span></div>
+          <div class="cx-bar-bg"><div class="cx-bar-fill" style="width:82%"></div></div>
+        </div>
+        <div class="cx-row">
+          <div class="cx-top"><span class="cx-label">Densidade Técnica e Metodológica</span><span class="cx-pct">74%</span></div>
+          <div class="cx-bar-bg"><div class="cx-bar-fill" style="width:74%"></div></div>
+        </div>
+        <div class="cx-row">
+          <div class="cx-top"><span class="cx-label">Influência Estratégica e Capacidade de Alinhamento</span><span class="cx-pct">38%</span></div>
+          <div class="cx-bar-bg"><div class="cx-bar-fill" style="width:38%"></div></div>
+        </div>
+        <div class="cx-row">
+          <div class="cx-top"><span class="cx-label">Capacidade de Transformação e Inovação Aplicada</span><span class="cx-pct">66%</span></div>
+          <div class="cx-bar-bg"><div class="cx-bar-fill" style="width:66%"></div></div>
+        </div>
+        <div class="cx-row">
+          <div class="cx-top"><span class="cx-label">Amplitude de Autonomia e Decisão</span><span class="cx-pct">72%</span></div>
+          <div class="cx-bar-bg"><div class="cx-bar-fill" style="width:72%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05 AVALIAÇÃO DE RISCO -->
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">05</span><span class="sec-title">Avaliação de Risco</span></div>
+      <div class="var-band">Avaliação de Risco</div>
+      <table class="var-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding-bottom:0.5rem;border-bottom:0.5px solid rgba(0,0,0,0.08);font-size:9px;font-weight:600;color:var(--light);letter-spacing:0.05em;">Critério</th>
+            <th>SIM</th>
+            <th>NÃO</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="var-key">VAR1</span> Atividade desempenhada possui acesso a informações sensíveis de *PLDFT?</td>
+            <td class="var-check"><span class="check-box"></span></td>
+            <td class="var-check"><span class="check-box no"><svg width="9" height="9" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="#C0392B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          </tr>
+          <tr>
+            <td><span class="var-key">VAR2</span> Possui alçada para deliberar reportes em relação a *PLDFT?</td>
+            <td class="var-check"><span class="check-box"></span></td>
+            <td class="var-check"><span class="check-box no"><svg width="9" height="9" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="#C0392B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          </tr>
+          <tr>
+            <td><span class="var-key">VAR3</span> Possui alçada para autorizar operações financeiras?</td>
+            <td class="var-check"><span class="check-box"></span></td>
+            <td class="var-check"><span class="check-box no"><svg width="9" height="9" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="#C0392B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          </tr>
+          <tr>
+            <td><span class="var-key">VAR4</span> Possui contato com o cliente?</td>
+            <td class="var-check"><span class="check-box"></span></td>
+            <td class="var-check"><span class="check-box no"><svg width="9" height="9" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="#C0392B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          </tr>
+          <tr>
+            <td><span class="var-key">VAR5</span> Possui acesso para incluir/alterar dados de cliente/operações?</td>
+            <td class="var-check"><span class="check-box"></span></td>
+            <td class="var-check"><span class="check-box no"><svg width="9" height="9" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="#C0392B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          </tr>
+          <tr>
+            <td><span class="var-key">VAR6</span> Comercializa produtos e serviços e/ou oferta propostas de transações financeiras?</td>
+            <td class="var-check"><span class="check-box"></span></td>
+            <td class="var-check"><span class="check-box no"><svg width="9" height="9" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="#C0392B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="var-footnote">*PLDFT: Prevenção à Lavagem de Dinheiro e ao Financiamento ao Terrorismo</p>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- FOOTER -->
+  <div class="page-footer">
+    <div class="pf-note">Remuneração &amp; Performance / Recursos Humanos — Elaborado por Hector</div>
+    <div class="pf-logo">Bradesco Seguros</div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+function copiarTexto() {
+  const el = document.getElementById('page-content');
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  document.execCommand('copy');
+  sel.removeAllRanges();
+  const btn = document.querySelector('.btn-export');
+  btn.textContent = '✓ Copiado!';
+  setTimeout(() => btn.textContent = 'Copiar Texto (DOCX)', 2000);
+}
+</script>
+
+</body>
+</html>
