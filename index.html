@@ -139,9 +139,11 @@ header {
 }
 
 .input-shell {
-  position: relative;
   max-width: 540px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .input-shell input {
@@ -150,7 +152,6 @@ header {
   border: 1px solid rgba(201,168,76,0.3);
   border-radius: 8px;
   padding: 1.05rem 1.5rem;
-  padding-right: 158px;
   font-family: 'DM Sans', sans-serif;
   font-size: 16px;
   color: var(--white);
@@ -165,15 +166,24 @@ header {
   box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
 }
 
+.input-row2 {
+  position: relative;
+  display: flex;
+  gap: 8px;
+}
+
+.input-row2 input {
+  flex: 1;
+  padding: 0.85rem 1.25rem;
+  font-size: 14px;
+}
+
 .btn-gen {
-  position: absolute;
-  right: 7px; top: 50%;
-  transform: translateY(-50%);
   background: var(--gold);
   color: var(--navy);
   border: none;
   border-radius: 5px;
-  padding: 0.55rem 1.1rem;
+  padding: 0.55rem 1.25rem;
   font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   font-weight: 600;
@@ -181,6 +191,7 @@ header {
   cursor: pointer;
   transition: background 0.15s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .btn-gen:hover { background: var(--gold-light); }
@@ -667,7 +678,10 @@ header {
 
   <div class="input-shell">
     <input type="text" id="cargo-input" placeholder="Ex: Analista de Remuneração Sênior…" autocomplete="off"/>
-    <button type="button" class="btn-gen" id="btn-gen" onclick="gerar()">Gerar Descrição →</button>
+    <div class="input-row2">
+      <input type="text" id="segmento-input" placeholder="Segmento (Ex: Varejo, Tecnologia, Saúde…)" autocomplete="off"/>
+      <button type="button" class="btn-gen" id="btn-gen" onclick="gerar()">Gerar Descrição →</button>
+    </div>
   </div>
 
   <div class="chips">
@@ -713,6 +727,7 @@ Você deve retornar APENAS um JSON válido, sem nenhum texto antes ou depois, se
   "codigo": "código interno no formato FAM-NNN (ex: TEC-042)",
   "versao": "1.0",
   "data_referencia": "2025",
+  "segmento": "segmento de mercado informado (ex: Varejo, Tecnologia, Saúde)",
   "familia": "nome da família de cargos (ex: Tecnologia, Finanças, Recursos Humanos)",
   "subfamilia": "subfamília específica (ex: Engenharia de Software, Remuneração & Benefícios)",
   "nivel": "Júnior | Pleno | Sênior | Especialista | Gerência | Diretoria | C-Level",
@@ -759,21 +774,25 @@ Regras:
 - progressao: sempre 4 itens (1 origem, 1 atual, 2 destino)
 - Todo o conteúdo em português do Brasil
 - Use linguagem corporativa precisa, sem genéricos
-- Calibre o nível ao cargo informado (pleno ≠ sênior ≠ especialista)`;
+- Calibre o nível ao cargo informado (pleno ≠ sênior ≠ especialista)
+- Use o segmento informado para calibrar linguagem, KPIs, requisitos e exemplos com a realidade daquele mercado`;
 
 let loadingInterval, stepInterval, currentStepIndex = 0;
 let lastDocData = null;
 
 function setEx(v) {
   document.getElementById('cargo-input').value = v;
-  document.getElementById('cargo-input').focus();
+  document.getElementById('segmento-input').focus();
 }
 
 document.getElementById('cargo-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('segmento-input').focus();
+});
+document.getElementById('segmento-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') gerar();
 });
 
-function startLoading(cargo) {
+function startLoading(cargo, segmento) {
   currentStepIndex = 0;
   const stepsEl = document.getElementById('loading-steps');
   stepsEl.innerHTML = STEPS.map((s,i) => `
@@ -782,7 +801,8 @@ function startLoading(cargo) {
       <span>${s}</span>
     </div>
   `).join('');
-  document.getElementById('loading-msg').textContent = `Processando: ${cargo}`;
+  const label = segmento ? `${cargo} · ${segmento}` : cargo;
+  document.getElementById('loading-msg').textContent = `Processando: ${label}`;
   updateStep(0);
   stepInterval = setInterval(() => {
     if (currentStepIndex < STEPS.length - 1) {
@@ -813,31 +833,28 @@ function resetUI() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('btn-new').classList.remove('visible');
   document.getElementById('cargo-input').value = '';
+  document.getElementById('segmento-input').value = '';
   document.getElementById('cargo-input').focus();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 async function gerar() {
   const cargo = document.getElementById('cargo-input').value.trim();
+  const segmento = document.getElementById('segmento-input').value.trim();
   if (!cargo) { document.getElementById('cargo-input').focus(); return; }
-
-  const apiKey = document.getElementById('api-key-input') && document.getElementById('api-key-input').value.trim();
 
   document.getElementById('btn-gen').disabled = true;
   document.getElementById('hero').style.opacity = '0.4';
   document.getElementById('output').style.display = 'none';
   document.getElementById('error').style.display = 'none';
   document.getElementById('loading').style.display = 'block';
-  startLoading(cargo);
+  startLoading(cargo, segmento);
 
   try {
-    const headers = { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01' };
-    if (apiKey) headers['x-api-key'] = apiKey;
-
     const resp = await fetch('/api/generate', {
       method: 'POST',
-      headers,
-      body: JSON.stringify({ cargo })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cargo, segmento })
     });
 
     const data = await resp.json();
@@ -883,9 +900,9 @@ function renderDoc(d) {
   const grauPill = d.grau && d.grau.startsWith('Estr') ? 'pill-green' : 'pill-slate';
 
   /* ── HEADER ── */
-  const idsPill = [d.nivel, d.familia, d.subfamilia, d.grau]
+  const idsPill = [d.nivel, d.segmento, d.familia, d.subfamilia, d.grau]
     .filter(Boolean)
-    .map(v => `<span class="pill ${v === d.nivel ? 'pill-gold' : v === d.grau ? grauPill : 'pill-slate'}">${esc(v)}</span>`)
+    .map(v => `<span class="pill ${v === d.nivel ? 'pill-gold' : v === d.grau ? grauPill : v === d.segmento ? 'pill-green' : 'pill-slate'}">${esc(v)}</span>`)
     .join('');
 
   /* ── DIMENSÕES ── */
@@ -1005,6 +1022,7 @@ function renderDoc(d) {
     <div class="ident-grid">
       <div class="ident-card"><div class="ident-label">Família</div><div class="ident-value">${esc(d.familia)}</div></div>
       <div class="ident-card"><div class="ident-label">Sub-Família</div><div class="ident-value">${esc(d.subfamilia)}</div></div>
+      <div class="ident-card"><div class="ident-label">Segmento</div><div class="ident-value">${esc(d.segmento || '—')}</div></div>
       <div class="ident-card"><div class="ident-label">Grau de Complexidade</div><div class="ident-value">${esc(d.grau)}</div></div>
       <div class="ident-card"><div class="ident-label">Nível</div><div class="ident-value">${esc(d.nivel)}</div></div>
       <div class="ident-card"><div class="ident-label">Código Interno</div><div class="ident-value" style="font-family:'DM Mono',monospace;color:var(--gold-light)">${esc(d.codigo)}</div></div>

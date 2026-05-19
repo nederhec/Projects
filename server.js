@@ -15,6 +15,7 @@ Você deve retornar APENAS um JSON válido, sem nenhum texto antes ou depois, se
   "codigo": "código interno no formato FAM-NNN (ex: TEC-042)",
   "versao": "1.0",
   "data_referencia": "2025",
+  "segmento": "segmento de mercado informado (ex: Varejo, Tecnologia, Saúde)",
   "familia": "nome da família de cargos (ex: Tecnologia, Finanças, Recursos Humanos)",
   "subfamilia": "subfamília específica (ex: Engenharia de Software, Remuneração & Benefícios)",
   "nivel": "Júnior | Pleno | Sênior | Especialista | Gerência | Diretoria | C-Level",
@@ -61,15 +62,19 @@ Regras:
 - progressao: sempre 4 itens (1 origem, 1 atual, 2 destino)
 - Todo o conteúdo em português do Brasil
 - Use linguagem corporativa precisa, sem genéricos
-- Calibre o nível ao cargo informado (pleno ≠ sênior ≠ especialista)`;
+- Calibre o nível ao cargo informado (pleno ≠ sênior ≠ especialista)
+- Use o segmento informado para calibrar linguagem, KPIs, requisitos e exemplos com a realidade daquele mercado`;
 
-function callAnthropic(cargo, apiKey) {
+function callAnthropic(cargo, segmento, apiKey) {
   return new Promise((resolve, reject) => {
+    const userMsg = segmento
+      ? `Gere a descrição completa para o cargo: ${cargo}\nSegmento de mercado: ${segmento}`
+      : `Gere a descrição completa para o cargo: ${cargo}`;
     const body = JSON.stringify({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: `Gere a descrição completa para o cargo: ${cargo}` }]
+      messages: [{ role: 'user', content: userMsg }]
     });
 
     const req = https.request({
@@ -113,7 +118,7 @@ const server = http.createServer((req, res) => {
     req.on('data', chunk => body += chunk);
     req.on('end', async () => {
       try {
-        const { cargo } = JSON.parse(body);
+        const { cargo, segmento } = JSON.parse(body);
         if (!cargo || typeof cargo !== 'string' || cargo.trim().length === 0) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Campo "cargo" é obrigatório' }));
@@ -125,7 +130,8 @@ const server = http.createServer((req, res) => {
           res.end(JSON.stringify({ error: 'ANTHROPIC_API_KEY não configurada no servidor' }));
           return;
         }
-        const doc = await callAnthropic(cargo.trim().slice(0, 200), key);
+        const seg = typeof segmento === 'string' ? segmento.trim().slice(0, 100) : '';
+        const doc = await callAnthropic(cargo.trim().slice(0, 200), seg, key);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(doc));
       } catch (err) {
