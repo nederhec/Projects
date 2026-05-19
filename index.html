@@ -458,39 +458,7 @@ header {
 
 .ident-value { font-size: 13px; font-weight: 500; color: var(--white); }
 
-/* ── SECTION 02: RESUMO ──────────────────────── */
-.summary-box {
-  background: rgba(201,168,76,0.04);
-  border: 0.5px solid rgba(201,168,76,0.14);
-  border-radius: 8px;
-  padding: 1.5rem;
-}
-
-/* ── SECTION 03: DIMENSÕES ───────────────────── */
-.dim-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px 28px;
-}
-
-.dim-top { display: flex; justify-content: space-between; margin-bottom: 5px; }
-.dim-name { font-size: 12px; font-weight: 500; color: var(--slate-light); }
-.dim-pct { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold); }
-
-.dim-bar-bg {
-  height: 5px; background: rgba(255,255,255,0.05);
-  border-radius: 3px; overflow: hidden; margin-bottom: 5px;
-}
-
-.dim-bar-fill {
-  height: 100%; border-radius: 3px;
-  background: linear-gradient(90deg, rgba(201,168,76,0.4), var(--gold));
-  transition: width 0.9s cubic-bezier(.22,.61,.36,1);
-}
-
-.dim-desc { font-size: 11px; color: var(--slate); line-height: 1.45; }
-
-/* ── SECTION 04: RESPONSABILIDADES ──────────── */
+/* ── SECTION 01: RESPONSABILIDADES ──────────── */
 .resp-list { list-style: none; padding: 0; }
 
 .resp-list li {
@@ -527,14 +495,13 @@ header {
 }
 
 .comp-item {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 0.6rem 0;
+  display: flex; align-items: center; gap: 10px;
+  padding: 0.5rem 0;
   border-bottom: 0.5px solid rgba(255,255,255,0.04);
 }
 
 .comp-item:last-child { border-bottom: none; }
-.comp-main { font-size: 12.5px; font-weight: 500; color: var(--white); }
-.comp-desc { font-size: 11px; color: var(--slate); margin-top: 2px; }
+.comp-main { font-size: 12.5px; font-weight: 500; color: var(--white); flex: 1; }
 
 .badge-level {
   font-size: 9.5px; padding: 2px 8px;
@@ -548,79 +515,123 @@ header {
 .lv-avancado      { background: rgba(201,168,76,0.1);  color: var(--gold-light); border: 0.5px solid rgba(201,168,76,0.28); }
 .lv-expert        { background: rgba(61,153,112,0.12); color: #6FCFA2; border: 0.5px solid rgba(61,153,112,0.28); }
 
-/* ── SECTION 06: REQUISITOS ──────────────────── */
-.req-cols {
-  display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px;
-}
-
+/* ── SECTION 03: REQUISITOS ──────────────────── */
 .req-table { width: 100%; border-collapse: collapse; }
 
 .req-table td {
-  padding: 0.55rem 0;
+  padding: 0.6rem 0;
   border-bottom: 0.5px solid rgba(255,255,255,0.05);
   font-size: 13px; vertical-align: top;
 }
 
 .req-table tr:last-child td { border-bottom: none; }
-.req-key { color: var(--slate); width: 42%; font-weight: 500; }
+.req-key { color: var(--slate); width: 32%; font-weight: 500; }
 .req-val { color: var(--slate-light); }
 
-/* ── KPIs ────────────────────────────────────── */
-.kpi-list { list-style: none; padding: 0; }
+/* ── SECTION 04: COMPLEXIDADE ────────────────── */
+.cx-list { display: flex; flex-direction: column; gap: 14px; }
 
-.kpi-list li {
-  display: flex; gap: 9px;
-  padding: 0.6rem 0;
+.cx-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.cx-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #E8824A;
+}
+
+.cx-pct {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: #E8824A;
+}
+
+.cx-bar-bg {
+  height: 7px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cx-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #1B2D6B 0%, #C0392B 55%, #E67E22 100%);
+  transition: width 0.9s cubic-bezier(.22,.61,.36,1);
+  width: 0%;
+}
+
+/* ── SECTION 05: AVALIAÇÃO DE RISCO ─────────── */
+.var-header {
+  background: linear-gradient(90deg, #C0392B 0%, #E67E22 100%);
+  border-radius: 5px;
+  padding: 0.75rem 1.25rem;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.var-table { width: 100%; border-collapse: collapse; }
+
+.var-table td {
+  padding: 0.65rem 0.5rem;
   border-bottom: 0.5px solid rgba(255,255,255,0.05);
-  font-size: 13px; align-items: flex-start;
+  font-size: 13px;
+  vertical-align: middle;
 }
 
-.kpi-list li:last-child { border-bottom: none; }
-.kpi-bullet { color: var(--gold); font-weight: 700; min-width: 12px; margin-top: 2px; }
-.kpi-main { font-size: 12px; font-weight: 500; color: var(--white); display: block; margin-bottom: 2px; }
-.kpi-sub  { font-size: 11px; color: var(--slate); }
+.var-table tr:last-child td { border-bottom: none; }
 
-/* ── SECTION 07: PROGRESSÃO ──────────────────── */
-.prog-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
+.var-q { color: var(--slate-light); width: 76%; padding-left: 0; }
+.var-q strong { color: var(--white); }
+
+.var-col-head {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--slate);
+  text-align: center;
+  padding-bottom: 0.75rem;
+  border-bottom: 0.5px solid rgba(255,255,255,0.07);
 }
 
-.prog-card {
-  background: rgba(255,255,255,0.025);
-  border: 0.5px solid rgba(255,255,255,0.06);
-  border-radius: 7px;
-  padding: 1rem 1.1rem;
-  position: relative;
+.var-check { text-align: center; width: 12%; }
+
+.var-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  border-radius: 3px;
 }
 
-.prog-card.current {
-  border-color: rgba(201,168,76,0.35);
-  background: rgba(201,168,76,0.04);
+.var-box.checked {
+  background: rgba(61,153,112,0.15);
+  border-color: #3D9970;
 }
 
-.prog-card.current::after {
-  content: 'ATUAL';
-  position: absolute;
-  top: 8px; right: 8px;
-  font-size: 7px; font-weight: 700;
-  letter-spacing: 0.2em;
-  color: var(--gold);
-  border: 0.5px solid rgba(201,168,76,0.4);
-  padding: 1px 5px; border-radius: 10px;
+.var-box.checked-no {
+  background: rgba(192,57,43,0.12);
+  border-color: #C0392B;
 }
 
-.prog-cargo {
-  font-size: 12.5px; font-weight: 500; color: var(--white);
-  margin-bottom: 4px;
-}
-
-.prog-desc { font-size: 11px; color: var(--slate); line-height: 1.4; }
-.prog-arrow {
-  display: flex; align-items: center; justify-content: center;
-  color: rgba(201,168,76,0.4);
-  font-size: 18px; margin-top: 14px;
+.var-footnote {
+  margin-top: 1rem;
+  font-size: 11px;
+  color: var(--slate);
+  font-style: italic;
+  text-align: center;
 }
 
 /* ── FOOTER ──────────────────────────────────── */
@@ -764,55 +775,66 @@ Você deve retornar APENAS um JSON válido, sem nenhum texto antes ou depois, se
   "codigo": "código interno no formato FAM-NNN (ex: TEC-042)",
   "versao": "1.0",
   "data_referencia": "2025",
-  "segmento": "segmento de mercado informado (ex: Varejo, Tecnologia, Saúde)",
-  "familia": "nome da família de cargos (ex: Tecnologia, Finanças, Recursos Humanos)",
-  "subfamilia": "subfamília específica (ex: Engenharia de Software, Remuneração & Benefícios)",
+  "segmento": "segmento de mercado informado",
+  "familia": "nome da família de cargos",
+  "subfamilia": "subfamília específica",
   "nivel": "Júnior | Pleno | Sênior | Especialista | Gerência | Diretoria | C-Level",
   "grau": "Operacional | Tático | Estratégico | Estratégico Executivo",
-  "proposito": "parágrafo de 2-3 frases descrevendo o propósito central do cargo de forma precisa e objetiva",
-  "contribuicao_negocio": "frase única e poderosa descrevendo o impacto no negócio",
-  "dimensoes": [
-    { "nome": "nome da dimensão", "pct": 30, "descricao": "descrição do tempo/energia dedicado a essa dimensão" }
-  ],
+  "proposito": "parágrafo de 2-3 frases sobre o propósito central do cargo",
+  "contribuicao_negocio": "frase única e poderosa sobre o impacto no negócio",
   "responsabilidades": [
-    { "area": "área/tema", "descricao": "responsabilidade específica e mensurável com verbo no infinitivo" }
+    { "area": "área/tema", "descricao": "responsabilidade específica com verbo no infinitivo" }
   ],
   "competencias_tecnicas": [
-    { "nome": "competência técnica", "descricao": "descrição breve de aplicação", "nivel": "Básico | Intermediário | Avançado | Expert" }
+    { "nome": "nome da competência técnica", "nivel": "Básico | Intermediário | Avançado | Expert" }
   ],
   "competencias_comportamentais": [
-    { "nome": "competência comportamental", "descricao": "manifestação esperada no cargo", "nivel": "Básico | Intermediário | Avançado | Expert" }
+    { "nome": "nome da competência comportamental", "nivel": "Básico | Intermediário | Avançado | Expert" }
   ],
   "requisitos": {
     "formacao_minima": "formação mínima exigida",
     "formacao_desejavel": "formação desejável / diferencial",
     "experiencia_minima": "tempo e tipo de experiência mínima",
-    "experiencia_desejavel": "experiência diferencial desejável",
-    "idiomas": ["idioma e nível (ex: Inglês avançado)"],
-    "certificacoes": ["certificação 1", "certificação 2"]
+    "experiencia_desejavel": "experiência diferencial desejável"
   },
-  "kpis": [
-    { "nome": "nome do KPI", "descricao": "como é medido e qual a meta de referência" }
-  ],
-  "progressao": [
-    { "cargo": "cargo anterior", "descricao": "perfil típico de quem vem deste cargo", "tipo": "origem" },
-    { "cargo": "cargo atual", "descricao": "posição em foco neste documento", "tipo": "atual" },
-    { "cargo": "cargo destino 1", "descricao": "progressão vertical típica", "tipo": "destino" },
-    { "cargo": "cargo destino 2", "descricao": "progressão lateral possível", "tipo": "destino" }
-  ]
+  "complexidade": {
+    "profundidade_analitica": 0,
+    "densidade_tecnica": 0,
+    "influencia_estrategica": 0,
+    "transformacao_inovacao": 0,
+    "autonomia_decisao": 0
+  },
+  "avaliacao_risco": {
+    "VAR1": false,
+    "VAR2": false,
+    "VAR3": false,
+    "VAR4": false,
+    "VAR5": false,
+    "VAR6": false
+  }
 }
 
 Regras:
-- dimensoes: 4 a 6 itens, soma dos pct = 100
 - responsabilidades: 6 a 8 itens variados e específicos
-- competencias_tecnicas: 5 a 7 itens relevantes para o cargo
+- competencias_tecnicas: 5 a 7 itens
 - competencias_comportamentais: 4 a 6 itens
-- kpis: 4 a 6 indicadores mensuráveis
-- progressao: sempre 4 itens (1 origem, 1 atual, 2 destino)
+- complexidade: avalie cada dimensão de 0 a 100 conforme o cargo e segmento
+  - profundidade_analitica: nível de raciocínio analítico e diagnóstico exigido
+  - densidade_tecnica: volume e profundidade de conhecimento técnico/metodológico
+  - influencia_estrategica: capacidade de influenciar decisões e alinhar stakeholders
+  - transformacao_inovacao: capacidade de transformar processos e gerar inovação aplicada
+  - autonomia_decisao: amplitude de autonomia e responsabilidade por decisões
+- avaliacao_risco: responda true/false para cada variável:
+  - VAR1: a atividade possui acesso a informações sensíveis de PLDFT
+  - VAR2: possui alçada para deliberar reportes em relação a PLDFT
+  - VAR3: possui alçada para autorizar operações financeiras
+  - VAR4: possui contato direto com o cliente
+  - VAR5: possui acesso para incluir/alterar dados de cliente/operações
+  - VAR6: comercializa produtos/serviços ou oferta propostas de transações financeiras
 - Todo o conteúdo em português do Brasil
 - Use linguagem corporativa precisa, sem genéricos
-- Calibre o nível ao cargo informado (pleno ≠ sênior ≠ especialista)
-- Use o segmento informado para calibrar linguagem, KPIs, requisitos e exemplos com a realidade daquele mercado`;
+- Calibre o nível ao cargo (pleno ≠ sênior ≠ especialista)
+- Use o segmento para calibrar linguagem, requisitos e complexidade`;
 
 let loadingInterval, stepInterval, currentStepIndex = 0;
 let lastDocData = null;
@@ -936,102 +958,83 @@ function levelClass(n) {
   return m[n] || 'lv-basico';
 }
 
+const CX_DIMS = [
+  { key: 'profundidade_analitica',  label: 'Profundidade Analítica e Diagnóstica' },
+  { key: 'densidade_tecnica',       label: 'Densidade Técnica e Metodológica' },
+  { key: 'influencia_estrategica',  label: 'Influência Estratégica e Capacidade de Alinhamento' },
+  { key: 'transformacao_inovacao',  label: 'Capacidade de Transformação e Inovação Aplicada' },
+  { key: 'autonomia_decisao',       label: 'Amplitude de Autonomia e Decisão' },
+];
+
+const VAR_QUESTIONS = [
+  { key: 'VAR1', text: 'Atividade desempenhada possui acesso a informações sensíveis de *PLDFT?' },
+  { key: 'VAR2', text: 'Possui alçada para deliberar reportes em relação a *PLDFT?' },
+  { key: 'VAR3', text: 'Possui alçada para autorizar operações financeiras?' },
+  { key: 'VAR4', text: 'Possui contato com o cliente?' },
+  { key: 'VAR5', text: 'Possui acesso para incluir/alterar dados de cliente/operações?' },
+  { key: 'VAR6', text: 'Comercializa produtos e serviços e/ou oferta propostas de transações financeiras?' },
+];
+
+const CHECK_SVG = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
 function renderDoc(d) {
   const ts = Date.now().toString(36).toUpperCase();
   const req = d.requisitos || {};
+  const cx  = d.complexidade || {};
+  const vr  = d.avaliacao_risco || {};
   const grauPill = d.grau && d.grau.startsWith('Estr') ? 'pill-green' : 'pill-slate';
 
-  /* ── HEADER ── */
   const idsPill = [d.nivel, d.segmento, d.familia, d.subfamilia, d.grau]
     .filter(Boolean)
-    .map(v => `<span class="pill ${v === d.nivel ? 'pill-gold' : v === d.grau ? grauPill : v === d.segmento ? 'pill-green' : 'pill-slate'}">${esc(v)}</span>`)
+    .map(v => `<span class="pill ${v === d.nivel ? 'pill-gold' : v === d.segmento ? 'pill-green' : v === d.grau ? grauPill : 'pill-slate'}">${esc(v)}</span>`)
     .join('');
 
-  /* ── DIMENSÕES ── */
-  const dimHtml = (d.dimensoes || []).map(dim => `
-    <div>
-      <div class="dim-top">
-        <span class="dim-name">${esc(dim.nome)}</span>
-        <span class="dim-pct">${dim.pct}%</span>
-      </div>
-      <div class="dim-bar-bg">
-        <div class="dim-bar-fill" style="width:0%" data-pct="${dim.pct}"></div>
-      </div>
-      <div class="dim-desc">${esc(dim.descricao)}</div>
-    </div>
-  `).join('');
-
-  /* ── RESPONSABILIDADES ── */
   const respHtml = (d.responsabilidades || []).map(r => `
     <li>
       <div class="resp-icon">
-        <svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8">
-          <path d="M1.5 4L3.2 5.8L6.5 2"/>
-        </svg>
+        <svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg>
       </div>
       <div>
         <span style="font-weight:500;color:#E8C97A;font-size:12.5px;">${esc(r.area)}</span>
         <span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span>
         <span>${esc(r.descricao)}</span>
       </div>
-    </li>
-  `).join('');
+    </li>`).join('');
 
-  /* ── COMPETÊNCIAS ── */
   const compTec = (d.competencias_tecnicas || []).map(c => `
     <div class="comp-item">
-      <div style="flex:1">
-        <div class="comp-main">${esc(c.nome)}</div>
-        <div class="comp-desc">${esc(c.descricao)}</div>
-      </div>
+      <div class="comp-main">${esc(c.nome)}</div>
       <span class="badge-level ${levelClass(c.nivel)}">${esc(c.nivel)}</span>
-    </div>
-  `).join('');
+    </div>`).join('');
 
   const compBeh = (d.competencias_comportamentais || []).map(c => `
     <div class="comp-item">
-      <div style="flex:1">
-        <div class="comp-main">${esc(c.nome)}</div>
-        <div class="comp-desc">${esc(c.descricao)}</div>
-      </div>
+      <div class="comp-main">${esc(c.nome)}</div>
       <span class="badge-level ${levelClass(c.nivel)}">${esc(c.nivel)}</span>
-    </div>
-  `).join('');
+    </div>`).join('');
 
-  /* ── REQUISITOS ── */
-  const certsHtml = (req.certificacoes || []).map(c =>
-    `<span class="pill pill-slate" style="margin:2px 2px 0 0">${esc(c)}</span>`
-  ).join('');
-
-  const idsHtml = (req.idiomas || []).map(i =>
-    `<span class="pill pill-green" style="margin:2px 2px 0 0">${esc(i)}</span>`
-  ).join('');
-
-  /* ── KPIs ── */
-  const kpiHtml = (d.kpis || []).map(k => `
-    <li>
-      <span class="kpi-bullet">◆</span>
-      <div>
-        <span class="kpi-main">${esc(k.nome)}</span>
-        <span class="kpi-sub">${esc(k.descricao)}</span>
+  const cxHtml = CX_DIMS.map(dim => {
+    const pct = cx[dim.key] || 0;
+    return `
+    <div class="cx-item">
+      <div class="cx-top">
+        <span class="cx-label">${dim.label}</span>
+        <span class="cx-pct">${pct}%</span>
       </div>
-    </li>
-  `).join('');
-
-  /* ── PROGRESSÃO ── */
-  const progItems = (d.progressao || []);
-  const progHtml = progItems.map((p, i) => {
-    const isLast = i === progItems.length - 1;
-    const card = `
-      <div class="prog-card ${p.tipo === 'atual' ? 'current' : ''}">
-        <div class="prog-cargo">${esc(p.cargo)}</div>
-        <div class="prog-desc">${esc(p.descricao)}</div>
+      <div class="cx-bar-bg">
+        <div class="cx-bar-fill" data-pct="${pct}" style="width:0%"></div>
       </div>
-    `;
-    if (!isLast) {
-      return card + `<div class="prog-arrow">→</div>`;
-    }
-    return card;
+    </div>`;
+  }).join('');
+
+  const vrRows = VAR_QUESTIONS.map(q => {
+    const val = vr[q.key] === true;
+    return `
+    <tr>
+      <td class="var-q"><strong>${q.key}</strong> — ${esc(q.text)}</td>
+      <td class="var-check"><span class="var-box ${val ? 'checked' : ''}" style="color:${val ? '#6FCFA2' : 'transparent'}">${CHECK_SVG}</span></td>
+      <td class="var-check"><span class="var-box ${!val ? 'checked-no' : ''}" style="color:${!val ? '#E07070' : 'transparent'}">${CHECK_SVG}</span></td>
+    </tr>`;
   }).join('');
 
   const html = `
@@ -1055,127 +1058,77 @@ function renderDoc(d) {
     </div>
   </div>
 
-  <!-- 01 IDENTIFICAÇÃO -->
+  <!-- 01 RESPONSABILIDADES -->
   <div class="section-card">
-    <div class="section-header">
-      <span class="s-num">01</span>
-      <span class="s-title">Identificação &amp; Enquadramento</span>
-    </div>
-    <div class="ident-grid">
-      <div class="ident-card"><div class="ident-label">Família</div><div class="ident-value">${esc(d.familia)}</div></div>
-      <div class="ident-card"><div class="ident-label">Sub-Família</div><div class="ident-value">${esc(d.subfamilia)}</div></div>
-      <div class="ident-card"><div class="ident-label">Segmento</div><div class="ident-value">${esc(d.segmento || '—')}</div></div>
-      <div class="ident-card"><div class="ident-label">Grau de Complexidade</div><div class="ident-value">${esc(d.grau)}</div></div>
-      <div class="ident-card"><div class="ident-label">Nível</div><div class="ident-value">${esc(d.nivel)}</div></div>
-      <div class="ident-card"><div class="ident-label">Código Interno</div><div class="ident-value" style="font-family:'DM Mono',monospace;color:var(--gold-light)">${esc(d.codigo)}</div></div>
-      <div class="ident-card"><div class="ident-label">Referência de Mercado</div><div class="ident-value">${esc(d.data_referencia)}</div></div>
-    </div>
-  </div>
-
-  <!-- 02 RESUMO -->
-  <div class="section-card">
-    <div class="section-header">
-      <span class="s-num">02</span>
-      <span class="s-title">Descrição Sumária</span>
-    </div>
-    <div class="summary-box">
-      <p style="font-size:14.5px;color:var(--slate-light);line-height:1.75;margin-bottom:1rem;">${esc(d.proposito)}</p>
-      <div style="border-left:3px solid var(--gold);padding-left:1rem;">
-        <div style="font-size:8.5px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Contribuição ao Negócio</div>
-        <p style="font-size:14px;color:var(--gold-light);font-style:italic;line-height:1.6;">${esc(d.contribuicao_negocio)}</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- 03 DIMENSÕES -->
-  <div class="section-card">
-    <div class="section-header">
-      <span class="s-num">03</span>
-      <span class="s-title">Dimensões do Cargo</span>
-    </div>
-    <div class="dim-grid" id="dim-grid">${dimHtml}</div>
-  </div>
-
-  <!-- 04 RESPONSABILIDADES -->
-  <div class="section-card">
-    <div class="section-header">
-      <span class="s-num">04</span>
-      <span class="s-title">Responsabilidades e Entregas</span>
-    </div>
+    <div class="section-header"><span class="s-num">01</span><span class="s-title">Responsabilidades e Entregas</span></div>
     <ul class="resp-list">${respHtml}</ul>
   </div>
 
-  <!-- 05 COMPETÊNCIAS -->
+  <!-- 02 COMPETÊNCIAS -->
   <div class="section-card">
-    <div class="section-header">
-      <span class="s-num">05</span>
-      <span class="s-title">Competências Técnicas e Comportamentais</span>
-    </div>
+    <div class="section-header"><span class="s-num">02</span><span class="s-title">Competências Técnicas e Comportamentais</span></div>
     <div class="comp-cols">
       <div style="padding-right:1.5rem;border-right:0.5px solid rgba(255,255,255,0.05);">
-        <div class="comp-col-title">Técnicas</div>
-        ${compTec}
+        <div class="comp-col-title">Técnicas</div>${compTec}
       </div>
       <div style="padding-left:1.5rem;">
-        <div class="comp-col-title">Comportamentais</div>
-        ${compBeh}
+        <div class="comp-col-title">Comportamentais</div>${compBeh}
       </div>
     </div>
   </div>
 
-  <!-- 06 REQUISITOS -->
+  <!-- 03 REQUISITOS -->
   <div class="section-card">
-    <div class="section-header">
-      <span class="s-num">06</span>
-      <span class="s-title">Requisitos da Posição</span>
-    </div>
-    <div class="req-cols">
-      <div>
-        <table class="req-table">
-          <tr><td class="req-key">Formação Mínima</td><td class="req-val">${esc(req.formacao_minima)}</td></tr>
-          <tr><td class="req-key">Formação Desejável</td><td class="req-val">${esc(req.formacao_desejavel)}</td></tr>
-          <tr><td class="req-key">Exp. Mínima</td><td class="req-val">${esc(req.experiencia_minima)}</td></tr>
-          <tr><td class="req-key">Exp. Desejável</td><td class="req-val">${esc(req.experiencia_desejavel)}</td></tr>
-          <tr><td class="req-key">Idiomas</td><td class="req-val">${idsHtml || '—'}</td></tr>
-          <tr><td class="req-key">Certificações</td><td class="req-val">${certsHtml || '—'}</td></tr>
-        </table>
-      </div>
-      <div>
-        <div style="font-size:8.5px;font-weight:700;letter-spacing:0.19em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:0.5px solid var(--divider);">KPIs de Referência</div>
-        <ul class="kpi-list">${kpiHtml}</ul>
-      </div>
-    </div>
+    <div class="section-header"><span class="s-num">03</span><span class="s-title">Requisitos da Posição</span></div>
+    <table class="req-table">
+      <tr><td class="req-key">Formação Mínima</td><td class="req-val">${esc(req.formacao_minima)}</td></tr>
+      <tr><td class="req-key">Formação Desejável</td><td class="req-val">${esc(req.formacao_desejavel)}</td></tr>
+      <tr><td class="req-key">Exp. Mínima</td><td class="req-val">${esc(req.experiencia_minima)}</td></tr>
+      <tr><td class="req-key">Exp. Desejável</td><td class="req-val">${esc(req.experiencia_desejavel)}</td></tr>
+    </table>
   </div>
 
-  <!-- 07 PROGRESSÃO -->
+  <!-- 04 COMPLEXIDADE -->
   <div class="section-card">
-    <div class="section-header">
-      <span class="s-num">07</span>
-      <span class="s-title">Trilha de Progressão</span>
-    </div>
-    <div class="prog-cards" style="align-items:start;">${progHtml}</div>
+    <div class="section-header"><span class="s-num">04</span><span class="s-title">Complexidade</span></div>
+    <div class="cx-list">${cxHtml}</div>
+  </div>
+
+  <!-- 05 AVALIAÇÃO DE RISCO -->
+  <div class="section-card">
+    <div class="section-header"><span class="s-num">05</span><span class="s-title">Avaliação de Risco</span></div>
+    <div class="var-header">Avaliação de Risco</div>
+    <table class="var-table">
+      <thead>
+        <tr>
+          <td style="padding-bottom:0.75rem;border-bottom:0.5px solid rgba(255,255,255,0.07);font-size:12.5px;color:var(--slate-light);">
+            Avaliação de Risco: mapeamento do nível de exposição ao risco das atividades inerentes à função.
+          </td>
+          <td class="var-col-head">SIM</td>
+          <td class="var-col-head">NÃO</td>
+        </tr>
+      </thead>
+      <tbody>${vrRows}</tbody>
+    </table>
+    <div class="var-footnote">*PLDFT: Prevenção à Lavagem de Dinheiro e ao Financiamento ao Terrorismo</div>
   </div>
 
   <div class="doc-footer">
-    <div class="footer-note">
-      Gerado por Arquitetura de Cargos · Nederhec · Referência Brasil ${esc(d.data_referencia)} · Uso interno e confidencial
-    </div>
+    <div class="footer-note">Gerado por Arquitetura de Cargos · Nederhec · Referência Brasil ${esc(d.data_referencia)} · Uso Público, direitos autorais reservados</div>
     <div class="footer-btns">
       <button class="btn-action" onclick="copiarJSON()">Copiar JSON</button>
       <button class="btn-action" onclick="imprimirDoc()">Imprimir / PDF</button>
     </div>
-  </div>
-  `;
+  </div>`;
 
   const out = document.getElementById('output');
   out.innerHTML = html;
   out.style.display = 'block';
   out._docData = d;
 
-  /* animate bars after paint */
   requestAnimationFrame(() => {
     setTimeout(() => {
-      document.querySelectorAll('.dim-bar-fill').forEach(el => {
+      document.querySelectorAll('.cx-bar-fill').forEach(el => {
         el.style.width = el.dataset.pct + '%';
       });
     }, 80);

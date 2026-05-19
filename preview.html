@@ -9,53 +9,16 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
-  --navy:       #0D1B2A;
-  --navy-800:   #132034;
-  --navy-700:   #1B2D47;
-  --navy-600:   #24395A;
-  --gold:       #C9A84C;
-  --gold-light: #E8C97A;
-  --gold-pale:  #F5EED8;
-  --slate:      #7A8FA4;
-  --slate-light:#AAB8C4;
-  --white:      #F8F6F0;
-  --divider:    rgba(201,168,76,0.18);
-  --border:     rgba(255,255,255,0.07);
-  --success:    #3D9970;
+  --navy: #0D1B2A; --navy-800: #132034; --gold: #C9A84C; --gold-light: #E8C97A;
+  --slate: #7A8FA4; --slate-light: #AAB8C4; --white: #F8F6F0;
+  --divider: rgba(201,168,76,0.18); --border: rgba(255,255,255,0.07); --success: #3D9970;
 }
+body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: var(--white); min-height: 100vh; font-size: 15px; line-height: 1.65; }
 
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--navy);
-  color: var(--white);
-  min-height: 100vh;
-  font-size: 15px;
-  line-height: 1.65;
-}
-
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.25rem 2.5rem;
-  border-bottom: 0.5px solid var(--border);
-  background: rgba(13,27,42,0.96);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(8px);
-}
-
+header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2.5rem; border-bottom: 0.5px solid var(--border); background: rgba(13,27,42,0.96); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px); }
 .logo { display: flex; align-items: center; gap: 12px; }
-.logo-mark {
-  width: 30px; height: 30px;
-  border: 1.5px solid var(--gold);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
+.logo-mark { width: 30px; height: 30px; border: 1.5px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 .logo-mark svg { width: 13px; height: 13px; }
 .logo-text { font-family: 'DM Serif Display', serif; font-size: 15px; letter-spacing: 0.02em; }
 .logo-sub { font-size: 9px; font-weight: 600; letter-spacing: 0.16em; color: var(--gold); text-transform: uppercase; margin-top: 2px; }
@@ -63,44 +26,14 @@ header {
 .badge-version { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--slate); letter-spacing: 0.05em; border: 0.5px solid rgba(138,153,170,0.25); padding: 3px 10px; border-radius: 20px; }
 .btn-new { background: transparent; border: 0.5px solid rgba(201,168,76,0.3); color: var(--gold); padding: 5px 14px; border-radius: 5px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; }
 
-/* ── PREVIEW BANNER ── */
-.preview-banner {
-  background: rgba(201,168,76,0.07);
-  border-bottom: 0.5px solid rgba(201,168,76,0.2);
-  padding: 0.6rem 2.5rem;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 11.5px;
-  color: var(--gold);
-  font-family: 'DM Mono', monospace;
-  letter-spacing: 0.05em;
-}
+.preview-banner { background: rgba(201,168,76,0.07); border-bottom: 0.5px solid rgba(201,168,76,0.2); padding: 0.6rem 2.5rem; display: flex; align-items: center; gap: 10px; font-size: 11.5px; color: var(--gold); font-family: 'DM Mono', monospace; letter-spacing: 0.05em; }
 .preview-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: blink 1.4s ease-in-out infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-/* ── OUTPUT ── */
-#output {
-  max-width: 940px;
-  margin: 2.5rem auto 7rem;
-  padding: 0 2rem;
-}
+#output { max-width: 940px; margin: 2.5rem auto 7rem; padding: 0 2rem; }
 
-.doc-header {
-  border: 0.5px solid var(--divider);
-  border-radius: 10px 10px 0 0;
-  padding: 2.25rem 2.75rem;
-  background: var(--navy-800);
-  position: relative;
-  overflow: hidden;
-}
-.doc-header::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0;
-  width: 3px; height: 100%;
-  background: linear-gradient(180deg, var(--gold) 0%, transparent 100%);
-}
+.doc-header { border: 0.5px solid var(--divider); border-radius: 10px 10px 0 0; padding: 2.25rem 2.75rem; background: var(--navy-800); position: relative; overflow: hidden; }
+.doc-header::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: linear-gradient(180deg, var(--gold) 0%, transparent 100%); }
 .doc-meta { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem; margin-bottom: 1.5rem; }
 .doc-meta-left { flex: 1; min-width: 0; }
 .doc-label { font-size: 8.5px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
@@ -122,21 +55,6 @@ header {
 .s-num { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--gold); min-width: 22px; }
 .s-title { font-size: 9.5px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--slate-light); }
 
-.ident-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 10px; }
-.ident-card { background: rgba(255,255,255,0.025); border: 0.5px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 0.85rem 1rem; }
-.ident-label { font-size: 8.5px; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; color: var(--slate); margin-bottom: 5px; }
-.ident-value { font-size: 13px; font-weight: 500; color: var(--white); }
-
-.summary-box { background: rgba(201,168,76,0.04); border: 0.5px solid rgba(201,168,76,0.14); border-radius: 8px; padding: 1.5rem; }
-
-.dim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 28px; }
-.dim-top { display: flex; justify-content: space-between; margin-bottom: 5px; }
-.dim-name { font-size: 12px; font-weight: 500; color: var(--slate-light); }
-.dim-pct { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold); }
-.dim-bar-bg { height: 5px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-bottom: 5px; }
-.dim-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, rgba(201,168,76,0.4), var(--gold)); transition: width 0.9s cubic-bezier(.22,.61,.36,1); }
-.dim-desc { font-size: 11px; color: var(--slate); line-height: 1.45; }
-
 .resp-list { list-style: none; padding: 0; }
 .resp-list li { display: flex; gap: 12px; padding: 0.7rem 0; border-bottom: 0.5px solid rgba(255,255,255,0.04); font-size: 13.5px; color: var(--slate-light); line-height: 1.55; }
 .resp-list li:last-child { border-bottom: none; }
@@ -144,43 +62,48 @@ header {
 
 .comp-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 2px; }
 .comp-col-title { font-size: 8.5px; font-weight: 700; letter-spacing: 0.19em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 0.5px solid var(--divider); }
-.comp-item { display: flex; align-items: flex-start; gap: 10px; padding: 0.6rem 0; border-bottom: 0.5px solid rgba(255,255,255,0.04); }
+.comp-item { display: flex; align-items: center; gap: 10px; padding: 0.5rem 0; border-bottom: 0.5px solid rgba(255,255,255,0.04); }
 .comp-item:last-child { border-bottom: none; }
-.comp-main { font-size: 12.5px; font-weight: 500; color: var(--white); }
-.comp-desc { font-size: 11px; color: var(--slate); margin-top: 2px; }
-.badge-level { font-size: 9.5px; padding: 2px 8px; border-radius: 12px; white-space: nowrap; font-weight: 600; letter-spacing: 0.02em; flex-shrink: 0; margin-top: 2px; }
+.comp-main { font-size: 12.5px; font-weight: 500; color: var(--white); flex: 1; }
+.badge-level { font-size: 9.5px; padding: 2px 8px; border-radius: 12px; white-space: nowrap; font-weight: 600; letter-spacing: 0.02em; flex-shrink: 0; }
 .lv-basico        { background: rgba(138,153,170,0.1); color: #8A99AA; border: 0.5px solid rgba(138,153,170,0.28); }
 .lv-intermediario { background: rgba(59,130,246,0.1);  color: #93C5FD; border: 0.5px solid rgba(59,130,246,0.28); }
 .lv-avancado      { background: rgba(201,168,76,0.1);  color: var(--gold-light); border: 0.5px solid rgba(201,168,76,0.28); }
 .lv-expert        { background: rgba(61,153,112,0.12); color: #6FCFA2; border: 0.5px solid rgba(61,153,112,0.28); }
 
-.req-cols { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; }
 .req-table { width: 100%; border-collapse: collapse; }
-.req-table td { padding: 0.55rem 0; border-bottom: 0.5px solid rgba(255,255,255,0.05); font-size: 13px; vertical-align: top; }
+.req-table td { padding: 0.6rem 0; border-bottom: 0.5px solid rgba(255,255,255,0.05); font-size: 13px; vertical-align: top; }
 .req-table tr:last-child td { border-bottom: none; }
-.req-key { color: var(--slate); width: 42%; font-weight: 500; }
+.req-key { color: var(--slate); width: 32%; font-weight: 500; }
 .req-val { color: var(--slate-light); }
 
-.kpi-list { list-style: none; padding: 0; }
-.kpi-list li { display: flex; gap: 9px; padding: 0.6rem 0; border-bottom: 0.5px solid rgba(255,255,255,0.05); font-size: 13px; align-items: flex-start; }
-.kpi-list li:last-child { border-bottom: none; }
-.kpi-bullet { color: var(--gold); font-weight: 700; min-width: 12px; margin-top: 2px; }
-.kpi-main { font-size: 12px; font-weight: 500; color: var(--white); display: block; margin-bottom: 2px; }
-.kpi-sub  { font-size: 11px; color: var(--slate); }
+/* COMPLEXIDADE */
+.cx-list { display: flex; flex-direction: column; gap: 14px; }
+.cx-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.cx-label { font-size: 13px; font-weight: 500; color: #E8824A; }
+.cx-pct { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 600; color: #E8824A; }
+.cx-bar-bg { height: 7px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+.cx-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #1B2D6B 0%, #C0392B 55%, #E67E22 100%); transition: width 0.9s cubic-bezier(.22,.61,.36,1); }
 
-.prog-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
-.prog-card { background: rgba(255,255,255,0.025); border: 0.5px solid rgba(255,255,255,0.06); border-radius: 7px; padding: 1rem 1.1rem; position: relative; }
-.prog-card.current { border-color: rgba(201,168,76,0.35); background: rgba(201,168,76,0.04); }
-.prog-card.current::after { content: 'ATUAL'; position: absolute; top: 8px; right: 8px; font-size: 7px; font-weight: 700; letter-spacing: 0.2em; color: var(--gold); border: 0.5px solid rgba(201,168,76,0.4); padding: 1px 5px; border-radius: 10px; }
-.prog-cargo { font-size: 12.5px; font-weight: 500; color: var(--white); margin-bottom: 4px; }
-.prog-desc { font-size: 11px; color: var(--slate); line-height: 1.4; }
-.prog-arrow { display: flex; align-items: center; justify-content: center; color: rgba(201,168,76,0.4); font-size: 18px; margin-top: 14px; }
+/* AVALIAÇÃO DE RISCO */
+.var-header { background: linear-gradient(90deg, #C0392B 0%, #E67E22 100%); border-radius: 5px; padding: 0.75rem 1.25rem; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #fff; margin-bottom: 1rem; }
+.var-table { width: 100%; border-collapse: collapse; }
+.var-table td { padding: 0.65rem 0.5rem; border-bottom: 0.5px solid rgba(255,255,255,0.05); font-size: 13px; vertical-align: middle; }
+.var-table tr:last-child td { border-bottom: none; }
+.var-q { color: var(--slate-light); width: 76%; padding-left: 0; }
+.var-q strong { color: var(--white); }
+.var-col-head { font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--slate); text-align: center; padding-bottom: 0.75rem; border-bottom: 0.5px solid rgba(255,255,255,0.07); }
+.var-check { text-align: center; width: 12%; }
+.var-box { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 3px; }
+.var-box.checked    { background: rgba(61,153,112,0.15); border-color: #3D9970; color: #6FCFA2; }
+.var-box.checked-no { background: rgba(192,57,43,0.12);  border-color: #C0392B; color: #E07070; }
+.var-box.empty      { color: transparent; }
+.var-footnote { margin-top: 1rem; font-size: 11px; color: var(--slate); font-style: italic; text-align: center; }
 
-.doc-footer { margin-top: 0; border: 0.5px solid var(--border); border-top: none; border-radius: 0 0 10px 10px; background: var(--navy-800); padding: 0.9rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.doc-footer { border: 0.5px solid var(--border); border-top: none; border-radius: 0 0 10px 10px; background: var(--navy-800); padding: 0.9rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
 .footer-note { font-size: 10.5px; color: var(--slate); letter-spacing: 0.02em; }
 .footer-btns { display: flex; gap: 8px; }
-.btn-action { background: transparent; border: 0.5px solid rgba(201,168,76,0.3); color: var(--gold); padding: 5px 13px; border-radius: 5px; font-size: 11.5px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s; }
-.btn-action:hover { background: rgba(201,168,76,0.08); }
+.btn-action { background: transparent; border: 0.5px solid rgba(201,168,76,0.3); color: var(--gold); padding: 5px 13px; border-radius: 5px; font-size: 11.5px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; }
 
 @media (max-width: 660px) {
   header { padding: 1rem 1.25rem; }
@@ -188,9 +111,8 @@ header {
   .doc-meta { flex-direction: column; }
   .doc-ids { align-items: flex-start; }
   .section-card { padding: 1.25rem; }
-  .dim-grid, .comp-cols, .req-cols { grid-template-columns: 1fr; }
+  .comp-cols { grid-template-columns: 1fr; }
   .comp-cols > div:first-child { border-right: none; padding-right: 0; border-bottom: 0.5px solid var(--border); padding-bottom: 1.25rem; margin-bottom: 0.5rem; }
-  .comp-cols > div:last-child { padding-left: 0; }
 }
 </style>
 </head>
@@ -199,10 +121,7 @@ header {
 <header>
   <div class="logo">
     <div class="logo-mark">
-      <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M7 1L13 4.5V9.5L7 13L1 9.5V4.5L7 1Z" stroke="#C9A84C" stroke-width="1.2"/>
-        <path d="M7 4L10 5.8V9.2L7 11L4 9.2V5.8L7 4Z" fill="#C9A84C" fill-opacity="0.45"/>
-      </svg>
+      <svg viewBox="0 0 14 14" fill="none"><path d="M7 1L13 4.5V9.5L7 13L1 9.5V4.5L7 1Z" stroke="#C9A84C" stroke-width="1.2"/><path d="M7 4L10 5.8V9.2L7 11L4 9.2V5.8L7 4Z" fill="#C9A84C" fill-opacity="0.45"/></svg>
     </div>
     <div>
       <div class="logo-text">Arquitetura de Cargos</div>
@@ -222,7 +141,7 @@ header {
 
 <div id="output">
 
-  <!-- CABEÇALHO DO DOCUMENTO -->
+  <!-- CABEÇALHO -->
   <div class="doc-header">
     <div class="doc-meta">
       <div class="doc-meta-left">
@@ -231,7 +150,7 @@ header {
         <div class="pills-row">
           <span class="pill pill-gold">Sênior</span>
           <span class="pill pill-green">Varejo</span>
-          <span class="pill pill-slate">Tecnologia & Dados</span>
+          <span class="pill pill-slate">Tecnologia &amp; Dados</span>
           <span class="pill pill-slate">Ciência de Dados</span>
           <span class="pill pill-slate">Estratégico</span>
         </div>
@@ -249,79 +168,9 @@ header {
     </div>
   </div>
 
-  <!-- 01 IDENTIFICAÇÃO -->
+  <!-- 01 RESPONSABILIDADES -->
   <div class="section-card">
-    <div class="section-header">
-      <span class="s-num">01</span>
-      <span class="s-title">Identificação &amp; Enquadramento</span>
-    </div>
-    <div class="ident-grid">
-      <div class="ident-card"><div class="ident-label">Família</div><div class="ident-value">Tecnologia &amp; Dados</div></div>
-      <div class="ident-card"><div class="ident-label">Sub-Família</div><div class="ident-value">Ciência de Dados</div></div>
-      <div class="ident-card"><div class="ident-label">Segmento</div><div class="ident-value">Varejo</div></div>
-      <div class="ident-card"><div class="ident-label">Grau de Complexidade</div><div class="ident-value">Estratégico</div></div>
-      <div class="ident-card"><div class="ident-label">Nível</div><div class="ident-value">Sênior</div></div>
-      <div class="ident-card"><div class="ident-label">Código Interno</div><div class="ident-value" style="font-family:'DM Mono',monospace;color:var(--gold-light)">DAD-031</div></div>
-      <div class="ident-card"><div class="ident-label">Referência de Mercado</div><div class="ident-value">2025</div></div>
-    </div>
-  </div>
-
-  <!-- 02 RESUMO -->
-  <div class="section-card">
-    <div class="section-header">
-      <span class="s-num">02</span>
-      <span class="s-title">Descrição Sumária</span>
-    </div>
-    <div class="summary-box">
-      <p style="font-size:14.5px;color:var(--slate-light);line-height:1.75;margin-bottom:1rem;">Responsável por desenvolver modelos preditivos e soluções analíticas avançadas que suportem decisões estratégicas nas áreas de pricing, sortimento, demanda e comportamento do consumidor no varejo. Atua como referência técnica na equipe de dados, orientando projetos de alto impacto e assegurando a qualidade e escalabilidade das soluções entregues.</p>
-      <div style="border-left:3px solid var(--gold);padding-left:1rem;">
-        <div style="font-size:8.5px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Contribuição ao Negócio</div>
-        <p style="font-size:14px;color:var(--gold-light);font-style:italic;line-height:1.6;">Transforma volumes massivos de dados de comportamento de consumo em inteligência acionável que impulsiona receita, margem e experiência do cliente.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- 03 DIMENSÕES -->
-  <div class="section-card">
-    <div class="section-header">
-      <span class="s-num">03</span>
-      <span class="s-title">Dimensões do Cargo</span>
-    </div>
-    <div class="dim-grid">
-      <div>
-        <div class="dim-top"><span class="dim-name">Modelagem &amp; Experimentação</span><span class="dim-pct">35%</span></div>
-        <div class="dim-bar-bg"><div class="dim-bar-fill" style="width:35%"></div></div>
-        <div class="dim-desc">Desenvolvimento e validação de modelos de ML/IA para previsão de demanda, churn, LTV e precificação dinâmica.</div>
-      </div>
-      <div>
-        <div class="dim-top"><span class="dim-name">Análise &amp; Insights</span><span class="dim-pct">25%</span></div>
-        <div class="dim-bar-bg"><div class="dim-bar-fill" style="width:25%"></div></div>
-        <div class="dim-desc">Análise exploratória de grandes volumes de dados transacionais e comportamentais para geração de hipóteses de negócio.</div>
-      </div>
-      <div>
-        <div class="dim-top"><span class="dim-name">Engenharia de Dados</span><span class="dim-pct">20%</span></div>
-        <div class="dim-bar-bg"><div class="dim-bar-fill" style="width:20%"></div></div>
-        <div class="dim-desc">Construção e manutenção de pipelines de dados, feature stores e infraestrutura de serving de modelos em produção.</div>
-      </div>
-      <div>
-        <div class="dim-top"><span class="dim-name">Comunicação &amp; Influência</span><span class="dim-pct">12%</span></div>
-        <div class="dim-bar-bg"><div class="dim-bar-fill" style="width:12%"></div></div>
-        <div class="dim-desc">Apresentação de resultados e recomendações para lideranças de negócio e parceiros estratégicos.</div>
-      </div>
-      <div>
-        <div class="dim-top"><span class="dim-name">Mentoria &amp; Desenvolvimento</span><span class="dim-pct">8%</span></div>
-        <div class="dim-bar-bg"><div class="dim-bar-fill" style="width:8%"></div></div>
-        <div class="dim-desc">Orientação técnica a analistas e cientistas plenos, revisão de código e condução de code reviews.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 04 RESPONSABILIDADES -->
-  <div class="section-card">
-    <div class="section-header">
-      <span class="s-num">04</span>
-      <span class="s-title">Responsabilidades e Entregas</span>
-    </div>
+    <div class="section-header"><span class="s-num">01</span><span class="s-title">Responsabilidades e Entregas</span></div>
     <ul class="resp-list">
       <li>
         <div class="resp-icon"><svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
@@ -350,124 +199,118 @@ header {
     </ul>
   </div>
 
-  <!-- 05 COMPETÊNCIAS -->
+  <!-- 02 COMPETÊNCIAS -->
   <div class="section-card">
-    <div class="section-header">
-      <span class="s-num">05</span>
-      <span class="s-title">Competências Técnicas e Comportamentais</span>
-    </div>
+    <div class="section-header"><span class="s-num">02</span><span class="s-title">Competências Técnicas e Comportamentais</span></div>
     <div class="comp-cols">
       <div style="padding-right:1.5rem;border-right:0.5px solid rgba(255,255,255,0.05);">
         <div class="comp-col-title">Técnicas</div>
-        <div class="comp-item">
-          <div style="flex:1"><div class="comp-main">Python para Ciência de Dados</div><div class="comp-desc">Pandas, NumPy, Scikit-learn, PyTorch/TensorFlow, MLflow</div></div>
-          <span class="badge-level lv-expert">Expert</span>
-        </div>
-        <div class="comp-item">
-          <div style="flex:1"><div class="comp-main">Modelagem Estatística &amp; ML</div><div class="comp-desc">Regressão, árvores, ensembles, modelos sequenciais, séries temporais</div></div>
-          <span class="badge-level lv-expert">Expert</span>
-        </div>
-        <div class="comp-item">
-          <div style="flex:1"><div class="comp-main">SQL &amp; Processamento Distribuído</div><div class="comp-desc">BigQuery, Spark, dbt — consultas analíticas em escala de petabytes</div></div>
-          <span class="badge-level lv-avancado">Avançado</span>
-        </div>
-        <div class="comp-item">
-          <div style="flex:1"><div class="comp-main">MLOps &amp; Cloud</div><div class="comp-desc">GCP/AWS, Vertex AI, Docker, pipelines CI/CD para modelos</div></div>
-          <span class="badge-level lv-avancado">Avançado</span>
-        </div>
-        <div class="comp-item">
-          <div style="flex:1"><div class="comp-main">Experimentação &amp; Causalidade</div><div class="comp-desc">Design de A/B tests, inferência causal, uplift modeling</div></div>
-          <span class="badge-level lv-avancado">Avançado</span>
-        </div>
+        <div class="comp-item"><div class="comp-main">Python para Ciência de Dados</div><span class="badge-level lv-expert">Expert</span></div>
+        <div class="comp-item"><div class="comp-main">Modelagem Estatística &amp; ML</div><span class="badge-level lv-expert">Expert</span></div>
+        <div class="comp-item"><div class="comp-main">SQL &amp; Processamento Distribuído</div><span class="badge-level lv-avancado">Avançado</span></div>
+        <div class="comp-item"><div class="comp-main">MLOps &amp; Cloud</div><span class="badge-level lv-avancado">Avançado</span></div>
+        <div class="comp-item"><div class="comp-main">Experimentação &amp; Causalidade</div><span class="badge-level lv-avancado">Avançado</span></div>
       </div>
       <div style="padding-left:1.5rem;">
         <div class="comp-col-title">Comportamentais</div>
-        <div class="comp-item">
-          <div style="flex:1"><div class="comp-main">Orientação a Resultado</div><div class="comp-desc">Prioriza entregas de alto impacto e mensura o retorno gerado pelos modelos</div></div>
-          <span class="badge-level lv-avancado">Avançado</span>
-        </div>
-        <div class="comp-item">
-          <div style="flex:1"><div class="comp-main">Comunicação Analítica</div><div class="comp-desc">Traduz análises complexas em narrativas claras para stakeholders não-técnicos</div></div>
-          <span class="badge-level lv-avancado">Avançado</span>
-        </div>
-        <div class="comp-item">
-          <div style="flex:1"><div class="comp-main">Colaboração Interfuncional</div><div class="comp-desc">Trabalha em parceria com produto, negócio e engenharia para alinhar soluções</div></div>
-          <span class="badge-level lv-avancado">Avançado</span>
-        </div>
-        <div class="comp-item">
-          <div style="flex:1"><div class="comp-main">Pensamento Sistêmico</div><div class="comp-desc">Enxerga impactos de segunda ordem das decisões tomadas com base em modelos</div></div>
-          <span class="badge-level lv-intermediario">Intermediário</span>
-        </div>
+        <div class="comp-item"><div class="comp-main">Orientação a Resultado</div><span class="badge-level lv-avancado">Avançado</span></div>
+        <div class="comp-item"><div class="comp-main">Comunicação Analítica</div><span class="badge-level lv-avancado">Avançado</span></div>
+        <div class="comp-item"><div class="comp-main">Colaboração Interfuncional</div><span class="badge-level lv-avancado">Avançado</span></div>
+        <div class="comp-item"><div class="comp-main">Pensamento Sistêmico</div><span class="badge-level lv-intermediario">Intermediário</span></div>
       </div>
     </div>
   </div>
 
-  <!-- 06 REQUISITOS + KPIs -->
+  <!-- 03 REQUISITOS -->
   <div class="section-card">
-    <div class="section-header">
-      <span class="s-num">06</span>
-      <span class="s-title">Requisitos da Posição</span>
-    </div>
-    <div class="req-cols">
-      <div>
-        <table class="req-table">
-          <tr><td class="req-key">Formação Mínima</td><td class="req-val">Graduação em Ciência da Computação, Estatística, Matemática ou Engenharia</td></tr>
-          <tr><td class="req-key">Formação Desejável</td><td class="req-val">Pós-graduação ou Mestrado em áreas quantitativas; especialização em ML aplicado</td></tr>
-          <tr><td class="req-key">Exp. Mínima</td><td class="req-val">5 anos em ciência de dados, com ao menos 2 anos em ambiente de varejo ou e-commerce</td></tr>
-          <tr><td class="req-key">Exp. Desejável</td><td class="req-val">Experiência com modelos em produção de alta escala e projetos de pricing ou CRM</td></tr>
-          <tr><td class="req-key">Idiomas</td><td class="req-val">
-            <span class="pill pill-green" style="margin:2px 2px 0 0">Inglês avançado</span>
-          </td></tr>
-          <tr><td class="req-key">Certificações</td><td class="req-val">
-            <span class="pill pill-slate" style="margin:2px 2px 0 0">Google Professional ML Engineer</span>
-            <span class="pill pill-slate" style="margin:2px 2px 0 0">AWS Certified ML Specialty</span>
-          </td></tr>
-        </table>
+    <div class="section-header"><span class="s-num">03</span><span class="s-title">Requisitos da Posição</span></div>
+    <table class="req-table">
+      <tr><td class="req-key">Formação Mínima</td><td class="req-val">Graduação em Ciência da Computação, Estatística, Matemática ou Engenharia</td></tr>
+      <tr><td class="req-key">Formação Desejável</td><td class="req-val">Pós-graduação ou Mestrado em áreas quantitativas; especialização em ML aplicado</td></tr>
+      <tr><td class="req-key">Exp. Mínima</td><td class="req-val">5 anos em ciência de dados, com ao menos 2 anos em ambiente de varejo ou e-commerce</td></tr>
+      <tr><td class="req-key">Exp. Desejável</td><td class="req-val">Experiência com modelos em produção de alta escala e projetos de pricing ou CRM</td></tr>
+    </table>
+  </div>
+
+  <!-- 04 COMPLEXIDADE -->
+  <div class="section-card">
+    <div class="section-header"><span class="s-num">04</span><span class="s-title">Complexidade</span></div>
+    <div class="cx-list">
+      <div class="cx-item">
+        <div class="cx-top"><span class="cx-label">Profundidade Analítica e Diagnóstica</span><span class="cx-pct">82%</span></div>
+        <div class="cx-bar-bg"><div class="cx-bar-fill" style="width:82%"></div></div>
       </div>
-      <div>
-        <div style="font-size:8.5px;font-weight:700;letter-spacing:0.19em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:0.5px solid var(--divider);">KPIs de Referência</div>
-        <ul class="kpi-list">
-          <li><span class="kpi-bullet">◆</span><div><span class="kpi-main">MAPE dos Modelos de Demanda</span><span class="kpi-sub">Erro médio absoluto percentual ≤ 12% no horizonte de 4 semanas</span></div></li>
-          <li><span class="kpi-bullet">◆</span><div><span class="kpi-main">Modelos em Produção</span><span class="kpi-sub">Mínimo de 3 novos modelos implantados por semestre com SLA de disponibilidade &gt; 99%</span></div></li>
-          <li><span class="kpi-bullet">◆</span><div><span class="kpi-main">Impacto em Receita</span><span class="kpi-sub">Projetos conduzidos devem gerar impacto mensurável de pelo menos R$ 5M/ano</span></div></li>
-          <li><span class="kpi-bullet">◆</span><div><span class="kpi-main">Tempo de Deploy</span><span class="kpi-sub">Ciclo médio de experimento à produção inferior a 6 semanas</span></div></li>
-          <li><span class="kpi-bullet">◆</span><div><span class="kpi-main">Cobertura de Monitoramento</span><span class="kpi-sub">100% dos modelos críticos com alertas de data drift configurados</span></div></li>
-        </ul>
+      <div class="cx-item">
+        <div class="cx-top"><span class="cx-label">Densidade Técnica e Metodológica</span><span class="cx-pct">74%</span></div>
+        <div class="cx-bar-bg"><div class="cx-bar-fill" style="width:74%"></div></div>
+      </div>
+      <div class="cx-item">
+        <div class="cx-top"><span class="cx-label">Influência Estratégica e Capacidade de Alinhamento</span><span class="cx-pct">38%</span></div>
+        <div class="cx-bar-bg"><div class="cx-bar-fill" style="width:38%"></div></div>
+      </div>
+      <div class="cx-item">
+        <div class="cx-top"><span class="cx-label">Capacidade de Transformação e Inovação Aplicada</span><span class="cx-pct">66%</span></div>
+        <div class="cx-bar-bg"><div class="cx-bar-fill" style="width:66%"></div></div>
+      </div>
+      <div class="cx-item">
+        <div class="cx-top"><span class="cx-label">Amplitude de Autonomia e Decisão</span><span class="cx-pct">72%</span></div>
+        <div class="cx-bar-bg"><div class="cx-bar-fill" style="width:72%"></div></div>
       </div>
     </div>
   </div>
 
-  <!-- 07 PROGRESSÃO -->
+  <!-- 05 AVALIAÇÃO DE RISCO -->
   <div class="section-card">
-    <div class="section-header">
-      <span class="s-num">07</span>
-      <span class="s-title">Trilha de Progressão</span>
-    </div>
-    <div class="prog-cards" style="align-items:start;">
-      <div class="prog-card">
-        <div class="prog-cargo">Cientista de Dados Pleno</div>
-        <div class="prog-desc">3–5 anos de experiência, com domínio técnico consolidado e primeiros projetos autônomos entregues.</div>
-      </div>
-      <div class="prog-arrow">→</div>
-      <div class="prog-card current">
-        <div class="prog-cargo">Cientista de Dados Sênior</div>
-        <div class="prog-desc">Posição em foco. Referência técnica, projetos de alto impacto e influência em decisões de produto e negócio.</div>
-      </div>
-      <div class="prog-arrow">→</div>
-      <div class="prog-card">
-        <div class="prog-cargo">Líder de Ciência de Dados</div>
-        <div class="prog-desc">Progressão vertical para gestão de equipe e definição da estratégia analítica da companhia.</div>
-      </div>
-      <div class="prog-arrow">→</div>
-      <div class="prog-card">
-        <div class="prog-cargo">Engenheiro de ML Sênior</div>
-        <div class="prog-desc">Progressão lateral para perfil mais focado em infraestrutura, MLOps e plataformas de dados em escala.</div>
-      </div>
-    </div>
+    <div class="section-header"><span class="s-num">05</span><span class="s-title">Avaliação de Risco</span></div>
+    <div class="var-header">Avaliação de Risco</div>
+    <table class="var-table">
+      <thead>
+        <tr>
+          <td style="padding-bottom:0.75rem;border-bottom:0.5px solid rgba(255,255,255,0.07);font-size:12.5px;color:var(--slate-light);">
+            Avaliação de Risco: mapeamento do nível de exposição ao risco das atividades inerentes à função.
+          </td>
+          <td class="var-col-head">SIM</td>
+          <td class="var-col-head">NÃO</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="var-q"><strong>VAR1</strong> — Atividade desempenhada possui acesso a informações sensíveis de *PLDFT?</td>
+          <td class="var-check"><span class="var-box empty"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td class="var-check"><span class="var-box checked-no"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+        </tr>
+        <tr>
+          <td class="var-q"><strong>VAR2</strong> — Possui alçada para deliberar reportes em relação a *PLDFT?</td>
+          <td class="var-check"><span class="var-box empty"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td class="var-check"><span class="var-box checked-no"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+        </tr>
+        <tr>
+          <td class="var-q"><strong>VAR3</strong> — Possui alçada para autorizar operações financeiras?</td>
+          <td class="var-check"><span class="var-box empty"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td class="var-check"><span class="var-box checked-no"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+        </tr>
+        <tr>
+          <td class="var-q"><strong>VAR4</strong> — Possui contato com o cliente?</td>
+          <td class="var-check"><span class="var-box empty"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td class="var-check"><span class="var-box checked-no"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+        </tr>
+        <tr>
+          <td class="var-q"><strong>VAR5</strong> — Possui acesso para incluir/alterar dados de cliente/operações?</td>
+          <td class="var-check"><span class="var-box empty"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td class="var-check"><span class="var-box checked-no"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+        </tr>
+        <tr>
+          <td class="var-q"><strong>VAR6</strong> — Comercializa produtos e serviços e/ou oferta propostas de transações financeiras?</td>
+          <td class="var-check"><span class="var-box empty"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td class="var-check"><span class="var-box checked-no"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="var-footnote">*PLDFT: Prevenção à Lavagem de Dinheiro e ao Financiamento ao Terrorismo</div>
   </div>
 
   <div class="doc-footer">
-    <div class="footer-note">Gerado por Arquitetura de Cargos · Nederhec · Referência Brasil 2025 · Uso interno e confidencial</div>
+    <div class="footer-note">Gerado por Arquitetura de Cargos · Nederhec · Referência Brasil 2025 · Uso Público, direitos autorais reservados</div>
     <div class="footer-btns">
       <button class="btn-action">Copiar JSON</button>
       <button class="btn-action">Imprimir / PDF</button>

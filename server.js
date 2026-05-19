@@ -15,55 +15,66 @@ Você deve retornar APENAS um JSON válido, sem nenhum texto antes ou depois, se
   "codigo": "código interno no formato FAM-NNN (ex: TEC-042)",
   "versao": "1.0",
   "data_referencia": "2025",
-  "segmento": "segmento de mercado informado (ex: Varejo, Tecnologia, Saúde)",
-  "familia": "nome da família de cargos (ex: Tecnologia, Finanças, Recursos Humanos)",
-  "subfamilia": "subfamília específica (ex: Engenharia de Software, Remuneração & Benefícios)",
+  "segmento": "segmento de mercado informado",
+  "familia": "nome da família de cargos",
+  "subfamilia": "subfamília específica",
   "nivel": "Júnior | Pleno | Sênior | Especialista | Gerência | Diretoria | C-Level",
   "grau": "Operacional | Tático | Estratégico | Estratégico Executivo",
-  "proposito": "parágrafo de 2-3 frases descrevendo o propósito central do cargo de forma precisa e objetiva",
-  "contribuicao_negocio": "frase única e poderosa descrevendo o impacto no negócio",
-  "dimensoes": [
-    { "nome": "nome da dimensão", "pct": 30, "descricao": "descrição do tempo/energia dedicado a essa dimensão" }
-  ],
+  "proposito": "parágrafo de 2-3 frases sobre o propósito central do cargo",
+  "contribuicao_negocio": "frase única e poderosa sobre o impacto no negócio",
   "responsabilidades": [
-    { "area": "área/tema", "descricao": "responsabilidade específica e mensurável com verbo no infinitivo" }
+    { "area": "área/tema", "descricao": "responsabilidade específica com verbo no infinitivo" }
   ],
   "competencias_tecnicas": [
-    { "nome": "competência técnica", "descricao": "descrição breve de aplicação", "nivel": "Básico | Intermediário | Avançado | Expert" }
+    { "nome": "nome da competência técnica", "nivel": "Básico | Intermediário | Avançado | Expert" }
   ],
   "competencias_comportamentais": [
-    { "nome": "competência comportamental", "descricao": "manifestação esperada no cargo", "nivel": "Básico | Intermediário | Avançado | Expert" }
+    { "nome": "nome da competência comportamental", "nivel": "Básico | Intermediário | Avançado | Expert" }
   ],
   "requisitos": {
     "formacao_minima": "formação mínima exigida",
     "formacao_desejavel": "formação desejável / diferencial",
     "experiencia_minima": "tempo e tipo de experiência mínima",
-    "experiencia_desejavel": "experiência diferencial desejável",
-    "idiomas": ["idioma e nível (ex: Inglês avançado)"],
-    "certificacoes": ["certificação 1", "certificação 2"]
+    "experiencia_desejavel": "experiência diferencial desejável"
   },
-  "kpis": [
-    { "nome": "nome do KPI", "descricao": "como é medido e qual a meta de referência" }
-  ],
-  "progressao": [
-    { "cargo": "cargo anterior", "descricao": "perfil típico de quem vem deste cargo", "tipo": "origem" },
-    { "cargo": "cargo atual", "descricao": "posição em foco neste documento", "tipo": "atual" },
-    { "cargo": "cargo destino 1", "descricao": "progressão vertical típica", "tipo": "destino" },
-    { "cargo": "cargo destino 2", "descricao": "progressão lateral possível", "tipo": "destino" }
-  ]
+  "complexidade": {
+    "profundidade_analitica": 0,
+    "densidade_tecnica": 0,
+    "influencia_estrategica": 0,
+    "transformacao_inovacao": 0,
+    "autonomia_decisao": 0
+  },
+  "avaliacao_risco": {
+    "VAR1": false,
+    "VAR2": false,
+    "VAR3": false,
+    "VAR4": false,
+    "VAR5": false,
+    "VAR6": false
+  }
 }
 
 Regras:
-- dimensoes: 4 a 6 itens, soma dos pct = 100
 - responsabilidades: 6 a 8 itens variados e específicos
-- competencias_tecnicas: 5 a 7 itens relevantes para o cargo
+- competencias_tecnicas: 5 a 7 itens
 - competencias_comportamentais: 4 a 6 itens
-- kpis: 4 a 6 indicadores mensuráveis
-- progressao: sempre 4 itens (1 origem, 1 atual, 2 destino)
+- complexidade: avalie cada dimensão de 0 a 100 conforme o cargo e segmento
+  - profundidade_analitica: nível de raciocínio analítico e diagnóstico exigido
+  - densidade_tecnica: volume e profundidade de conhecimento técnico/metodológico
+  - influencia_estrategica: capacidade de influenciar decisões e alinhar stakeholders
+  - transformacao_inovacao: capacidade de transformar processos e gerar inovação aplicada
+  - autonomia_decisao: amplitude de autonomia e responsabilidade por decisões
+- avaliacao_risco: responda true/false para cada variável:
+  - VAR1: a atividade possui acesso a informações sensíveis de PLDFT
+  - VAR2: possui alçada para deliberar reportes em relação a PLDFT
+  - VAR3: possui alçada para autorizar operações financeiras
+  - VAR4: possui contato direto com o cliente
+  - VAR5: possui acesso para incluir/alterar dados de cliente/operações
+  - VAR6: comercializa produtos/serviços ou oferta propostas de transações financeiras
 - Todo o conteúdo em português do Brasil
 - Use linguagem corporativa precisa, sem genéricos
-- Calibre o nível ao cargo informado (pleno ≠ sênior ≠ especialista)
-- Use o segmento informado para calibrar linguagem, KPIs, requisitos e exemplos com a realidade daquele mercado`;
+- Calibre o nível ao cargo (pleno ≠ sênior ≠ especialista)
+- Use o segmento para calibrar linguagem, requisitos e complexidade`;
 
 function callAnthropic(cargo, segmento, apiKey) {
   return new Promise((resolve, reject) => {
