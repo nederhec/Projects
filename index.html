@@ -198,9 +198,22 @@ header {
 .btn-gen:active { opacity: 0.9; }
 .btn-gen:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.chips-group {
+  margin-top: 1.25rem;
+}
+
+.chips-label {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--slate);
+  margin-bottom: 7px;
+}
+
 .chips {
   display: flex; flex-wrap: wrap; gap: 7px;
-  justify-content: center; margin-top: 1.1rem;
+  justify-content: center;
 }
 
 .chip {
@@ -215,6 +228,13 @@ header {
 }
 
 .chip:hover { border-color: var(--gold); color: var(--gold-light); }
+
+.chip-seg {
+  border-color: rgba(61,153,112,0.3);
+  color: #6FCFA2;
+}
+
+.chip-seg:hover { border-color: #6FCFA2; color: #9ADFC2; }
 
 /* ── LOADING ─────────────────────────────────── */
 #loading {
@@ -684,17 +704,34 @@ header {
     </div>
   </div>
 
-  <div class="chips">
-    <span class="chip" onclick="setEx('Head of Engineering')">Head of Engineering</span>
-    <span class="chip" onclick="setEx('Product Manager Sênior')">PM Sênior</span>
-    <span class="chip" onclick="setEx('Tech Lead Backend')">Tech Lead</span>
-    <span class="chip" onclick="setEx('CTO')">CTO</span>
-    <span class="chip" onclick="setEx('Especialista de Remuneração')">Esp. Remuneração</span>
-    <span class="chip" onclick="setEx('Analista de People Analytics Pleno')">People Analytics</span>
-    <span class="chip" onclick="setEx('Head de Compensação e Benefícios')">Head C&amp;B</span>
-    <span class="chip" onclick="setEx('CISO')">CISO</span>
-    <span class="chip" onclick="setEx('Gerente de Recursos Humanos')">Gerente de RH</span>
-    <span class="chip" onclick="setEx('Data Scientist Sênior')">Data Scientist Sr</span>
+  <div class="chips-group">
+    <div class="chips-label">Cargos</div>
+    <div class="chips">
+      <span class="chip" onclick="setEx('Head de Engenharia')">Head de Engenharia</span>
+      <span class="chip" onclick="setEx('Gerente de Produto Sênior')">Gerente de Produto Sr</span>
+      <span class="chip" onclick="setEx('Líder Técnico Backend')">Líder Técnico</span>
+      <span class="chip" onclick="setEx('Diretor de Tecnologia')">Diretor de Tecnologia</span>
+      <span class="chip" onclick="setEx('Especialista de Remuneração')">Esp. Remuneração</span>
+      <span class="chip" onclick="setEx('Analista de People Analytics Pleno')">People Analytics</span>
+      <span class="chip" onclick="setEx('Head de Compensação e Benefícios')">Head Comp &amp; Ben</span>
+      <span class="chip" onclick="setEx('Diretor de Segurança da Informação')">Diretor de Segurança</span>
+      <span class="chip" onclick="setEx('Gerente de Recursos Humanos')">Gerente de RH</span>
+      <span class="chip" onclick="setEx('Cientista de Dados Sênior')">Cientista de Dados Sr</span>
+    </div>
+  </div>
+
+  <div class="chips-group">
+    <div class="chips-label">Segmentos</div>
+    <div class="chips">
+      <span class="chip chip-seg" onclick="setSeg('Tecnologia')">Tecnologia</span>
+      <span class="chip chip-seg" onclick="setSeg('Varejo')">Varejo</span>
+      <span class="chip chip-seg" onclick="setSeg('Saúde')">Saúde</span>
+      <span class="chip chip-seg" onclick="setSeg('Serviços Financeiros')">Serviços Financeiros</span>
+      <span class="chip chip-seg" onclick="setSeg('Indústria')">Indústria</span>
+      <span class="chip chip-seg" onclick="setSeg('Agronegócio')">Agronegócio</span>
+      <span class="chip chip-seg" onclick="setSeg('Educação')">Educação</span>
+      <span class="chip chip-seg" onclick="setSeg('Logística')">Logística</span>
+    </div>
   </div>
 </div>
 
@@ -782,6 +819,11 @@ let lastDocData = null;
 
 function setEx(v) {
   document.getElementById('cargo-input').value = v;
+  document.getElementById('segmento-input').focus();
+}
+
+function setSeg(v) {
+  document.getElementById('segmento-input').value = v;
   document.getElementById('segmento-input').focus();
 }
 
