@@ -468,7 +468,7 @@ header {
   display: flex; gap: 12px;
   padding: 0.7rem 0;
   border-bottom: 0.5px solid rgba(0,0,0,0.06);
-  font-size: 14.5px; color: var(--slate-light); line-height: 1.55;
+  font-size: 15.5px; color: var(--slate-light); line-height: 1.6;
 }
 
 .resp-list li:last-child { border-bottom: none; }
@@ -572,15 +572,15 @@ header {
 /* ── SECTION 05: AVALIAÇÃO DE RISCO ─────────── */
 .var-header {
   background: linear-gradient(90deg, #7A000F 0%, #CC1226 100%);
-  border-radius: 5px;
-  padding: 0.75rem 1.25rem;
+  border-radius: 4px;
+  padding: 0.35rem 1rem;
   text-align: center;
-  font-size: 11px;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: #fff;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .var-table { width: 100%; border-collapse: collapse; }
@@ -1007,13 +1007,11 @@ function renderDoc(d) {
   const compTec = (d.competencias_tecnicas || []).map(c => `
     <div class="comp-item">
       <div class="comp-main">${esc(c.nome)}</div>
-      <span class="badge-level ${levelClass(c.nivel)}">${esc(c.nivel)}</span>
     </div>`).join('');
 
   const compBeh = (d.competencias_comportamentais || []).map(c => `
     <div class="comp-item">
       <div class="comp-main">${esc(c.nome)}</div>
-      <span class="badge-level ${levelClass(c.nivel)}">${esc(c.nivel)}</span>
     </div>`).join('');
 
   const cxHtml = CX_DIMS.map(dim => {
