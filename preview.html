@@ -56,7 +56,7 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .s-title { font-size: 9.5px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--slate-light); }
 
 .resp-list { list-style: none; padding: 0; }
-.resp-list li { display: flex; gap: 12px; padding: 0.7rem 0; border-bottom: 0.5px solid rgba(0,0,0,0.06); font-size: 13.5px; color: var(--slate-light); line-height: 1.55; }
+.resp-list li { display: flex; gap: 12px; padding: 0.7rem 0; border-bottom: 0.5px solid rgba(0,0,0,0.06); font-size: 14.5px; color: var(--slate-light); line-height: 1.55; }
 .resp-list li:last-child { border-bottom: none; }
 .resp-icon { width: 17px; height: 17px; min-width: 17px; border: 0.5px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: 3px; }
 
@@ -64,7 +64,7 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .comp-col-title { font-size: 8.5px; font-weight: 700; letter-spacing: 0.19em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 0.5px solid var(--divider); }
 .comp-item { display: flex; align-items: center; gap: 10px; padding: 0.5rem 0; border-bottom: 0.5px solid rgba(0,0,0,0.06); }
 .comp-item:last-child { border-bottom: none; }
-.comp-main { font-size: 12.5px; font-weight: 500; color: var(--white); flex: 1; }
+.comp-main { font-size: 13.5px; font-weight: 500; color: var(--white); flex: 1; }
 .badge-level { font-size: 9.5px; padding: 2px 8px; border-radius: 12px; white-space: nowrap; font-weight: 600; letter-spacing: 0.02em; flex-shrink: 0; }
 .lv-basico        { background: rgba(138,153,170,0.1); color: #8A99AA; border: 0.5px solid rgba(138,153,170,0.28); }
 .lv-intermediario { background: rgba(59,130,246,0.1);  color: #93C5FD; border: 0.5px solid rgba(59,130,246,0.28); }
@@ -72,7 +72,7 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 .lv-expert        { background: rgba(61,153,112,0.12); color: #6FCFA2; border: 0.5px solid rgba(61,153,112,0.28); }
 
 .req-table { width: 100%; border-collapse: collapse; }
-.req-table td { padding: 0.6rem 0; border-bottom: 0.5px solid rgba(0,0,0,0.06); font-size: 13px; vertical-align: top; }
+.req-table td { padding: 0.6rem 0; border-bottom: 0.5px solid rgba(0,0,0,0.06); font-size: 14px; vertical-align: top; }
 .req-table tr:last-child td { border-bottom: none; }
 .req-key { color: var(--slate); width: 32%; font-weight: 500; }
 .req-val { color: var(--slate-light); }
@@ -80,15 +80,15 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 /* COMPLEXIDADE */
 .cx-list { display: flex; flex-direction: column; gap: 14px; }
 .cx-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
-.cx-label { font-size: 13px; font-weight: 500; color: #E8354A; }
-.cx-pct { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 600; color: #E8354A; }
+.cx-label { font-size: 14px; font-weight: 500; color: #E8354A; }
+.cx-pct { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 600; color: #E8354A; }
 .cx-bar-bg { height: 7px; background: rgba(0,0,0,0.06); border-radius: 4px; overflow: hidden; }
 .cx-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #3D0410 0%, #900018 45%, #CC1226 100%); transition: width 0.9s cubic-bezier(.22,.61,.36,1); }
 
 /* AVALIAÇÃO DE RISCO */
 .var-header { background: linear-gradient(90deg, #7A000F 0%, #CC1226 100%); border-radius: 5px; padding: 0.75rem 1.25rem; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #fff; margin-bottom: 1rem; }
 .var-table { width: 100%; border-collapse: collapse; }
-.var-table td { padding: 0.65rem 0.5rem; border-bottom: 0.5px solid rgba(0,0,0,0.06); font-size: 13px; vertical-align: middle; }
+.var-table td { padding: 0.4rem 0.5rem; border-bottom: 0.5px solid rgba(0,0,0,0.06); font-size: 11.5px; vertical-align: middle; }
 .var-table tr:last-child td { border-bottom: none; }
 .var-q { color: var(--slate-light); width: 76%; padding-left: 0; }
 .var-q strong { color: var(--white); }
@@ -150,9 +150,6 @@ header { display: flex; align-items: center; justify-content: space-between; pad
         <div class="pills-row">
           <span class="pill pill-gold">Sênior</span>
           <span class="pill pill-green">Varejo</span>
-          <span class="pill pill-slate">Tecnologia &amp; Dados</span>
-          <span class="pill pill-slate">Ciência de Dados</span>
-          <span class="pill pill-slate">Estratégico</span>
         </div>
       </div>
       <div class="doc-ids">
@@ -174,27 +171,27 @@ header { display: flex; align-items: center; justify-content: space-between; pad
     <ul class="resp-list">
       <li>
         <div class="resp-icon"><svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
-        <div><span style="font-weight:500;color:#CC1226;font-size:12.5px;">Previsão de Demanda</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Desenvolver e manter modelos de forecast de vendas por SKU, loja e canal, com horizonte de 4 a 12 semanas, atingindo erro MAPE abaixo de 12%.</span></div>
+        <div><span style="font-weight:500;color:#CC1226;font-size:13.5px;">Previsão de Demanda</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Desenvolver e manter modelos de forecast de vendas por SKU, loja e canal, com horizonte de 4 a 12 semanas, atingindo erro MAPE abaixo de 12%.</span></div>
       </li>
       <li>
         <div class="resp-icon"><svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
-        <div><span style="font-weight:500;color:#CC1226;font-size:12.5px;">Modelagem de Comportamento</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Construir modelos de propensão de compra, churn e segmentação de clientes para campanhas de CRM e personalização de ofertas.</span></div>
+        <div><span style="font-weight:500;color:#CC1226;font-size:13.5px;">Modelagem de Comportamento</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Construir modelos de propensão de compra, churn e segmentação de clientes para campanhas de CRM e personalização de ofertas.</span></div>
       </li>
       <li>
         <div class="resp-icon"><svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
-        <div><span style="font-weight:500;color:#CC1226;font-size:12.5px;">MLOps &amp; Deploy</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Colocar modelos em produção utilizando práticas de MLOps, garantindo monitoramento de drift, versionamento e SLAs de latência.</span></div>
+        <div><span style="font-weight:500;color:#CC1226;font-size:13.5px;">MLOps &amp; Deploy</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Colocar modelos em produção utilizando práticas de MLOps, garantindo monitoramento de drift, versionamento e SLAs de latência.</span></div>
       </li>
       <li>
         <div class="resp-icon"><svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
-        <div><span style="font-weight:500;color:#CC1226;font-size:12.5px;">Precificação Dinâmica</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Colaborar com as equipes de pricing na construção de algoritmos de elasticidade de preço e otimização de margem por categoria.</span></div>
+        <div><span style="font-weight:500;color:#CC1226;font-size:13.5px;">Precificação Dinâmica</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Colaborar com as equipes de pricing na construção de algoritmos de elasticidade de preço e otimização de margem por categoria.</span></div>
       </li>
       <li>
         <div class="resp-icon"><svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
-        <div><span style="font-weight:500;color:#CC1226;font-size:12.5px;">Qualidade de Dados</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Identificar e corrigir problemas de qualidade nos pipelines de dados, definindo contratos de dados com as equipes de engenharia.</span></div>
+        <div><span style="font-weight:500;color:#CC1226;font-size:13.5px;">Qualidade de Dados</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Identificar e corrigir problemas de qualidade nos pipelines de dados, definindo contratos de dados com as equipes de engenharia.</span></div>
       </li>
       <li>
         <div class="resp-icon"><svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg></div>
-        <div><span style="font-weight:500;color:#CC1226;font-size:12.5px;">Pesquisa Aplicada</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Avaliar e incorporar avanços da literatura acadêmica e do mercado em técnicas de ML aplicadas ao contexto de varejo.</span></div>
+        <div><span style="font-weight:500;color:#CC1226;font-size:13.5px;">Pesquisa Aplicada</span><span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span><span>Avaliar e incorporar avanços da literatura acadêmica e do mercado em técnicas de ML aplicadas ao contexto de varejo.</span></div>
       </li>
     </ul>
   </div>
@@ -224,12 +221,16 @@ header { display: flex; align-items: center; justify-content: space-between; pad
   <!-- 03 REQUISITOS -->
   <div class="section-card">
     <div class="section-header"><span class="s-num">03</span><span class="s-title">Requisitos da Posição</span></div>
-    <table class="req-table">
-      <tr><td class="req-key">Formação Mínima</td><td class="req-val">Graduação em Ciência da Computação, Estatística, Matemática ou Engenharia</td></tr>
-      <tr><td class="req-key">Formação Desejável</td><td class="req-val">Pós-graduação ou Mestrado em áreas quantitativas; especialização em ML aplicado</td></tr>
-      <tr><td class="req-key">Exp. Mínima</td><td class="req-val">5 anos em ciência de dados, com ao menos 2 anos em ambiente de varejo ou e-commerce</td></tr>
-      <tr><td class="req-key">Exp. Desejável</td><td class="req-val">Experiência com modelos em produção de alta escala e projetos de pricing ou CRM</td></tr>
-    </table>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;">
+      <div>
+        <div style="font-size:8.5px;font-weight:700;letter-spacing:0.17em;text-transform:uppercase;color:var(--slate);margin-bottom:8px;">Formação</div>
+        <p style="font-size:14px;color:var(--slate-light);line-height:1.65;">Graduação em Ciência da Computação, Estatística, Matemática ou Engenharia. <span style="color:var(--slate);">Desejável:</span> Pós-graduação ou Mestrado em áreas quantitativas; especialização em ML aplicado</p>
+      </div>
+      <div style="border-left:0.5px solid rgba(0,0,0,0.06);padding-left:28px;">
+        <div style="font-size:8.5px;font-weight:700;letter-spacing:0.17em;text-transform:uppercase;color:var(--slate);margin-bottom:8px;">Experiência</div>
+        <p style="font-size:14px;color:var(--slate-light);line-height:1.65;">5 anos em ciência de dados, com ao menos 2 anos em ambiente de varejo ou e-commerce. <span style="color:var(--slate);">Desejável:</span> Experiência com modelos em produção de alta escala e projetos de pricing ou CRM</p>
+      </div>
+    </div>
   </div>
 
   <!-- 04 COMPLEXIDADE -->
