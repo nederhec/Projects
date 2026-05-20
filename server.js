@@ -55,7 +55,7 @@ Você deve retornar APENAS um JSON válido, sem nenhum texto antes ou depois, se
 }
 
 Regras:
-- responsabilidades: 7 a 14 itens variados e específicos
+- responsabilidades: 7 a 10 itens variados e específicos
 - competencias_tecnicas: 5 a 7 itens
 - competencias_comportamentais: 4 a 6 itens
 - complexidade: avalie cada dimensão de 0 a 100 conforme o cargo e segmento
