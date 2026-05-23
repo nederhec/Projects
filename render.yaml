@@ -15,4 +15,4 @@ services:
       - key: OPENROUTER_API_KEY
         sync: false
       - key: OPENAI_MODEL
-        value: gpt-4.1
+        value: gpt-4o-mini
