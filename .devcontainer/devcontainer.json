@@ -1,0 +1,15 @@
+{
+  "name": "Arquitetura de Cargos v4",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "App — Gerador de Cargos",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "postCreateCommand": "echo 'Pronto! Inicie com: ANTHROPIC_API_KEY=sk-ant-... node server.js'",
+  "remoteEnv": {
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}"
+  }
+}
