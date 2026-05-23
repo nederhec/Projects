@@ -4,9 +4,14 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = process.env.PORT || 3000;
-const API_KEY = process.env.ANTHROPIC_API_KEY || '';
-const BODY_LIMIT = 16 * 1024; // 16 KB
-const API_TIMEOUT_MS = 90_000;
+const ANTHROPIC_KEY    = process.env.ANTHROPIC_API_KEY   || '';
+const OPENROUTER_KEY   = process.env.OPENROUTER_API_KEY  || '';
+const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL    || 'anthropic/claude-sonnet-4-6';
+const BODY_LIMIT       = 16 * 1024; // 16 KB
+const API_TIMEOUT_MS   = 90_000;
+
+function activeKey()      { return ANTHROPIC_KEY || OPENROUTER_KEY; }
+function useOpenRouter()  { return !ANTHROPIC_KEY && !!OPENROUTER_KEY; }
 
 function buildSystemPrompt() {
   const year = new Date().getFullYear();
@@ -111,29 +116,14 @@ const SECURITY_HEADERS = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
 };
 
-function callAnthropic(cargo, segmento) {
-  return new Promise((resolve, reject) => {
-    const userMsg = segmento
-      ? `Gere a descrição completa para o cargo: ${cargo}\nSegmento de mercado: ${segmento}`
-      : `Gere a descrição completa para o cargo: ${cargo}`;
-    const body = JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 4096,
-      system: buildSystemPrompt(),
-      messages: [{ role: 'user', content: userMsg }]
-    });
+function parseJsonResponse(raw) {
+  const cleaned = raw.trim().replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '').trim();
+  return JSON.parse(cleaned);
+}
 
-    const req = https.request({
-      hostname: 'api.anthropic.com',
-      path: '/v1/messages',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01',
-        'x-api-key': API_KEY,
-        'Content-Length': Buffer.byteLength(body)
-      }
-    }, (res) => {
+function makeRequest(options, body) {
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
@@ -143,22 +133,78 @@ function callAnthropic(cargo, segmento) {
             reject(new Error(parsed.error?.message || `API error ${res.statusCode}`));
             return;
           }
-          const raw = (parsed.content || []).map(b => b.text || '').join('').trim()
-            .replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '').trim();
-          resolve(JSON.parse(raw));
+          resolve(parsed);
         } catch {
           reject(new Error('Resposta da API em formato inesperado'));
         }
       });
     });
-
-    req.setTimeout(API_TIMEOUT_MS, () => {
-      req.destroy(new Error('Tempo limite da API excedido'));
-    });
+    req.setTimeout(API_TIMEOUT_MS, () => req.destroy(new Error('Tempo limite da API excedido')));
     req.on('error', reject);
     req.write(body);
     req.end();
   });
+}
+
+function callAnthropic(cargo, segmento) {
+  const userMsg = segmento
+    ? `Gere a descrição completa para o cargo: ${cargo}\nSegmento de mercado: ${segmento}`
+    : `Gere a descrição completa para o cargo: ${cargo}`;
+  const body = JSON.stringify({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 4096,
+    system: buildSystemPrompt(),
+    messages: [{ role: 'user', content: userMsg }]
+  });
+  return makeRequest({
+    hostname: 'api.anthropic.com',
+    path: '/v1/messages',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'anthropic-version': '2023-06-01',
+      'x-api-key': ANTHROPIC_KEY,
+      'Content-Length': Buffer.byteLength(body)
+    }
+  }, body).then(parsed => {
+    const raw = (parsed.content || []).map(b => b.text || '').join('');
+    return parseJsonResponse(raw);
+  });
+}
+
+function callOpenRouter(cargo, segmento) {
+  const userMsg = segmento
+    ? `Gere a descrição completa para o cargo: ${cargo}\nSegmento de mercado: ${segmento}`
+    : `Gere a descrição completa para o cargo: ${cargo}`;
+  const body = JSON.stringify({
+    model: OPENROUTER_MODEL,
+    max_tokens: 4096,
+    messages: [
+      { role: 'system', content: buildSystemPrompt() },
+      { role: 'user', content: userMsg }
+    ]
+  });
+  return makeRequest({
+    hostname: 'openrouter.ai',
+    path: '/api/v1/chat/completions',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${OPENROUTER_KEY}`,
+      'HTTP-Referer': 'https://arquitetura-de-cargos.local',
+      'X-Title': 'Arquitetura de Cargos',
+      'Content-Length': Buffer.byteLength(body)
+    }
+  }, body).then(parsed => {
+    const raw = parsed.choices?.[0]?.message?.content || '';
+    return parseJsonResponse(raw);
+  });
+}
+
+function callLLM(cargo, segmento) {
+  return useOpenRouter()
+    ? callOpenRouter(cargo, segmento)
+    : callAnthropic(cargo, segmento);
 }
 
 const server = http.createServer((req, res) => {
@@ -202,14 +248,14 @@ const server = http.createServer((req, res) => {
           res.end(JSON.stringify({ error: 'Campo "cargo" é obrigatório' }));
           return;
         }
-        if (!API_KEY) {
+        if (!activeKey()) {
           res.writeHead(500, { 'Content-Type': 'application/json', ...SECURITY_HEADERS });
-          res.end(JSON.stringify({ error: 'ANTHROPIC_API_KEY não configurada no servidor' }));
+          res.end(JSON.stringify({ error: 'Nenhuma chave de API configurada. Defina ANTHROPIC_API_KEY ou OPENROUTER_API_KEY.' }));
           return;
         }
 
         const seg = typeof segmento === 'string' ? segmento.trim().slice(0, 100) : '';
-        const doc = await callAnthropic(cargo.trim().slice(0, 200), seg);
+        const doc = await callLLM(cargo.trim().slice(0, 200), seg);
         res.writeHead(200, { 'Content-Type': 'application/json', ...SECURITY_HEADERS });
         res.end(JSON.stringify(doc));
       } catch (err) {
@@ -239,6 +285,12 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
+  const provider = ANTHROPIC_KEY
+    ? 'Anthropic'
+    : OPENROUTER_KEY
+      ? `OpenRouter (${OPENROUTER_MODEL})`
+      : null;
   console.log(`Arquitetura de Cargos v4 — http://localhost:${PORT}`);
-  if (!API_KEY) console.warn('Aviso: ANTHROPIC_API_KEY não definida. Defina antes de iniciar.');
+  if (provider) console.log(`Provedor: ${provider}`);
+  else console.warn('Aviso: nenhuma chave de API configurada. Defina ANTHROPIC_API_KEY ou OPENROUTER_API_KEY.');
 });
