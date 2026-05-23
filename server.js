@@ -81,6 +81,29 @@ Regras:
 - Use o segmento para calibrar linguagem, requisitos e complexidade`;
 }
 
+const rateLimitMap = new Map();
+const RATE_LIMIT_COUNT  = 10;
+const RATE_LIMIT_WINDOW = 60_000;
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of rateLimitMap) {
+    if (now > entry.resetAt) rateLimitMap.delete(ip);
+  }
+}, 5 * 60_000).unref();
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return false;
+  }
+  if (entry.count >= RATE_LIMIT_COUNT) return true;
+  entry.count++;
+  return false;
+}
+
 const SECURITY_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
@@ -140,6 +163,13 @@ function callAnthropic(cargo, segmento) {
 
 const server = http.createServer((req, res) => {
   if (req.method === 'POST' && req.url === '/api/generate') {
+    const ip = req.socket.remoteAddress || 'unknown';
+    if (isRateLimited(ip)) {
+      res.writeHead(429, { 'Content-Type': 'application/json', 'Retry-After': '60', ...SECURITY_HEADERS });
+      res.end(JSON.stringify({ error: 'Muitas requisições. Aguarde um minuto antes de tentar novamente.' }));
+      return;
+    }
+
     let body = '';
     let exceeded = false;
 

@@ -667,6 +667,97 @@ header {
 
 .btn-action:hover { background: rgba(204,18,38,0.08); }
 
+/* ── HISTÓRICO ───────────────────────────────── */
+.btn-history {
+  background: transparent;
+  border: 0.5px solid rgba(0,0,0,0.15);
+  color: var(--slate);
+  padding: 4px 11px;
+  border-radius: 5px;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-history:hover { border-color: var(--gold); color: var(--gold); }
+
+.h-badge {
+  background: var(--gold);
+  color: #fff;
+  font-size: 8.5px;
+  font-weight: 700;
+  border-radius: 20px;
+  padding: 1px 6px;
+  line-height: 1.5;
+  display: none;
+}
+.h-badge.show { display: inline-block; }
+
+.h-panel {
+  position: fixed;
+  top: 62px;
+  right: 1.5rem;
+  width: 300px;
+  background: var(--navy-800);
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+  z-index: 200;
+  display: none;
+  overflow: hidden;
+}
+.h-panel.open { display: block; }
+
+.h-panel-hdr {
+  padding: 0.75rem 1.1rem;
+  border-bottom: 0.5px solid var(--divider);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.h-panel-title {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--slate);
+}
+.h-panel-clear {
+  background: transparent;
+  border: none;
+  font-size: 10.5px;
+  color: var(--slate);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  padding: 0;
+  transition: color 0.12s;
+}
+.h-panel-clear:hover { color: var(--gold); }
+
+.h-list { max-height: 360px; overflow-y: auto; }
+
+.h-item {
+  padding: 0.65rem 1.1rem;
+  border-bottom: 0.5px solid rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.h-item:hover { background: rgba(204,18,38,0.04); }
+.h-item:last-child { border-bottom: none; }
+.h-item-cargo { font-size: 12.5px; font-weight: 500; color: var(--white); }
+.h-item-meta { font-size: 10px; color: var(--slate); margin-top: 2px; }
+
+.h-empty {
+  padding: 1.75rem 1.1rem;
+  text-align: center;
+  font-size: 12px;
+  color: var(--slate);
+}
+
 /* ── RESPONSIVE ──────────────────────────────── */
 @media (max-width: 660px) {
   header { padding: 1rem 1.25rem; }
@@ -698,9 +789,20 @@ header {
   </div>
   <div class="header-right">
     <button class="btn-new" id="btn-new" onclick="resetUI()">← Nova Pesquisa</button>
+    <button class="btn-history" id="btn-history" onclick="toggleHistory()">
+      Histórico <span class="h-badge" id="h-badge">0</span>
+    </button>
     <div class="badge-version">Powered by Nederhec</div>
   </div>
 </header>
+
+<div class="h-panel" id="h-panel">
+  <div class="h-panel-hdr">
+    <span class="h-panel-title">Histórico de Sessão</span>
+    <button class="h-panel-clear" onclick="clearHistory()">Limpar tudo</button>
+  </div>
+  <div class="h-list" id="h-list"></div>
+</div>
 
 <div id="hero">
   <div class="eyebrow">Arquitetura de Cargos &amp; Remuneração</div>
@@ -765,6 +867,9 @@ const STEPS = [
   "Consolidando KPIs e progressão…",
   "Montando documento final…"
 ];
+
+const HISTORY_KEY = 'cargo_history';
+const HISTORY_MAX = 15;
 
 let loadingInterval, stepInterval, currentStepIndex = 0;
 let lastDocData = null;
@@ -861,8 +966,8 @@ async function gerar() {
     document.getElementById('hero').style.display = 'none';
     document.getElementById('btn-new').classList.add('visible');
     lastDocData = doc;
+    saveToHistory(doc);
     renderDoc(doc);
-
 
   } catch (err) {
     stopLoading();
@@ -1098,8 +1203,289 @@ function fallbackCopy(text, cb) {
 }
 
 function imprimirDoc() {
-  window.print();
+  if (!lastDocData) return;
+  const html = buildExportHTML(lastDocData);
+  const blob = new Blob([html], { type: 'text/html; charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+  if (!win) alert('Permita popups para abrir a exportação.');
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
+
+/* ── HISTÓRICO ─────────────────────────────────── */
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
+}
+
+function saveToHistory(doc) {
+  const items = loadHistory().filter(i => i.cargo !== doc.cargo || i.segmento !== (doc.segmento || ''));
+  items.unshift({ cargo: doc.cargo, segmento: doc.segmento || '', ts: Date.now(), data: doc });
+  if (items.length > HISTORY_MAX) items.length = HISTORY_MAX;
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(items)); } catch {}
+  renderHistory();
+}
+
+function renderHistory() {
+  const items = loadHistory();
+  const badge = document.getElementById('h-badge');
+  const list  = document.getElementById('h-list');
+  badge.textContent = items.length;
+  badge.classList.toggle('show', items.length > 0);
+  if (items.length === 0) {
+    list.innerHTML = '<div class="h-empty">Nenhuma descrição gerada ainda.</div>';
+    return;
+  }
+  list.innerHTML = items.map((item, i) => `
+    <div class="h-item" onclick="restoreDoc(${i})">
+      <div class="h-item-cargo">${esc(item.cargo)}</div>
+      <div class="h-item-meta">${item.segmento ? esc(item.segmento) + ' · ' : ''}${timeAgo(item.ts)}</div>
+    </div>`).join('');
+}
+
+function toggleHistory() {
+  document.getElementById('h-panel').classList.toggle('open');
+}
+
+document.addEventListener('click', e => {
+  const panel = document.getElementById('h-panel');
+  const btn   = document.getElementById('btn-history');
+  if (panel.classList.contains('open') && !panel.contains(e.target) && !btn.contains(e.target)) {
+    panel.classList.remove('open');
+  }
+});
+
+function clearHistory() {
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+}
+
+function restoreDoc(index) {
+  const item = loadHistory()[index];
+  if (!item) return;
+  lastDocData = item.data;
+  document.getElementById('cargo-input').value = item.cargo;
+  document.getElementById('segmento-input').value = item.segmento || '';
+  document.getElementById('hero').style.display = 'none';
+  document.getElementById('error').style.display = 'none';
+  document.getElementById('btn-new').classList.add('visible');
+  document.getElementById('h-panel').classList.remove('open');
+  renderDoc(item.data);
+}
+
+function timeAgo(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return 'agora';
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}min atrás`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h atrás`;
+  return `${Math.floor(h / 24)}d atrás`;
+}
+
+/* ── EXPORTAÇÃO PDF ────────────────────────────── */
+function buildExportHTML(d) {
+  const req = d.requisitos || {};
+  const cx  = d.complexidade || {};
+  const vr  = d.avaliacao_risco || {};
+
+  const CX_EXP = [
+    { key: 'profundidade_analitica', label: 'Profundidade Analítica e Diagnóstica' },
+    { key: 'densidade_tecnica',      label: 'Densidade Técnica e Metodológica' },
+    { key: 'influencia_estrategica', label: 'Influência Estratégica e Capacidade de Alinhamento' },
+    { key: 'transformacao_inovacao', label: 'Capacidade de Transformação e Inovação Aplicada' },
+    { key: 'autonomia_decisao',      label: 'Amplitude de Autonomia e Decisão' },
+  ];
+  const VAR_EXP = [
+    { key: 'VAR1', text: 'Atividade desempenhada possui acesso a informações sensíveis de *PLDFT?' },
+    { key: 'VAR2', text: 'Possui alçada para deliberar reportes em relação a *PLDFT?' },
+    { key: 'VAR3', text: 'Possui alçada para autorizar operações financeiras?' },
+    { key: 'VAR4', text: 'Possui contato com o cliente?' },
+    { key: 'VAR5', text: 'Possui acesso para incluir/alterar dados de cliente/operações?' },
+    { key: 'VAR6', text: 'Comercializa produtos e serviços e/ou oferta propostas de transações financeiras?' },
+  ];
+
+  const chk = `<svg width="9" height="9" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const dot = `<svg viewBox="0 0 8 8" fill="none" stroke="#CC1226" stroke-width="1.4" stroke-linecap="round" width="7" height="7"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg>`;
+
+  const respRows = (d.responsabilidades || []).map(r => `
+    <li class="resp-item">
+      <div class="resp-dot">${dot}</div>
+      <div><span class="resp-area">${esc(r.area)}</span> — ${esc(r.descricao)}</div>
+    </li>`).join('');
+
+  const tecTags = (d.competencias_tecnicas || []).map(c => `<span class="comp-tag">${esc(c.nome)}</span>`).join('');
+  const behTags = (d.competencias_comportamentais || []).map(c => `<span class="comp-tag">${esc(c.nome)}</span>`).join('');
+
+  const cxRows = CX_EXP.map(dim => {
+    const pct = cx[dim.key] || 0;
+    return `<div><div class="cx-top"><span class="cx-label">${dim.label}</span><span class="cx-pct">${pct}%</span></div><div class="cx-bar-bg"><div class="cx-bar-fill" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+
+  const varRows = VAR_EXP.map(q => {
+    const val = vr[q.key] === true;
+    return `<tr>
+      <td><span class="var-key">${q.key}</span> ${esc(q.text)}</td>
+      <td class="var-check"><span class="check-box${val ? ' yes' : ''}" style="color:${val ? '#3D9970' : 'transparent'}">${chk}</span></td>
+      <td class="var-check"><span class="check-box${!val ? ' no' : ''}" style="color:${!val ? '#C0392B' : 'transparent'}">${chk}</span></td>
+    </tr>`;
+  }).join('');
+
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Descrição de Cargo — ${esc(d.cargo)}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--red:#CC1226;--red2:#E8354A;--dark:#1C1010;--mid:#5A4A50;--light:#8A7880;--rule:rgba(204,18,38,0.15)}
+body{font-family:'DM Sans',sans-serif;background:#EDEBEB;color:var(--dark);font-size:14px;line-height:1.6;padding:2rem 1rem 4rem}
+.toolbar{max-width:800px;margin:0 auto 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.toolbar-label{font-size:10px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--red);font-family:'DM Mono',monospace}
+.btn-print{background:var(--red);color:#fff;border:none;border-radius:5px;padding:6px 16px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer}
+.btn-print:hover{background:var(--red2)}
+.page{width:800px;max-width:100%;margin:0 auto;background:#fff;border:0.5px solid rgba(0,0,0,0.1);box-shadow:0 4px 28px rgba(0,0,0,0.13)}
+.letterhead{background:#fff;border-bottom:2.5px solid var(--red);padding:1rem 2.5rem;display:flex;align-items:center;justify-content:space-between;gap:1.5rem}
+.lh-logo img{height:52px;width:auto;display:block}
+.lh-right{text-align:right;font-size:8.5px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--light);line-height:1.8}
+.page-header{background:var(--red);padding:1.25rem 2.5rem;display:flex;justify-content:space-between;align-items:center;gap:1.5rem}
+.ph-left{flex:1}
+.ph-org{font-size:7.5px;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:5px}
+.ph-title{font-family:'DM Serif Display',serif;font-size:1.65rem;color:#fff;line-height:1.1}
+.ph-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.ph-meta-row{display:flex;gap:7px;align-items:center;font-size:8.5px;font-family:'DM Mono',monospace}
+.ph-meta-key{color:rgba(255,255,255,0.45);letter-spacing:0.1em;text-transform:uppercase}
+.ph-meta-val{color:rgba(255,255,255,0.9);background:rgba(255,255,255,0.12);padding:1px 7px;border-radius:3px}
+.proposito-band{background:#FFF8F8;border-bottom:0.5px solid var(--rule);padding:1rem 2.5rem}
+.proposito-text{font-size:12px;color:var(--mid);line-height:1.7;margin-bottom:0.3rem}
+.contribuicao-text{font-size:11.5px;color:var(--red2);font-style:italic}
+.sec{border-bottom:0.5px solid rgba(0,0,0,0.07);padding:1.1rem 2.5rem}
+.sec:last-child{border-bottom:none}
+.sec-head{display:flex;align-items:center;gap:8px;margin-bottom:0.85rem;padding-bottom:0.45rem;border-bottom:0.5px solid var(--rule)}
+.sec-num{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--red);min-width:18px}
+.sec-title{font-size:8.5px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--light)}
+.resp-list{list-style:none;padding:0}
+.resp-item{display:flex;gap:9px;padding:0.45rem 0;border-bottom:0.5px solid rgba(0,0,0,0.05);font-size:12px;color:var(--mid);line-height:1.55}
+.resp-item:last-child{border-bottom:none}
+.resp-dot{width:13px;height:13px;min-width:13px;border:0.5px solid var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:2px;flex-shrink:0}
+.resp-area{font-weight:600;color:var(--red);font-size:11px}
+.comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.comp-col-title{font-size:7.5px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--red);margin-bottom:0.65rem;padding-bottom:0.35rem;border-bottom:0.5px solid var(--rule)}
+.comp-tags{display:flex;flex-wrap:wrap;gap:5px}
+.comp-tag{font-size:10.5px;font-weight:500;padding:3px 10px;border-radius:20px;background:rgba(204,18,38,0.05);border:0.5px solid rgba(204,18,38,0.2);color:var(--dark);line-height:1.4}
+.req-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.req-col-title{font-size:7.5px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--mid);margin-bottom:5px}
+.req-text{font-size:12px;color:var(--mid);line-height:1.65}
+.req-text em{color:var(--light);font-style:normal}
+.cx-list{display:flex;flex-direction:column;gap:9px}
+.cx-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.cx-label{font-size:11.5px;font-weight:500;color:var(--dark)}
+.cx-pct{font-family:'DM Mono',monospace;font-size:11.5px;font-weight:600;color:var(--red)}
+.cx-bar-bg{height:5px;background:rgba(0,0,0,0.07);border-radius:3px;overflow:hidden}
+.cx-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#7A000F 0%,#CC1226 100%)}
+.var-band{background:var(--red);border-radius:3px;padding:0.22rem 0.85rem;text-align:center;font-size:8px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:#fff;margin-bottom:0.65rem}
+.var-table{width:100%;border-collapse:collapse}
+.var-table th{font-size:7.5px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--light);text-align:center;padding-bottom:0.4rem;border-bottom:0.5px solid rgba(0,0,0,0.08)}
+.var-table th:first-child{text-align:left}
+.var-table td{font-size:11px;padding:0.3rem 0.25rem;border-bottom:0.5px solid rgba(0,0,0,0.05);vertical-align:middle;color:var(--mid)}
+.var-table tr:last-child td{border-bottom:none}
+.var-table td:first-child{padding-left:0}
+.var-key{font-weight:700;color:var(--dark);margin-right:4px}
+.var-check{text-align:center;width:10%}
+.check-box{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border:1px solid rgba(0,0,0,0.18);border-radius:2px}
+.check-box.yes{background:rgba(61,153,112,0.12);border-color:#3D9970}
+.check-box.no{background:rgba(192,57,43,0.08);border-color:#C0392B}
+.var-footnote{margin-top:0.65rem;font-size:9.5px;color:var(--light);font-style:italic}
+.page-footer{border-top:1px solid var(--rule);padding:0.65rem 2.5rem;display:flex;justify-content:space-between;align-items:center;background:#FFF8F8}
+.pf-note{font-size:9px;color:var(--light);letter-spacing:0.02em}
+.pf-logo{font-family:'DM Serif Display',serif;font-size:10px;color:var(--red);letter-spacing:0.04em}
+@media print{body{background:#fff;padding:0}.toolbar{display:none}.page{width:100%;box-shadow:none;border:none}.sec{page-break-inside:avoid}@page{size:A4;margin:0}}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <div class="toolbar-label">⬡ Exportação — ${esc(d.cargo)}</div>
+  <div><button class="btn-print" onclick="window.print()">Imprimir / Salvar PDF</button></div>
+</div>
+<div class="page">
+  <div class="letterhead">
+    <div class="lh-logo">
+      <img src="https://tuiaseguros.com.br/wp-content/uploads/2019/03/bradesco-seguros-2.png" alt="Bradesco Seguros"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <div style="display:none;font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--red);font-weight:700;">bradesco seguros</div>
+    </div>
+    <div class="lh-right">Descrição de Cargo<br>Recursos Humanos</div>
+  </div>
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="ph-org">Descrição de Cargo — Bradesco Seguros</div>
+      <div class="ph-title">${esc(d.cargo)}</div>
+    </div>
+    <div class="ph-right">
+      <div class="ph-meta-row"><span class="ph-meta-key">Código</span><span class="ph-meta-val">${esc(d.codigo || '—')}</span></div>
+      <div class="ph-meta-row"><span class="ph-meta-key">Versão</span><span class="ph-meta-val">${esc(d.versao || '1.0')}</span></div>
+      <div class="ph-meta-row"><span class="ph-meta-key">Ref.</span><span class="ph-meta-val">${esc(d.data_referencia || '')}</span></div>
+      ${d.nivel ? `<div class="ph-meta-row"><span class="ph-meta-key">Nível</span><span class="ph-meta-val">${esc(d.nivel)}</span></div>` : ''}
+    </div>
+  </div>
+  <div class="proposito-band">
+    <p class="proposito-text">${esc(d.proposito || '')}</p>
+    <p class="contribuicao-text">${esc(d.contribuicao_negocio || '')}</p>
+  </div>
+  <div class="content">
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">Responsabilidades e Entregas</span></div>
+      <ul class="resp-list">${respRows}</ul>
+    </div>
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">02</span><span class="sec-title">Competências Técnicas e Comportamentais</span></div>
+      <div class="comp-grid">
+        <div><div class="comp-col-title">Técnicas</div><div class="comp-tags">${tecTags}</div></div>
+        <div style="border-left:0.5px solid rgba(0,0,0,0.07);padding-left:1.5rem;">
+          <div class="comp-col-title">Comportamentais</div><div class="comp-tags">${behTags}</div>
+        </div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">03</span><span class="sec-title">Requisitos da Posição</span></div>
+      <div class="req-grid">
+        <div>
+          <div class="req-col-title">Formação</div>
+          <p class="req-text">${esc(req.formacao_minima || '')}. <em>Desejável:</em> ${esc(req.formacao_desejavel || '')}</p>
+        </div>
+        <div style="border-left:0.5px solid rgba(0,0,0,0.07);padding-left:1.5rem;">
+          <div class="req-col-title">Experiência</div>
+          <p class="req-text">${esc(req.experiencia_minima || '')}. <em>Desejável:</em> ${esc(req.experiencia_desejavel || '')}</p>
+        </div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">04</span><span class="sec-title">Complexidade</span></div>
+      <div class="cx-list">${cxRows}</div>
+    </div>
+    <div class="sec">
+      <div class="sec-head"><span class="sec-num">05</span><span class="sec-title">Avaliação de Risco</span></div>
+      <div class="var-band">Avaliação de Risco</div>
+      <table class="var-table">
+        <thead><tr><th style="text-align:left;">Critério de Exposição ao Risco</th><th>SIM</th><th>NÃO</th></tr></thead>
+        <tbody>${varRows}</tbody>
+      </table>
+      <p class="var-footnote">*PLDFT: Prevenção à Lavagem de Dinheiro e ao Financiamento ao Terrorismo</p>
+    </div>
+  </div>
+  <div class="page-footer">
+    <div class="pf-note">Remuneração &amp; Performance / Recursos Humanos — Elaborado por Hector Gustavo de Souza Neder</div>
+    <div class="pf-logo">Bradesco Seguros</div>
+  </div>
+</div>
+</body>
+</html>`;
+}
+
+renderHistory();
 </script>
 </body>
 </html>
