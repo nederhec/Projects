@@ -766,76 +766,6 @@ const STEPS = [
   "Montando documento final…"
 ];
 
-const SYSTEM_PROMPT = `Você é um especialista sênior em Arquitetura de Cargos e Remuneração, com expertise nas metodologias Hay, Mercer, Willis Towers Watson e Korn Ferry. Gera descrições de cargos no padrão das maiores consultorias de RH do Brasil.
-
-Você deve retornar APENAS um JSON válido, sem nenhum texto antes ou depois, sem markdown, sem backticks. O JSON deve seguir exatamente esta estrutura:
-
-{
-  "cargo": "título exato do cargo",
-  "codigo": "código interno no formato FAM-NNN (ex: TEC-042)",
-  "versao": "1.0",
-  "data_referencia": "2025",
-  "segmento": "segmento de mercado informado",
-  "familia": "nome da família de cargos",
-  "subfamilia": "subfamília específica",
-  "nivel": "Júnior | Pleno | Sênior | Especialista | Gerência | Diretoria | C-Level",
-  "grau": "Operacional | Tático | Estratégico | Estratégico Executivo",
-  "proposito": "parágrafo de 2-3 frases sobre o propósito central do cargo",
-  "contribuicao_negocio": "frase única e poderosa sobre o impacto no negócio",
-  "responsabilidades": [
-    { "area": "área/tema", "descricao": "responsabilidade específica com verbo no infinitivo" }
-  ],
-  "competencias_tecnicas": [
-    { "nome": "nome da competência técnica", "nivel": "Básico | Intermediário | Avançado | Expert" }
-  ],
-  "competencias_comportamentais": [
-    { "nome": "nome da competência comportamental", "nivel": "Básico | Intermediário | Avançado | Expert" }
-  ],
-  "requisitos": {
-    "formacao_minima": "formação mínima exigida",
-    "formacao_desejavel": "formação desejável / diferencial",
-    "experiencia_minima": "tempo e tipo de experiência mínima",
-    "experiencia_desejavel": "experiência diferencial desejável"
-  },
-  "complexidade": {
-    "profundidade_analitica": 0,
-    "densidade_tecnica": 0,
-    "influencia_estrategica": 0,
-    "transformacao_inovacao": 0,
-    "autonomia_decisao": 0
-  },
-  "avaliacao_risco": {
-    "VAR1": false,
-    "VAR2": false,
-    "VAR3": false,
-    "VAR4": false,
-    "VAR5": false,
-    "VAR6": false
-  }
-}
-
-Regras:
-- responsabilidades: 6 a 8 itens variados e específicos
-- competencias_tecnicas: 5 a 7 itens
-- competencias_comportamentais: 4 a 6 itens
-- complexidade: avalie cada dimensão de 0 a 100 conforme o cargo e segmento
-  - profundidade_analitica: nível de raciocínio analítico e diagnóstico exigido
-  - densidade_tecnica: volume e profundidade de conhecimento técnico/metodológico
-  - influencia_estrategica: capacidade de influenciar decisões e alinhar stakeholders
-  - transformacao_inovacao: capacidade de transformar processos e gerar inovação aplicada
-  - autonomia_decisao: amplitude de autonomia e responsabilidade por decisões
-- avaliacao_risco: responda true/false para cada variável:
-  - VAR1: a atividade possui acesso a informações sensíveis de PLDFT
-  - VAR2: possui alçada para deliberar reportes em relação a PLDFT
-  - VAR3: possui alçada para autorizar operações financeiras
-  - VAR4: possui contato direto com o cliente
-  - VAR5: possui acesso para incluir/alterar dados de cliente/operações
-  - VAR6: comercializa produtos/serviços ou oferta propostas de transações financeiras
-- Todo o conteúdo em português do Brasil
-- Use linguagem corporativa precisa, sem genéricos
-- Calibre o nível ao cargo (pleno ≠ sênior ≠ especialista)
-- Use o segmento para calibrar linguagem, requisitos e complexidade`;
-
 let loadingInterval, stepInterval, currentStepIndex = 0;
 let lastDocData = null;
 
@@ -933,6 +863,7 @@ async function gerar() {
     lastDocData = doc;
     renderDoc(doc);
 
+
   } catch (err) {
     stopLoading();
     document.getElementById('loading').style.display = 'none';
@@ -982,11 +913,13 @@ function renderDoc(d) {
   const req = d.requisitos || {};
   const cx  = d.complexidade || {};
   const vr  = d.avaliacao_risco || {};
-  const grauPill = d.grau && d.grau.startsWith('Estr') ? 'pill-green' : 'pill-slate';
+  const grauClass = d.grau && d.grau.startsWith('Estr') ? 'pill-green' : 'pill-slate';
 
   const idsPill = [
     d.nivel    && `<span class="pill pill-gold">${esc(d.nivel)}</span>`,
-    d.segmento && `<span class="pill pill-green">${esc(d.segmento)}</span>`
+    d.grau     && `<span class="pill ${grauClass}">${esc(d.grau)}</span>`,
+    d.segmento && `<span class="pill pill-green">${esc(d.segmento)}</span>`,
+    d.familia  && `<span class="pill pill-slate">${esc(d.familia)}${d.subfamilia ? ' · ' + esc(d.subfamilia) : ''}</span>`,
   ].filter(Boolean).join('');
 
   const respHtml = (d.responsabilidades || []).map(r => `
@@ -1122,7 +1055,6 @@ function renderDoc(d) {
   const out = document.getElementById('output');
   out.innerHTML = html;
   out.style.display = 'block';
-  out._docData = d;
 
   requestAnimationFrame(() => {
     setTimeout(() => {
@@ -1136,12 +1068,33 @@ function renderDoc(d) {
 }
 
 function copiarJSON() {
-  const d = document.getElementById('output')._docData;
-  if (!d) return;
-  navigator.clipboard.writeText(JSON.stringify(d, null, 2)).then(() => {
-    const btns = document.querySelectorAll('.btn-action');
-    btns.forEach(b => { if (b.textContent.includes('Copiar')) { b.textContent = '✓ Copiado!'; setTimeout(() => b.textContent = 'Copiar JSON', 2000); } });
-  });
+  if (!lastDocData) return;
+  const text = JSON.stringify(lastDocData, null, 2);
+  const markDone = () => {
+    document.querySelectorAll('.btn-action').forEach(b => {
+      if (b.textContent.includes('Copiar')) {
+        b.textContent = '✓ Copiado!';
+        setTimeout(() => b.textContent = 'Copiar JSON', 2000);
+      }
+    });
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(markDone).catch(() => fallbackCopy(text, markDone));
+  } else {
+    fallbackCopy(text, markDone);
+  }
+}
+
+function fallbackCopy(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try { document.execCommand('copy'); cb(); } catch {}
+  document.body.removeChild(ta);
 }
 
 function imprimirDoc() {
