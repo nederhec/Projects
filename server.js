@@ -5,13 +5,19 @@ const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 const ANTHROPIC_KEY    = process.env.ANTHROPIC_API_KEY   || '';
+const OPENAI_KEY       = process.env.OPENAI_API_KEY      || '';
 const OPENROUTER_KEY   = process.env.OPENROUTER_API_KEY  || '';
+const OPENAI_MODEL     = process.env.OPENAI_MODEL        || 'gpt-4.1';
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL    || 'anthropic/claude-sonnet-4-6';
-const BODY_LIMIT       = 16 * 1024; // 16 KB
+const BODY_LIMIT       = 16 * 1024;
 const API_TIMEOUT_MS   = 90_000;
 
-function activeKey()      { return ANTHROPIC_KEY || OPENROUTER_KEY; }
-function useOpenRouter()  { return !ANTHROPIC_KEY && !!OPENROUTER_KEY; }
+function getProvider() {
+  if (ANTHROPIC_KEY)  return 'anthropic';
+  if (OPENAI_KEY)     return 'openai';
+  if (OPENROUTER_KEY) return 'openrouter';
+  return null;
+}
 
 function buildSystemPrompt() {
   const year = new Date().getFullYear();
@@ -166,18 +172,18 @@ function callAnthropic(cargo, segmento) {
       'x-api-key': ANTHROPIC_KEY,
       'Content-Length': Buffer.byteLength(body)
     }
-  }, body).then(parsed => {
-    const raw = (parsed.content || []).map(b => b.text || '').join('');
-    return parseJsonResponse(raw);
-  });
+  }, body).then(parsed => parseJsonResponse(
+    (parsed.content || []).map(b => b.text || '').join('')
+  ));
 }
 
-function callOpenRouter(cargo, segmento) {
+// Shared logic for OpenAI-compatible APIs (OpenAI, OpenRouter, etc.)
+function callChatCompletions({ hostname, path: apiPath, apiKey, model, extraHeaders = {} }, cargo, segmento) {
   const userMsg = segmento
     ? `Gere a descrição completa para o cargo: ${cargo}\nSegmento de mercado: ${segmento}`
     : `Gere a descrição completa para o cargo: ${cargo}`;
   const body = JSON.stringify({
-    model: OPENROUTER_MODEL,
+    model,
     max_tokens: 4096,
     messages: [
       { role: 'system', content: buildSystemPrompt() },
@@ -185,26 +191,48 @@ function callOpenRouter(cargo, segmento) {
     ]
   });
   return makeRequest({
-    hostname: 'openrouter.ai',
-    path: '/api/v1/chat/completions',
+    hostname,
+    path: apiPath,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENROUTER_KEY}`,
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Length': Buffer.byteLength(body),
+      ...extraHeaders
+    }
+  }, body).then(parsed => parseJsonResponse(
+    parsed.choices?.[0]?.message?.content || ''
+  ));
+}
+
+function callOpenAI(cargo, segmento) {
+  return callChatCompletions({
+    hostname: 'api.openai.com',
+    path: '/v1/chat/completions',
+    apiKey: OPENAI_KEY,
+    model: OPENAI_MODEL,
+  }, cargo, segmento);
+}
+
+function callOpenRouter(cargo, segmento) {
+  return callChatCompletions({
+    hostname: 'openrouter.ai',
+    path: '/api/v1/chat/completions',
+    apiKey: OPENROUTER_KEY,
+    model: OPENROUTER_MODEL,
+    extraHeaders: {
       'HTTP-Referer': 'https://arquitetura-de-cargos.local',
       'X-Title': 'Arquitetura de Cargos',
-      'Content-Length': Buffer.byteLength(body)
     }
-  }, body).then(parsed => {
-    const raw = parsed.choices?.[0]?.message?.content || '';
-    return parseJsonResponse(raw);
-  });
+  }, cargo, segmento);
 }
 
 function callLLM(cargo, segmento) {
-  return useOpenRouter()
-    ? callOpenRouter(cargo, segmento)
-    : callAnthropic(cargo, segmento);
+  const provider = getProvider();
+  if (provider === 'anthropic')  return callAnthropic(cargo, segmento);
+  if (provider === 'openai')     return callOpenAI(cargo, segmento);
+  if (provider === 'openrouter') return callOpenRouter(cargo, segmento);
+  throw new Error('Nenhuma chave de API configurada.');
 }
 
 const server = http.createServer((req, res) => {
@@ -248,9 +276,9 @@ const server = http.createServer((req, res) => {
           res.end(JSON.stringify({ error: 'Campo "cargo" é obrigatório' }));
           return;
         }
-        if (!activeKey()) {
+        if (!getProvider()) {
           res.writeHead(500, { 'Content-Type': 'application/json', ...SECURITY_HEADERS });
-          res.end(JSON.stringify({ error: 'Nenhuma chave de API configurada. Defina ANTHROPIC_API_KEY ou OPENROUTER_API_KEY.' }));
+          res.end(JSON.stringify({ error: 'Nenhuma chave de API configurada. Defina ANTHROPIC_API_KEY, OPENAI_API_KEY ou OPENROUTER_API_KEY.' }));
           return;
         }
 
@@ -285,12 +313,13 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  const provider = ANTHROPIC_KEY
-    ? 'Anthropic'
-    : OPENROUTER_KEY
-      ? `OpenRouter (${OPENROUTER_MODEL})`
-      : null;
+  const provider = getProvider();
+  const label = {
+    anthropic:  'Anthropic (claude-sonnet-4-6)',
+    openai:     `OpenAI (${OPENAI_MODEL})`,
+    openrouter: `OpenRouter (${OPENROUTER_MODEL})`,
+  }[provider] || null;
   console.log(`Arquitetura de Cargos v4 — http://localhost:${PORT}`);
-  if (provider) console.log(`Provedor: ${provider}`);
-  else console.warn('Aviso: nenhuma chave de API configurada. Defina ANTHROPIC_API_KEY ou OPENROUTER_API_KEY.');
+  if (label) console.log(`Provedor: ${label}`);
+  else console.warn('Aviso: nenhuma chave de API configurada. Defina ANTHROPIC_API_KEY, OPENAI_API_KEY ou OPENROUTER_API_KEY.');
 });
