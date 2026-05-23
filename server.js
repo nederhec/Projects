@@ -5,8 +5,12 @@ const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 const API_KEY = process.env.ANTHROPIC_API_KEY || '';
+const BODY_LIMIT = 16 * 1024; // 16 KB
+const API_TIMEOUT_MS = 90_000;
 
-const SYSTEM_PROMPT = `Você é um especialista sênior em Arquitetura de Cargos e Remuneração, com expertise nas metodologias Hay, Mercer, Willis Towers Watson e Korn Ferry. Gera descrições de cargos no padrão das maiores consultorias de RH do Brasil.
+function buildSystemPrompt() {
+  const year = new Date().getFullYear();
+  return `Você é um especialista sênior em Arquitetura de Cargos e Remuneração, com expertise nas metodologias Hay, Mercer, Willis Towers Watson e Korn Ferry. Gera descrições de cargos no padrão das maiores consultorias de RH do Brasil.
 
 Você deve retornar APENAS um JSON válido, sem nenhum texto antes ou depois, sem markdown, sem backticks. O JSON deve seguir exatamente esta estrutura:
 
@@ -14,7 +18,7 @@ Você deve retornar APENAS um JSON válido, sem nenhum texto antes ou depois, se
   "cargo": "título exato do cargo",
   "codigo": "código interno no formato FAM-NNN (ex: TEC-042)",
   "versao": "1.0",
-  "data_referencia": "2025",
+  "data_referencia": "${year}",
   "segmento": "segmento de mercado informado",
   "familia": "nome da família de cargos",
   "subfamilia": "subfamília específica",
@@ -75,16 +79,24 @@ Regras:
 - Use linguagem corporativa precisa, sem genéricos
 - Calibre o nível ao cargo (pleno ≠ sênior ≠ especialista)
 - Use o segmento para calibrar linguagem, requisitos e complexidade`;
+}
 
-function callAnthropic(cargo, segmento, apiKey) {
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-XSS-Protection': '1; mode=block',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+};
+
+function callAnthropic(cargo, segmento) {
   return new Promise((resolve, reject) => {
     const userMsg = segmento
       ? `Gere a descrição completa para o cargo: ${cargo}\nSegmento de mercado: ${segmento}`
       : `Gere a descrição completa para o cargo: ${cargo}`;
     const body = JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 4096,
-      system: SYSTEM_PROMPT,
+      system: buildSystemPrompt(),
       messages: [{ role: 'user', content: userMsg }]
     });
 
@@ -95,7 +107,7 @@ function callAnthropic(cargo, segmento, apiKey) {
       headers: {
         'Content-Type': 'application/json',
         'anthropic-version': '2023-06-01',
-        'x-api-key': apiKey,
+        'x-api-key': API_KEY,
         'Content-Length': Buffer.byteLength(body)
       }
     }, (res) => {
@@ -111,12 +123,15 @@ function callAnthropic(cargo, segmento, apiKey) {
           const raw = (parsed.content || []).map(b => b.text || '').join('').trim()
             .replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '').trim();
           resolve(JSON.parse(raw));
-        } catch (e) {
-          reject(new Error('Falha ao processar resposta da API'));
+        } catch {
+          reject(new Error('Resposta da API em formato inesperado'));
         }
       });
     });
 
+    req.setTimeout(API_TIMEOUT_MS, () => {
+      req.destroy(new Error('Tempo limite da API excedido'));
+    });
     req.on('error', reject);
     req.write(body);
     req.end();
@@ -126,27 +141,49 @@ function callAnthropic(cargo, segmento, apiKey) {
 const server = http.createServer((req, res) => {
   if (req.method === 'POST' && req.url === '/api/generate') {
     let body = '';
-    req.on('data', chunk => body += chunk);
+    let exceeded = false;
+
+    req.on('data', chunk => {
+      if (exceeded) return;
+      body += chunk;
+      if (Buffer.byteLength(body) > BODY_LIMIT) {
+        exceeded = true;
+        res.writeHead(413, { 'Content-Type': 'application/json', ...SECURITY_HEADERS });
+        res.end(JSON.stringify({ error: 'Payload muito grande' }));
+        req.destroy();
+      }
+    });
+
     req.on('end', async () => {
+      if (exceeded) return;
       try {
-        const { cargo, segmento } = JSON.parse(body);
+        let parsed;
+        try {
+          parsed = JSON.parse(body);
+        } catch {
+          res.writeHead(400, { 'Content-Type': 'application/json', ...SECURITY_HEADERS });
+          res.end(JSON.stringify({ error: 'JSON inválido no corpo da requisição' }));
+          return;
+        }
+
+        const { cargo, segmento } = parsed;
         if (!cargo || typeof cargo !== 'string' || cargo.trim().length === 0) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.writeHead(400, { 'Content-Type': 'application/json', ...SECURITY_HEADERS });
           res.end(JSON.stringify({ error: 'Campo "cargo" é obrigatório' }));
           return;
         }
-        const key = API_KEY;
-        if (!key) {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
+        if (!API_KEY) {
+          res.writeHead(500, { 'Content-Type': 'application/json', ...SECURITY_HEADERS });
           res.end(JSON.stringify({ error: 'ANTHROPIC_API_KEY não configurada no servidor' }));
           return;
         }
+
         const seg = typeof segmento === 'string' ? segmento.trim().slice(0, 100) : '';
-        const doc = await callAnthropic(cargo.trim().slice(0, 200), seg, key);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
+        const doc = await callAnthropic(cargo.trim().slice(0, 200), seg);
+        res.writeHead(200, { 'Content-Type': 'application/json', ...SECURITY_HEADERS });
         res.end(JSON.stringify(doc));
       } catch (err) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.writeHead(500, { 'Content-Type': 'application/json', ...SECURITY_HEADERS });
         res.end(JSON.stringify({ error: err.message }));
       }
     });
@@ -157,17 +194,17 @@ const server = http.createServer((req, res) => {
     const filePath = path.join(__dirname, 'index.html');
     fs.readFile(filePath, (err, data) => {
       if (err) {
-        res.writeHead(404);
+        res.writeHead(404, SECURITY_HEADERS);
         res.end('Not found');
         return;
       }
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', ...SECURITY_HEADERS });
       res.end(data);
     });
     return;
   }
 
-  res.writeHead(404);
+  res.writeHead(404, SECURITY_HEADERS);
   res.end('Not found');
 });
 
