@@ -1,0 +1,15 @@
+{
+  "name": "arquitetura-de-cargos",
+  "version": "4.0.0",
+  "description": "Gerador de descrição de cargos via Claude AI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "playwright-core": "^1.60.0"
+  }
+}

@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arquitetura de Cargos — Gerador v4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:       #FFF5F5;
+  --navy-800:   #FFFFFF;
+  --navy-700:   #FFF0F0;
+  --navy-600:   #FFE5E5;
+  --gold:       #CC1226;
+  --gold-light: #E8354A;
+  --gold-pale:  #FFE8EA;
+  --slate:      #7A6870;
+  --slate-light:#9A8890;
+  --white:      #1C1010;
+  --divider:    rgba(204,18,38,0.15);
+  --border:     rgba(0,0,0,0.09);
+  --success:    #2D7A55;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+/* ── HEADER ─────────────────────────────────── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 2.5rem;
+  border-bottom: 0.5px solid var(--border);
+  background: rgba(255,245,245,0.97);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 1px 0 var(--border);
+}
+
+.logo { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+
+.logo-mark {
+  width: 30px; height: 30px;
+  border: 1.5px solid var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.logo-mark svg { width: 13px; height: 13px; }
+
+.logo-text {
+  font-family: 'DM Serif Display', serif;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+
+.logo-sub {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.header-right { display: flex; align-items: center; gap: 12px; }
+
+.badge-version {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--slate);
+  letter-spacing: 0.05em;
+  border: 0.5px solid rgba(0,0,0,0.15);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.btn-new {
+  background: transparent;
+  border: 0.5px solid rgba(204,18,38,0.35);
+  color: var(--gold);
+  padding: 5px 14px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.15s;
+  display: none;
+}
+.btn-new:hover { background: rgba(204,18,38,0.08); }
+.btn-new.visible { display: inline-block; }
+
+/* ── HERO ────────────────────────────────────── */
+#hero {
+  max-width: 700px;
+  margin: 5rem auto 0;
+  padding: 0 2rem;
+  text-align: center;
+  transition: opacity 0.3s;
+}
+
+.eyebrow {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.75rem;
+}
+
+#hero h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2.1rem, 4.5vw, 3.2rem);
+  line-height: 1.12;
+  color: var(--white);
+  margin-bottom: 1rem;
+}
+
+#hero h1 em { color: var(--gold-light); font-style: italic; }
+
+#hero p {
+  font-size: 14px;
+  color: var(--slate-light);
+  max-width: 430px;
+  margin: 0 auto 2.5rem;
+}
+
+.input-shell {
+  max-width: 540px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input-shell input {
+  width: 100%;
+  background: var(--navy-800);
+  border: 1px solid rgba(204,18,38,0.35);
+  border-radius: 8px;
+  padding: 1.05rem 1.5rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  color: var(--white);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-shell input::placeholder { color: var(--slate); }
+
+.input-shell input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(204,18,38,0.1);
+}
+
+.input-row2 {
+  position: relative;
+  display: flex;
+  gap: 8px;
+}
+
+.input-row2 input {
+  flex: 1;
+  padding: 0.85rem 1.25rem;
+  font-size: 14px;
+}
+
+.btn-gen {
+  background: var(--gold);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 5px;
+  padding: 0.55rem 1.25rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-gen:hover { background: var(--gold-light); }
+.btn-gen:active { opacity: 0.9; }
+.btn-gen:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.chips-group {
+  margin-top: 1.25rem;
+}
+
+.chips-label {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--slate);
+  margin-bottom: 7px;
+}
+
+.chips {
+  display: flex; flex-wrap: wrap; gap: 7px;
+  justify-content: center;
+}
+
+.chip {
+  background: transparent;
+  border: 0.5px solid rgba(138,153,170,0.3);
+  border-radius: 20px;
+  padding: 4px 13px;
+  font-size: 11.5px;
+  color: var(--slate-light);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.chip:hover { border-color: var(--gold); color: var(--gold-light); }
+
+.chip-seg {
+  border-color: rgba(61,153,112,0.3);
+  color: #6FCFA2;
+}
+
+.chip-seg:hover { border-color: #6FCFA2; color: #9ADFC2; }
+
+/* ── LOADING ─────────────────────────────────── */
+#loading {
+  display: none;
+  padding: 5rem 2rem;
+  text-align: center;
+}
+
+.ring {
+  width: 40px; height: 40px;
+  border: 2px solid rgba(204,18,38,0.15);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.85s linear infinite;
+  margin: 0 auto 1.25rem;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-msg {
+  font-size: 12.5px;
+  color: var(--slate);
+  letter-spacing: 0.06em;
+  font-family: 'DM Mono', monospace;
+}
+
+.loading-steps {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 1.25rem;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--slate);
+  opacity: 0.4;
+  transition: opacity 0.4s, color 0.4s;
+  font-family: 'DM Mono', monospace;
+}
+
+.step-item.active { opacity: 1; color: var(--gold-light); }
+.step-item.done   { opacity: 0.65; color: var(--success); }
+
+.step-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* ── ERROR ───────────────────────────────────── */
+#error {
+  display: none;
+  max-width: 520px;
+  margin: 3rem auto;
+  padding: 1.5rem 2rem;
+  background: rgba(255,80,80,0.06);
+  border: 0.5px solid rgba(255,80,80,0.25);
+  border-radius: 8px;
+  text-align: center;
+  color: #F09595;
+  font-size: 13.5px;
+}
+
+/* ── OUTPUT ──────────────────────────────────── */
+#output {
+  display: none;
+  max-width: 940px;
+  margin: 2.5rem auto 7rem;
+  padding: 0 2rem;
+}
+
+.doc-header {
+  border: 0.5px solid var(--divider);
+  border-radius: 16px 16px 0 0;
+  padding: 2.25rem 2.75rem;
+  background: var(--navy-800);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(204,18,38,0.07);
+}
+
+.doc-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: linear-gradient(180deg, var(--gold) 0%, transparent 100%);
+}
+
+.doc-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.doc-meta-left { flex: 1; min-width: 0; }
+
+.doc-label {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+
+.doc-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  color: var(--white);
+  line-height: 1.1;
+}
+
+.pills-row {
+  display: flex; flex-wrap: wrap; gap: 7px;
+  margin-top: 1rem;
+}
+
+.pill {
+  font-size: 10.5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.pill-gold  { background: rgba(204,18,38,0.1);   color: var(--gold-light);    border: 0.5px solid rgba(204,18,38,0.35);  }
+.pill-slate { background: rgba(138,153,170,0.08); color: var(--slate-light);   border: 0.5px solid rgba(138,153,170,0.2); }
+.pill-green { background: rgba(61,153,112,0.12);  color: #6FCFA2;              border: 0.5px solid rgba(61,153,112,0.3); }
+
+.doc-ids {
+  display: flex; flex-direction: column;
+  align-items: flex-end; gap: 5px;
+  flex-shrink: 0;
+}
+
+.id-row { display: flex; gap: 8px; align-items: center; }
+
+.id-key {
+  font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--slate);
+}
+
+.id-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px; color: var(--slate-light);
+  background: rgba(0,0,0,0.06);
+  padding: 2px 8px; border-radius: 4px;
+}
+
+.doc-summary {
+  border-top: 0.5px solid var(--divider);
+  padding-top: 1.25rem;
+  font-size: 14.5px;
+  color: var(--slate-light);
+  line-height: 1.75;
+}
+
+/* ── SECTION CARDS ───────────────────────────── */
+.section-card {
+  background: var(--navy-800);
+  border: 0.5px solid var(--border);
+  border-top: none;
+  padding: 1.75rem 2.5rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.section-card:last-of-type {
+  border-radius: 0 0 16px 16px;
+}
+
+.section-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 0.5px solid var(--divider);
+}
+
+.s-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  color: var(--gold);
+  min-width: 22px;
+}
+
+.s-title {
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--slate-light);
+}
+
+/* ── SECTION 01: IDENT GRID ──────────────────── */
+.ident-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+  gap: 10px;
+}
+
+.ident-card {
+  background: rgba(204,18,38,0.03);
+  border: 0.5px solid rgba(0,0,0,0.08);
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+}
+
+.ident-label {
+  font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.17em; text-transform: uppercase;
+  color: var(--slate); margin-bottom: 5px;
+}
+
+.ident-value { font-size: 13px; font-weight: 500; color: var(--white); }
+
+/* ── SECTION 01: RESPONSABILIDADES ──────────── */
+.resp-list { list-style: none; padding: 0; }
+
+.resp-list li {
+  display: flex; gap: 12px;
+  padding: 0.7rem 0;
+  border-bottom: 0.5px solid rgba(0,0,0,0.06);
+  font-size: 12px; color: var(--slate-light); line-height: 1.6;
+}
+
+.resp-list li:last-child { border-bottom: none; }
+
+.resp-icon {
+  width: 17px; height: 17px; min-width: 17px;
+  border: 0.5px solid var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 3px;
+}
+
+/* ── SECTION 05: COMPETÊNCIAS ────────────────── */
+.comp-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 2px;
+}
+
+.comp-col-title {
+  font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.19em; text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 0.5px solid var(--divider);
+}
+
+.comp-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding-top: 0.25rem;
+}
+
+.comp-tag {
+  background: rgba(204,18,38,0.05);
+  border: 0.5px solid rgba(204,18,38,0.22);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 13px;
+  border-radius: 20px;
+  line-height: 1.3;
+}
+
+/* ── SECTION 03: REQUISITOS ──────────────────── */
+.req-table { width: 100%; border-collapse: collapse; }
+
+.req-table td {
+  padding: 0.6rem 0;
+  border-bottom: 0.5px solid rgba(0,0,0,0.06);
+  font-size: 12px; vertical-align: top;
+}
+
+.req-table tr:last-child td { border-bottom: none; }
+.req-key { color: var(--slate); width: 32%; font-weight: 500; }
+.req-val { color: var(--slate-light); }
+
+/* ── SECTION 04: COMPLEXIDADE ────────────────── */
+.cx-list { display: flex; flex-direction: column; gap: 14px; }
+
+.cx-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.cx-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #E8354A;
+}
+
+.cx-pct {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: #E8354A;
+}
+
+.cx-bar-bg {
+  height: 7px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cx-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #3D0410 0%, #900018 45%, #CC1226 100%);
+  transition: width 0.9s cubic-bezier(.22,.61,.36,1);
+  width: 0%;
+}
+
+/* ── SECTION 05: AVALIAÇÃO DE RISCO ─────────── */
+.var-header {
+  background: linear-gradient(90deg, #7A000F 0%, #CC1226 100%);
+  border-radius: 4px;
+  padding: 0.35rem 1rem;
+  text-align: center;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 0.75rem;
+}
+
+.var-table { width: 100%; border-collapse: collapse; }
+
+.var-table td {
+  padding: 0.4rem 0.5rem;
+  border-bottom: 0.5px solid rgba(0,0,0,0.06);
+  font-size: 11px;
+  vertical-align: middle;
+}
+
+.var-table tr:last-child td { border-bottom: none; }
+
+.var-q { color: var(--slate-light); width: 76%; padding-left: 0; }
+.var-q strong { color: var(--white); }
+
+.var-col-head {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--slate);
+  text-align: center;
+  padding-bottom: 0.75rem;
+  border-bottom: 0.5px solid rgba(0,0,0,0.07);
+}
+
+.var-check { text-align: center; width: 12%; }
+
+.var-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  border-radius: 3px;
+}
+
+.var-box.checked {
+  background: rgba(61,153,112,0.15);
+  border-color: #3D9970;
+}
+
+.var-box.checked-no {
+  background: rgba(192,57,43,0.12);
+  border-color: #C0392B;
+}
+
+.var-footnote {
+  margin-top: 1rem;
+  font-size: 11px;
+  color: var(--slate);
+  font-style: italic;
+  text-align: center;
+}
+
+/* ── FOOTER ──────────────────────────────────── */
+.doc-footer {
+  margin-top: 0;
+  border: 0.5px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  background: var(--navy-800);
+  padding: 0.9rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.footer-note { font-size: 10.5px; color: var(--slate); letter-spacing: 0.02em; }
+
+.footer-btns { display: flex; gap: 8px; }
+
+.btn-action {
+  background: transparent;
+  border: 0.5px solid rgba(204,18,38,0.35);
+  color: var(--gold);
+  padding: 5px 13px;
+  border-radius: 5px;
+  font-size: 11.5px; font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.15s;
+}
+
+.btn-action:hover { background: rgba(204,18,38,0.08); }
+
+/* ── RESPONSIVE ──────────────────────────────── */
+@media (max-width: 660px) {
+  header { padding: 1rem 1.25rem; }
+  #hero { margin-top: 2.5rem; }
+  .doc-header { padding: 1.5rem; }
+  .doc-meta { flex-direction: column; }
+  .doc-ids { align-items: flex-start; }
+  .section-card { padding: 1.25rem; }
+  .dim-grid, .comp-cols, .req-cols { grid-template-columns: 1fr; }
+  .comp-cols > div:first-child { border-right: none; padding-right: 0; border-bottom: 0.5px solid var(--border); padding-bottom: 1.25rem; margin-bottom: 0.5rem; }
+  .comp-cols > div:last-child { padding-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" onclick="resetUI()">
+    <div class="logo-mark">
+      <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M7 1L13 4.5V9.5L7 13L1 9.5V4.5L7 1Z" stroke="#C9A84C" stroke-width="1.2"/>
+        <path d="M7 4L10 5.8V9.2L7 11L4 9.2V5.8L7 4Z" fill="#C9A84C" fill-opacity="0.45"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">Arquitetura de Cargos</div>
+      <div class="logo-sub">Método Estruturado de Descrição</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="btn-new" id="btn-new" onclick="resetUI()">← Nova Pesquisa</button>
+    <div class="badge-version">Powered by Nederhec</div>
+  </div>
+</header>
+
+<div id="hero">
+  <div class="eyebrow">Arquitetura de Cargos &amp; Remuneração</div>
+  <h1>Descrição de Cargo<br><em>precisa, estruturada e auditável</em></h1>
+  <p>Digite o título do cargo e obtenha um documento no padrão das maiores consultorias de remuneração do mercado.</p>
+
+  <div class="input-shell">
+    <input type="text" id="cargo-input" placeholder="Ex: Analista de Remuneração Sênior…" autocomplete="off"/>
+    <div class="input-row2">
+      <input type="text" id="segmento-input" placeholder="Segmento (Ex: Varejo, Tecnologia, Saúde…)" autocomplete="off"/>
+      <button type="button" class="btn-gen" id="btn-gen" onclick="gerar()">Gerar Descrição →</button>
+    </div>
+  </div>
+
+  <div class="chips-group">
+    <div class="chips-label">Cargos</div>
+    <div class="chips">
+      <span class="chip" onclick="setEx('Head de Engenharia')">Head de Engenharia</span>
+      <span class="chip" onclick="setEx('Gerente de Produto Sênior')">Gerente de Produto Sr</span>
+      <span class="chip" onclick="setEx('Líder Técnico Backend')">Líder Técnico</span>
+      <span class="chip" onclick="setEx('Diretor de Tecnologia')">Diretor de Tecnologia</span>
+      <span class="chip" onclick="setEx('Especialista de Remuneração')">Esp. Remuneração</span>
+      <span class="chip" onclick="setEx('Analista de People Analytics Pleno')">People Analytics</span>
+      <span class="chip" onclick="setEx('Head de Compensação e Benefícios')">Head Comp &amp; Ben</span>
+      <span class="chip" onclick="setEx('Diretor de Segurança da Informação')">Diretor de Segurança</span>
+      <span class="chip" onclick="setEx('Gerente de Recursos Humanos')">Gerente de RH</span>
+      <span class="chip" onclick="setEx('Cientista de Dados Sênior')">Cientista de Dados Sr</span>
+    </div>
+  </div>
+
+  <div class="chips-group">
+    <div class="chips-label">Segmentos</div>
+    <div class="chips">
+      <span class="chip chip-seg" onclick="setSeg('Tecnologia')">Tecnologia</span>
+      <span class="chip chip-seg" onclick="setSeg('Varejo')">Varejo</span>
+      <span class="chip chip-seg" onclick="setSeg('Saúde')">Saúde</span>
+      <span class="chip chip-seg" onclick="setSeg('Serviços Financeiros')">Serviços Financeiros</span>
+      <span class="chip chip-seg" onclick="setSeg('Indústria')">Indústria</span>
+      <span class="chip chip-seg" onclick="setSeg('Agronegócio')">Agronegócio</span>
+      <span class="chip chip-seg" onclick="setSeg('Educação')">Educação</span>
+      <span class="chip chip-seg" onclick="setSeg('Logística')">Logística</span>
+    </div>
+  </div>
+</div>
+
+<div id="loading">
+  <div class="ring"></div>
+  <div class="loading-msg" id="loading-msg">Inicializando…</div>
+  <div class="loading-steps" id="loading-steps"></div>
+</div>
+
+<div id="error"></div>
+<div id="output"></div>
+
+<script>
+const STEPS = [
+  "Classificando família e subfamília…",
+  "Calibrando grau de complexidade…",
+  "Mapeando dimensões do cargo…",
+  "Estruturando responsabilidades…",
+  "Definindo competências e requisitos…",
+  "Consolidando KPIs e progressão…",
+  "Montando documento final…"
+];
+
+const SYSTEM_PROMPT = `Você é um especialista sênior em Arquitetura de Cargos e Remuneração, com expertise nas metodologias Hay, Mercer, Willis Towers Watson e Korn Ferry. Gera descrições de cargos no padrão das maiores consultorias de RH do Brasil.
+
+Você deve retornar APENAS um JSON válido, sem nenhum texto antes ou depois, sem markdown, sem backticks. O JSON deve seguir exatamente esta estrutura:
+
+{
+  "cargo": "título exato do cargo",
+  "codigo": "código interno no formato FAM-NNN (ex: TEC-042)",
+  "versao": "1.0",
+  "data_referencia": "2025",
+  "segmento": "segmento de mercado informado",
+  "familia": "nome da família de cargos",
+  "subfamilia": "subfamília específica",
+  "nivel": "Júnior | Pleno | Sênior | Especialista | Gerência | Diretoria | C-Level",
+  "grau": "Operacional | Tático | Estratégico | Estratégico Executivo",
+  "proposito": "parágrafo de 2-3 frases sobre o propósito central do cargo",
+  "contribuicao_negocio": "frase única e poderosa sobre o impacto no negócio",
+  "responsabilidades": [
+    { "area": "área/tema", "descricao": "responsabilidade específica com verbo no infinitivo" }
+  ],
+  "competencias_tecnicas": [
+    { "nome": "nome da competência técnica", "nivel": "Básico | Intermediário | Avançado | Expert" }
+  ],
+  "competencias_comportamentais": [
+    { "nome": "nome da competência comportamental", "nivel": "Básico | Intermediário | Avançado | Expert" }
+  ],
+  "requisitos": {
+    "formacao_minima": "formação mínima exigida",
+    "formacao_desejavel": "formação desejável / diferencial",
+    "experiencia_minima": "tempo e tipo de experiência mínima",
+    "experiencia_desejavel": "experiência diferencial desejável"
+  },
+  "complexidade": {
+    "profundidade_analitica": 0,
+    "densidade_tecnica": 0,
+    "influencia_estrategica": 0,
+    "transformacao_inovacao": 0,
+    "autonomia_decisao": 0
+  },
+  "avaliacao_risco": {
+    "VAR1": false,
+    "VAR2": false,
+    "VAR3": false,
+    "VAR4": false,
+    "VAR5": false,
+    "VAR6": false
+  }
+}
+
+Regras:
+- responsabilidades: 6 a 8 itens variados e específicos
+- competencias_tecnicas: 5 a 7 itens
+- competencias_comportamentais: 4 a 6 itens
+- complexidade: avalie cada dimensão de 0 a 100 conforme o cargo e segmento
+  - profundidade_analitica: nível de raciocínio analítico e diagnóstico exigido
+  - densidade_tecnica: volume e profundidade de conhecimento técnico/metodológico
+  - influencia_estrategica: capacidade de influenciar decisões e alinhar stakeholders
+  - transformacao_inovacao: capacidade de transformar processos e gerar inovação aplicada
+  - autonomia_decisao: amplitude de autonomia e responsabilidade por decisões
+- avaliacao_risco: responda true/false para cada variável:
+  - VAR1: a atividade possui acesso a informações sensíveis de PLDFT
+  - VAR2: possui alçada para deliberar reportes em relação a PLDFT
+  - VAR3: possui alçada para autorizar operações financeiras
+  - VAR4: possui contato direto com o cliente
+  - VAR5: possui acesso para incluir/alterar dados de cliente/operações
+  - VAR6: comercializa produtos/serviços ou oferta propostas de transações financeiras
+- Todo o conteúdo em português do Brasil
+- Use linguagem corporativa precisa, sem genéricos
+- Calibre o nível ao cargo (pleno ≠ sênior ≠ especialista)
+- Use o segmento para calibrar linguagem, requisitos e complexidade`;
+
+let loadingInterval, stepInterval, currentStepIndex = 0;
+let lastDocData = null;
+
+function setEx(v) {
+  document.getElementById('cargo-input').value = v;
+  document.getElementById('segmento-input').focus();
+}
+
+function setSeg(v) {
+  document.getElementById('segmento-input').value = v;
+  document.getElementById('segmento-input').focus();
+}
+
+document.getElementById('cargo-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('segmento-input').focus();
+});
+document.getElementById('segmento-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') gerar();
+});
+
+function startLoading(cargo, segmento) {
+  currentStepIndex = 0;
+  const stepsEl = document.getElementById('loading-steps');
+  stepsEl.innerHTML = STEPS.map((s,i) => `
+    <div class="step-item" id="step-${i}">
+      <div class="step-dot"></div>
+      <span>${s}</span>
+    </div>
+  `).join('');
+  const label = segmento ? `${cargo} · ${segmento}` : cargo;
+  document.getElementById('loading-msg').textContent = `Processando: ${label}`;
+  updateStep(0);
+  stepInterval = setInterval(() => {
+    if (currentStepIndex < STEPS.length - 1) {
+      document.getElementById(`step-${currentStepIndex}`).className = 'step-item done';
+      currentStepIndex++;
+      updateStep(currentStepIndex);
+    }
+  }, 1400);
+}
+
+function updateStep(i) {
+  const el = document.getElementById(`step-${i}`);
+  if (el) el.className = 'step-item active';
+}
+
+function stopLoading() {
+  clearInterval(stepInterval);
+  for (let i = 0; i < STEPS.length; i++) {
+    const el = document.getElementById(`step-${i}`);
+    if (el) el.className = 'step-item done';
+  }
+}
+
+function resetUI() {
+  document.getElementById('hero').style.display = 'block';
+  document.getElementById('output').style.display = 'none';
+  document.getElementById('error').style.display = 'none';
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('btn-new').classList.remove('visible');
+  document.getElementById('cargo-input').value = '';
+  document.getElementById('segmento-input').value = '';
+  document.getElementById('cargo-input').focus();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function gerar() {
+  const cargo = document.getElementById('cargo-input').value.trim();
+  const segmento = document.getElementById('segmento-input').value.trim();
+  if (!cargo) { document.getElementById('cargo-input').focus(); return; }
+
+  document.getElementById('btn-gen').disabled = true;
+  document.getElementById('hero').style.opacity = '0.4';
+  document.getElementById('output').style.display = 'none';
+  document.getElementById('error').style.display = 'none';
+  document.getElementById('loading').style.display = 'block';
+  startLoading(cargo, segmento);
+
+  try {
+    const resp = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cargo, segmento })
+    });
+
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error?.message || data.error || 'Falha na API');
+
+    const doc = data;
+
+    stopLoading();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('hero').style.display = 'none';
+    document.getElementById('btn-new').classList.add('visible');
+    lastDocData = doc;
+    renderDoc(doc);
+
+  } catch (err) {
+    stopLoading();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('hero').style.opacity = '1';
+    document.getElementById('error').style.display = 'block';
+    document.getElementById('error').innerHTML = `
+      <p style="font-weight:500;margin-bottom:6px;">Não foi possível gerar a descrição</p>
+      <p style="font-size:12px;color:#a07070;">${esc(err.message)}</p>
+      <p style="font-size:11px;color:#888;margin-top:8px;">Verifique sua conexão e tente novamente.</p>
+    `;
+    console.error(err);
+  }
+
+  document.getElementById('btn-gen').disabled = false;
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function levelClass(n) {
+  const m = { 'Básico':'lv-basico','Intermediário':'lv-intermediario','Avançado':'lv-avancado','Expert':'lv-expert' };
+  return m[n] || 'lv-basico';
+}
+
+const CX_DIMS = [
+  { key: 'profundidade_analitica',  label: 'Profundidade Analítica e Diagnóstica' },
+  { key: 'densidade_tecnica',       label: 'Densidade Técnica e Metodológica' },
+  { key: 'influencia_estrategica',  label: 'Influência Estratégica e Capacidade de Alinhamento' },
+  { key: 'transformacao_inovacao',  label: 'Capacidade de Transformação e Inovação Aplicada' },
+  { key: 'autonomia_decisao',       label: 'Amplitude de Autonomia e Decisão' },
+];
+
+const VAR_QUESTIONS = [
+  { key: 'VAR1', text: 'Atividade desempenhada possui acesso a informações sensíveis de *PLDFT?' },
+  { key: 'VAR2', text: 'Possui alçada para deliberar reportes em relação a *PLDFT?' },
+  { key: 'VAR3', text: 'Possui alçada para autorizar operações financeiras?' },
+  { key: 'VAR4', text: 'Possui contato com o cliente?' },
+  { key: 'VAR5', text: 'Possui acesso para incluir/alterar dados de cliente/operações?' },
+  { key: 'VAR6', text: 'Comercializa produtos e serviços e/ou oferta propostas de transações financeiras?' },
+];
+
+const CHECK_SVG = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+function renderDoc(d) {
+  const ts = Date.now().toString(36).toUpperCase();
+  const req = d.requisitos || {};
+  const cx  = d.complexidade || {};
+  const vr  = d.avaliacao_risco || {};
+  const grauPill = d.grau && d.grau.startsWith('Estr') ? 'pill-green' : 'pill-slate';
+
+  const idsPill = [
+    d.nivel    && `<span class="pill pill-gold">${esc(d.nivel)}</span>`,
+    d.segmento && `<span class="pill pill-green">${esc(d.segmento)}</span>`
+  ].filter(Boolean).join('');
+
+  const respHtml = (d.responsabilidades || []).map(r => `
+    <li>
+      <div class="resp-icon">
+        <svg viewBox="0 0 8 8" fill="none" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round" width="8" height="8"><path d="M1.5 4L3.2 5.8L6.5 2"/></svg>
+      </div>
+      <div>
+        <span style="font-weight:500;color:#CC1226;font-size:12px;">${esc(r.area)}</span>
+        <span style="color:var(--slate);margin:0 5px;font-size:12px;">·</span>
+        <span>${esc(r.descricao)}</span>
+      </div>
+    </li>`).join('');
+
+  const compTec = `<div class="comp-tags">${(d.competencias_tecnicas || []).map(c =>
+    `<span class="comp-tag">${esc(c.nome)}</span>`).join('')}</div>`;
+
+  const compBeh = `<div class="comp-tags">${(d.competencias_comportamentais || []).map(c =>
+    `<span class="comp-tag">${esc(c.nome)}</span>`).join('')}</div>`;
+
+  const cxHtml = CX_DIMS.map(dim => {
+    const pct = cx[dim.key] || 0;
+    return `
+    <div class="cx-item">
+      <div class="cx-top">
+        <span class="cx-label">${dim.label}</span>
+        <span class="cx-pct">${pct}%</span>
+      </div>
+      <div class="cx-bar-bg">
+        <div class="cx-bar-fill" data-pct="${pct}" style="width:0%"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const vrRows = VAR_QUESTIONS.map(q => {
+    const val = vr[q.key] === true;
+    return `
+    <tr>
+      <td class="var-q"><strong>${q.key}</strong> — ${esc(q.text)}</td>
+      <td class="var-check"><span class="var-box ${val ? 'checked' : ''}" style="color:${val ? '#6FCFA2' : 'transparent'}">${CHECK_SVG}</span></td>
+      <td class="var-check"><span class="var-box ${!val ? 'checked-no' : ''}" style="color:${!val ? '#E07070' : 'transparent'}">${CHECK_SVG}</span></td>
+    </tr>`;
+  }).join('');
+
+  const html = `
+  <div class="doc-header">
+    <div class="doc-meta">
+      <div class="doc-meta-left">
+        <div class="doc-label">Descrição de Cargo - Bradesco Seguros</div>
+        <div class="doc-title">${esc(d.cargo)}</div>
+        <div class="pills-row">${idsPill}</div>
+      </div>
+      <div class="doc-ids">
+        <div class="id-row"><span class="id-key">Código</span><span class="id-val">${esc(d.codigo)}</span></div>
+        <div class="id-row"><span class="id-key">Versão</span><span class="id-val">${esc(d.versao)}</span></div>
+        <div class="id-row"><span class="id-key">Ref.</span><span class="id-val">${esc(d.data_referencia)}</span></div>
+        <div class="id-row"><span class="id-key">Doc ID</span><span class="id-val">${ts}</span></div>
+      </div>
+    </div>
+    <div class="doc-summary">
+      <p style="margin-bottom:0.6rem;">${esc(d.proposito)}</p>
+      <p style="color:var(--gold-light);font-style:italic;font-size:14px;">${esc(d.contribuicao_negocio)}</p>
+    </div>
+  </div>
+
+  <!-- 01 RESPONSABILIDADES -->
+  <div class="section-card">
+    <div class="section-header"><span class="s-num">01</span><span class="s-title">Responsabilidades e Entregas</span></div>
+    <ul class="resp-list">${respHtml}</ul>
+  </div>
+
+  <!-- 02 COMPETÊNCIAS -->
+  <div class="section-card">
+    <div class="section-header"><span class="s-num">02</span><span class="s-title">Competências Técnicas e Comportamentais</span></div>
+    <div class="comp-cols">
+      <div style="padding-right:1.5rem;border-right:0.5px solid rgba(0,0,0,0.06);">
+        <div class="comp-col-title">Técnicas</div>${compTec}
+      </div>
+      <div style="padding-left:1.5rem;">
+        <div class="comp-col-title">Comportamentais</div>${compBeh}
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 REQUISITOS -->
+  <div class="section-card">
+    <div class="section-header"><span class="s-num">03</span><span class="s-title">Requisitos da Posição</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;">
+      <div>
+        <div style="font-size:8.5px;font-weight:700;letter-spacing:0.17em;text-transform:uppercase;color:var(--slate);margin-bottom:8px;">Formação</div>
+        <p style="font-size:12px;color:var(--slate-light);line-height:1.65;">${esc(req.formacao_minima)}. <span style="color:var(--slate);">Desejável:</span> ${esc(req.formacao_desejavel)}</p>
+      </div>
+      <div style="border-left:0.5px solid rgba(0,0,0,0.06);padding-left:28px;">
+        <div style="font-size:8.5px;font-weight:700;letter-spacing:0.17em;text-transform:uppercase;color:var(--slate);margin-bottom:8px;">Experiência</div>
+        <p style="font-size:12px;color:var(--slate-light);line-height:1.65;">${esc(req.experiencia_minima)}. <span style="color:var(--slate);">Desejável:</span> ${esc(req.experiencia_desejavel)}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 COMPLEXIDADE -->
+  <div class="section-card">
+    <div class="section-header"><span class="s-num">04</span><span class="s-title">Complexidade</span></div>
+    <div class="cx-list">${cxHtml}</div>
+  </div>
+
+  <!-- 05 AVALIAÇÃO DE RISCO -->
+  <div class="section-card">
+    <div class="section-header"><span class="s-num">05</span><span class="s-title">Avaliação de Risco</span></div>
+    <div class="var-header">Avaliação de Risco</div>
+    <table class="var-table">
+      <thead>
+        <tr>
+          <td style="padding-bottom:0.75rem;border-bottom:0.5px solid rgba(0,0,0,0.07);font-size:12.5px;color:var(--slate-light);">
+            Avaliação de Risco: mapeamento do nível de exposição ao risco das atividades inerentes à função.
+          </td>
+          <td class="var-col-head">SIM</td>
+          <td class="var-col-head">NÃO</td>
+        </tr>
+      </thead>
+      <tbody>${vrRows}</tbody>
+    </table>
+    <div class="var-footnote">*PLDFT: Prevenção à Lavagem de Dinheiro e ao Financiamento ao Terrorismo</div>
+  </div>
+
+  <div class="doc-footer">
+    <div class="footer-note">Remuneração &amp; Performance / Recursos Humanos — Elaborado por Hector Gustavo de Souza Neder</div>
+    <div class="footer-btns">
+      <button class="btn-action" onclick="copiarJSON()">Copiar JSON</button>
+      <button class="btn-action" onclick="imprimirDoc()">Imprimir / PDF</button>
+    </div>
+  </div>`;
+
+  const out = document.getElementById('output');
+  out.innerHTML = html;
+  out.style.display = 'block';
+  out._docData = d;
+
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      document.querySelectorAll('.cx-bar-fill').forEach(el => {
+        el.style.width = el.dataset.pct + '%';
+      });
+    }, 80);
+  });
+
+  out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copiarJSON() {
+  const d = document.getElementById('output')._docData;
+  if (!d) return;
+  navigator.clipboard.writeText(JSON.stringify(d, null, 2)).then(() => {
+    const btns = document.querySelectorAll('.btn-action');
+    btns.forEach(b => { if (b.textContent.includes('Copiar')) { b.textContent = '✓ Copiado!'; setTimeout(() => b.textContent = 'Copiar JSON', 2000); } });
+  });
+}
+
+function imprimirDoc() {
+  window.print();
+}
+</script>
+</body>
+</html>
