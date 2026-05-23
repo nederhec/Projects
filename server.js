@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 const ANTHROPIC_KEY    = process.env.ANTHROPIC_API_KEY   || '';
 const OPENAI_KEY       = process.env.OPENAI_API_KEY      || '';
 const OPENROUTER_KEY   = process.env.OPENROUTER_API_KEY  || '';
-const OPENAI_MODEL     = process.env.OPENAI_MODEL        || 'gpt-4o';
+const OPENAI_MODEL     = process.env.OPENAI_MODEL        || 'gpt-4o-mini';
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL    || 'anthropic/claude-sonnet-4-6';
 const BODY_LIMIT       = 16 * 1024;
 const API_TIMEOUT_MS   = 90_000;
@@ -177,7 +177,6 @@ function callAnthropic(cargo, segmento) {
   ));
 }
 
-// Shared logic for OpenAI-compatible APIs (OpenAI, OpenRouter, etc.)
 function callChatCompletions({ hostname, path: apiPath, apiKey, model, extraHeaders = {} }, cargo, segmento) {
   const userMsg = segmento
     ? `Gere a descrição completa para o cargo: ${cargo}\nSegmento de mercado: ${segmento}`
