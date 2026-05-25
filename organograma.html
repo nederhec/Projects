@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organograma — Estrutura Atual | Base Abril 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #CC092F;
+  --red-deep: #8C0620;
+  --red-soft: #FBE8EC;
+  --ink: #0E0E10;
+  --ink-2: #2A2A2D;
+  --paper: #F6F4EE;
+  --paper-2: #FFFFFF;
+  --muted: #6E6E72;
+  --muted-2: #9A9A9F;
+  --line: #D8D3C7;
+  --line-2: #EAE5D8;
+  --amber: #A47100;
+  --amber-soft: #FAF1D8;
+  --green: #1F6E3F;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+body {
+  padding: 40px 32px 64px;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(204, 9, 47, 0.04), transparent 38%),
+    radial-gradient(circle at 88% 92%, rgba(14, 14, 16, 0.03), transparent 40%);
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ---------- HEADER ---------- */
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--red);
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.eyebrow::before {
+  content: '';
+  width: 28px;
+  height: 1.5px;
+  background: var(--red);
+}
+
+h1.title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(34px, 4.2vw, 54px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 12px;
+  font-variation-settings: "opsz" 100;
+}
+h1.title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--red);
+}
+
+.subtitle {
+  font-size: 15px;
+  color: var(--muted);
+  max-width: 680px;
+  margin-bottom: 36px;
+  font-weight: 400;
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 40px;
+}
+.meta-left { flex: 1; min-width: 280px; }
+.meta-right {
+  text-align: right;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.meta-right strong {
+  display: block;
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 22px;
+  color: var(--ink);
+  text-transform: none;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+
+/* ---------- KPIs ---------- */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  margin-bottom: 56px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.kpi {
+  background: var(--paper-2);
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+.kpi-label {
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+}
+.kpi-value {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 38px;
+  line-height: 1;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin-top: 4px;
+}
+.kpi-value .pct {
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-left: 4px;
+}
+.kpi-foot {
+  font-size: 11px;
+  color: var(--muted-2);
+  margin-top: 6px;
+  font-weight: 500;
+}
+.kpi.accent .kpi-value { color: var(--red); }
+.kpi.warn .kpi-value { color: var(--amber); }
+
+@media (max-width: 860px) {
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ---------- CHART ---------- */
+.chart-wrapper {
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 48px 24px 56px;
+  overflow-x: auto;
+  position: relative;
+}
+
+.chart-wrapper::before {
+  content: 'Estrutura Hierárquica';
+  position: absolute;
+  top: 16px;
+  left: 24px;
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  font-weight: 700;
+}
+
+.chart {
+  min-width: 1140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 18px;
+}
+
+/* Box base */
+.node {
+  background: var(--paper-2);
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
+  padding: 14px 16px;
+  min-width: 168px;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+.node:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(14, 14, 16, 0.08); }
+
+.node .level-tag {
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.node .name {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 17px;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.node .scope {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+/* Top tier — Gerente Sênior */
+.node.top {
+  background: var(--ink);
+  color: var(--paper-2);
+  border-color: var(--ink);
+  padding: 20px 28px;
+  min-width: 280px;
+  text-align: center;
+}
+.node.top .level-tag { color: var(--red); }
+.node.top .name { color: var(--paper-2); font-size: 22px; margin-bottom: 6px; }
+.node.top .scope { color: rgba(255,255,255,0.7); font-size: 13px; }
+
+/* Gerente Área */
+.node.mgr-area {
+  border-color: var(--red);
+  background: var(--red-soft);
+}
+.node.mgr-area .level-tag { color: var(--red-deep); }
+
+/* Coordenador */
+.node.coord { border-color: var(--ink-2); }
+.node.coord .level-tag { color: var(--ink-2); }
+
+/* Vaga / Aberta */
+.node.vaga {
+  border: 1.5px dashed var(--amber);
+  background: var(--amber-soft);
+}
+.node.vaga .level-tag { color: var(--amber); }
+.node.vaga .name { color: var(--amber); font-style: italic; }
+.node.vaga .name::before { content: '◇  '; font-style: normal; }
+.node.vaga .scope { color: var(--ink-2); }
+
+/* Em contratação */
+.node.hiring {
+  border: 1.5px dashed var(--red);
+  background: #FFF7F9;
+}
+.node.hiring .level-tag { color: var(--red); }
+.node.hiring .name { color: var(--red); font-style: italic; }
+.node.hiring .name::before { content: '◐  '; font-style: normal; }
+
+/* Sem gestor formal */
+.node.no-mgr {
+  border: 1.5px dashed var(--ink-2);
+  background: #F4F1E9;
+}
+.node.no-mgr .level-tag { color: var(--ink-2); }
+.node.no-mgr .name { color: var(--ink-2); font-style: italic; }
+.node.no-mgr .name::before { content: '○  '; font-style: normal; }
+
+/* Connectors */
+.v-line {
+  width: 1.5px;
+  background: var(--ink);
+  height: 36px;
+}
+.v-line.dashed {
+  background: repeating-linear-gradient(to bottom, var(--ink) 0 5px, transparent 5px 10px);
+}
+
+.tier-2-row {
+  display: flex;
+  gap: 16px;
+  position: relative;
+  justify-content: center;
+  padding-top: 32px;
+}
+.tier-2-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 84px;
+  right: 84px;
+  height: 1.5px;
+  background: var(--ink);
+}
+.tier-2-row > .branch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.tier-2-row > .branch > .v-line {
+  height: 32px;
+  margin-bottom: 0;
+}
+
+/* Tier 3 — Willian's team */
+.willian-block {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.willian-connector {
+  width: 1.5px;
+  background: var(--ink);
+  height: 28px;
+}
+.willian-groups {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+  max-width: 720px;
+  position: relative;
+  padding-top: 28px;
+}
+.willian-groups::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 16%;
+  right: 16%;
+  height: 1.5px;
+  background: var(--ink);
+}
+.group-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.group-col > .v-line {
+  height: 28px;
+  background: var(--ink);
+  width: 1.5px;
+  margin-bottom: 0;
+}
+
+.group-card {
+  border: 1px solid var(--line);
+  background: var(--paper-2);
+  border-radius: 4px;
+  padding: 14px 14px 12px;
+  width: 100%;
+}
+.group-card .group-tag {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line-2);
+  margin-bottom: 10px;
+}
+.group-card .count {
+  background: var(--ink);
+  color: var(--paper-2);
+  padding: 2px 7px;
+  border-radius: 12px;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+.group-card.consultor { border-top: 3px solid var(--red); }
+.group-card.analista-sr { border-top: 3px solid var(--ink-2); }
+.group-card.analista-jr { border-top: 3px solid var(--muted); }
+
+.group-card ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.group-card li {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  padding: 3px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.group-card li::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ink-2);
+  flex-shrink: 0;
+}
+.group-card.consultor li::before { background: var(--red); }
+.group-card.analista-sr li::before { background: var(--ink-2); }
+.group-card.analista-jr li::before { background: var(--muted-2); }
+
+/* ---------- LEGEND ---------- */
+.legend {
+  margin-top: 48px;
+  padding: 28px 24px;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.legend-title {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.legend-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.legend-swatch.filled { background: var(--ink); }
+.legend-swatch.mgr { background: var(--red-soft); border: 1.5px solid var(--red); }
+.legend-swatch.coord { background: var(--paper-2); border: 1.5px solid var(--ink-2); }
+.legend-swatch.vaga { background: var(--amber-soft); border: 1.5px dashed var(--amber); }
+.legend-swatch.hiring { background: #FFF7F9; border: 1.5px dashed var(--red); }
+.legend-swatch.no-mgr { background: #F4F1E9; border: 1.5px dashed var(--ink-2); }
+.legend-label {
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 500;
+}
+.legend-label small {
+  display: block;
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 11.5px;
+  margin-top: 1px;
+}
+
+/* ---------- INSIGHT FOOTER ---------- */
+.insight {
+  margin-top: 32px;
+  padding: 24px 28px;
+  background: var(--ink);
+  color: var(--paper-2);
+  border-radius: 6px;
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.insight-tag {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--red);
+  letter-spacing: 0.04em;
+}
+.insight-body p {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 10px;
+}
+.insight-body p:last-child { margin-bottom: 0; }
+.insight-body strong { color: var(--paper-2); font-weight: 700; }
+
+@media (max-width: 720px) {
+  body { padding: 28px 18px 48px; }
+  .insight { grid-template-columns: 1fr; gap: 12px; }
+  .meta-right { text-align: left; }
+}
+
+/* footer note */
+.footnote {
+  margin-top: 24px;
+  font-size: 11px;
+  color: var(--muted-2);
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="eyebrow">Estrutura Organizacional · Base Abril 2026</div>
+    <h1 class="title">Organograma <em>Atual</em></h1>
+    <p class="subtitle">Estrutura sob a liderança de Carolina (Gerência Sênior). Mapa de 15 posições com identificação de vacâncias, áreas sem gestor formal e demanda de contratação em curso.</p>
+
+    <div class="meta-row">
+      <div class="meta-left"></div>
+      <div class="meta-right">
+        <strong>Carolina</strong>
+        Liderança · Bradesco Seguros
+      </div>
+    </div>
+  </header>
+
+  <!-- KPIs -->
+  <section class="kpis">
+    <div class="kpi">
+      <span class="kpi-label">Posições Totais</span>
+      <span class="kpi-value">15</span>
+      <span class="kpi-foot">Headcount mapeado</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">Ocupadas</span>
+      <span class="kpi-value">12<span class="pct">80%</span></span>
+      <span class="kpi-foot">Colaboradores ativos</span>
+    </div>
+    <div class="kpi warn">
+      <span class="kpi-label">Em Aberto</span>
+      <span class="kpi-value">3<span class="pct">20%</span></span>
+      <span class="kpi-foot">Vagas + área sem gestor</span>
+    </div>
+    <div class="kpi accent">
+      <span class="kpi-label">Span Carolina</span>
+      <span class="kpi-value">6</span>
+      <span class="kpi-foot">Reportes diretos</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">Span Willian</span>
+      <span class="kpi-value">8</span>
+      <span class="kpi-foot">Maior cluster operacional</span>
+    </div>
+  </section>
+
+  <!-- ORG CHART -->
+  <section class="chart-wrapper">
+    <div class="chart">
+
+      <!-- Tier 1 -->
+      <div class="node top">
+        <div class="level-tag">Gerente Sênior</div>
+        <div class="name">Carolina</div>
+        <div class="scope">Liderança da estrutura</div>
+      </div>
+
+      <div class="v-line"></div>
+
+      <!-- Tier 2 — 6 direct reports -->
+      <div class="tier-2-row">
+
+        <div class="branch">
+          <div class="v-line"></div>
+          <div class="node mgr-area">
+            <div class="level-tag">Gerente de Área</div>
+            <div class="name">Renata</div>
+            <div class="scope">Gestão de Portfólio</div>
+          </div>
+        </div>
+
+        <div class="branch">
+          <div class="v-line"></div>
+          <div class="node coord">
+            <div class="level-tag">Coordenadora</div>
+            <div class="name">Cristiane</div>
+            <div class="scope">Governança &amp; Planejamento</div>
+          </div>
+        </div>
+
+        <div class="branch">
+          <div class="v-line dashed"></div>
+          <div class="node vaga">
+            <div class="level-tag">Vaga em Aberto</div>
+            <div class="name">A preencher</div>
+            <div class="scope">Gestão de Excelência</div>
+          </div>
+        </div>
+
+        <div class="branch">
+          <div class="v-line dashed"></div>
+          <div class="node no-mgr">
+            <div class="level-tag">Sem Gestor Formal</div>
+            <div class="name">A definir</div>
+            <div class="scope">Governança de Dados / BI</div>
+          </div>
+        </div>
+
+        <div class="branch">
+          <div class="v-line"></div>
+          <div class="node coord">
+            <div class="level-tag">Coordenador</div>
+            <div class="name">Willian</div>
+            <div class="scope">CoE Central</div>
+          </div>
+
+          <!-- Tier 3 — Willian's team -->
+          <div class="willian-block">
+            <div class="willian-connector"></div>
+            <div class="willian-groups">
+
+              <div class="group-col">
+                <div class="v-line"></div>
+                <div class="group-card consultor">
+                  <div class="group-tag">Consultores <span class="count">2</span></div>
+                  <ul>
+                    <li>Miguel</li>
+                    <li>Daniel</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="group-col">
+                <div class="v-line"></div>
+                <div class="group-card analista-sr">
+                  <div class="group-tag">Analistas Sênior <span class="count">2</span></div>
+                  <ul>
+                    <li>Lauro</li>
+                    <li>Ana Gabriela</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="group-col">
+                <div class="v-line"></div>
+                <div class="group-card analista-jr">
+                  <div class="group-tag">Analistas Júnior <span class="count">4</span></div>
+                  <ul>
+                    <li>Jefferson</li>
+                    <li>Victor</li>
+                    <li>Giovanni</li>
+                    <li>Vinicius</li>
+                  </ul>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="branch">
+          <div class="v-line dashed"></div>
+          <div class="node hiring">
+            <div class="level-tag">Em Contratação</div>
+            <div class="name">Processo Ativo</div>
+            <div class="scope">Posição em recrutamento</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- LEGEND -->
+  <section class="legend">
+    <div class="legend-title">Legenda</div>
+    <div class="legend-grid">
+      <div class="legend-item">
+        <div class="legend-swatch filled"></div>
+        <div class="legend-label">Gerência Sênior <small>Topo da estrutura</small></div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch mgr"></div>
+        <div class="legend-label">Gerência de Área <small>Liderança de portfólio</small></div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch coord"></div>
+        <div class="legend-label">Coordenação <small>Posição ocupada</small></div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch vaga"></div>
+        <div class="legend-label">Vaga em aberto <small>Posição formalizada, não preenchida</small></div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch no-mgr"></div>
+        <div class="legend-label">Sem gestor formal <small>Área ativa, gestão indefinida</small></div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch hiring"></div>
+        <div class="legend-label">Em contratação <small>Processo seletivo em curso</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSIGHT -->
+  <section class="insight">
+    <div class="insight-tag">Leitura<br>estrutural</div>
+    <div class="insight-body">
+      <p><strong>Concentração operacional em Willian (CoE Central).</strong> O cluster reúne 8 dos 12 colaboradores ativos (67%) — 2 consultores, 2 analistas sênior e 4 analistas júnior. Span de controle elevado, característico de células de execução técnica.</p>
+      <p><strong>Vulnerabilidade de cobertura em Gestão de Excelência e Governança de Dados/BI.</strong> Duas frentes estratégicas operam sem liderança formal — risco direto sobre entrega, accountability e maturação de capability.</p>
+      <p><strong>Span de Carolina em 6 reportes diretos</strong> é compatível com referenciais de mercado para Gerência Sênior (5–8), mas a heterogeneidade dos reportes (Gerente de Área, Coordenadores, vagas, posição em recrutamento) sugere oportunidade de reagrupamento por afinidade temática.</p>
+    </div>
+  </section>
+
+  <div class="footnote">Documento elaborado em base 04/2026 — Estrutura organizacional sob liderança de Carolina | Bradesco Seguros</div>
+
+</div>
+</body>
+</html>
