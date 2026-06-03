@@ -1,0 +1,256 @@
+// ============================================================
+// DAX Measures – Dashboard Cargos GBS
+// Arquivo: DAX_Measures.dax
+// Tabela principal: Cargos  (fato)
+// ============================================================
+// Instrução: Cole cada medida na tabela de medidas do Power BI.
+// Crie uma tabela auxiliar chamada "_Medidas" para organização.
+// ============================================================
+
+
+// ────────────────────────────────────────────────────────────
+// 1. CONTAGENS BÁSICAS
+// ────────────────────────────────────────────────────────────
+
+[Total Cargos] =
+COUNTROWS( Cargos )
+
+
+[Total Cargos Ativos] =
+CALCULATE(
+    COUNTROWS( Cargos ),
+    Cargos[IsActive] = TRUE()
+)
+
+
+[Total Cargos Inativos] =
+CALCULATE(
+    COUNTROWS( Cargos ),
+    Cargos[IsActive] = FALSE()
+)
+
+
+// ────────────────────────────────────────────────────────────
+// 2. PERCENTUAIS
+// ────────────────────────────────────────────────────────────
+
+[% Cargos Ativos] =
+DIVIDE(
+    [Total Cargos Ativos],
+    [Total Cargos],
+    0
+)
+// Formate como percentual (0.00%) no painel de formatação.
+
+
+[% Cargos Inativos] =
+DIVIDE(
+    [Total Cargos Inativos],
+    [Total Cargos],
+    0
+)
+
+
+// ────────────────────────────────────────────────────────────
+// 3. BENCHMARKING MERCER
+// ────────────────────────────────────────────────────────────
+
+[Cargos Sem Mercer 2026] =
+CALCULATE(
+    COUNTROWS( Cargos ),
+    Cargos[HasMercer2026] = FALSE()
+)
+
+
+[Cargos Com Mercer 2026] =
+CALCULATE(
+    COUNTROWS( Cargos ),
+    Cargos[HasMercer2026] = TRUE()
+)
+
+
+[Cargos Com Mercer 2025] =
+CALCULATE(
+    COUNTROWS( Cargos ),
+    NOT( ISBLANK( Cargos[Cod. Mercer 2025] ) ),
+    Cargos[Cod. Mercer 2025] <> ""
+)
+
+
+[% Cobertura Mercer 2026] =
+DIVIDE(
+    [Cargos Com Mercer 2026],
+    [Total Cargos],
+    0
+)
+// Exibe como gauge ou KPI card (0-100%).
+
+
+[Gap Mercer 2026 vs 2025] =
+[Cargos Com Mercer 2025] - [Cargos Com Mercer 2026]
+// Positivo = cargos que tinham Mercer 2025 mas perderam em 2026.
+
+
+// ────────────────────────────────────────────────────────────
+// 4. DIVERSIDADE ESTRUTURAL
+// ────────────────────────────────────────────────────────────
+
+[Total Empresas] =
+DISTINCTCOUNT( Cargos[EMPRESA] )
+
+
+[Total Famílias GBS] =
+DISTINCTCOUNT( Cargos[FAMÍLIA GBS] )
+
+
+[Total Grupos Hierárquicos] =
+DISTINCTCOUNT( Cargos[GRUPO HIERARQUICO] )
+
+
+[Total Grades Utilizadas] =
+DISTINCTCOUNT( Cargos[GRADE] )
+
+
+// ────────────────────────────────────────────────────────────
+// 5. MEDIDAS DE DISTRIBUIÇÃO (uso em visuais de tabela/matriz)
+// ────────────────────────────────────────────────────────────
+
+// Grades distintos por empresa – usar em tabela com EMPRESA no contexto de linha
+[Grades Distintos por Empresa] =
+VAR EmpresaAtual = SELECTEDVALUE( Cargos[EMPRESA] )
+VAR Resultado =
+    CALCULATE(
+        DISTINCTCOUNT( Cargos[GRADE] ),
+        Cargos[EMPRESA] = EmpresaAtual
+    )
+RETURN
+    Resultado
+
+// Alternativa usando SUMMARIZE (útil para tabelas virtuais em medidas compostas):
+// [Tabela Grades por Empresa] =
+//     SUMMARIZE(
+//         Cargos,
+//         Cargos[EMPRESA],
+//         "Grades Distintos", DISTINCTCOUNT( Cargos[GRADE] ),
+//         "Famílias Distintas", DISTINCTCOUNT( Cargos[FAMÍLIA GBS] )
+//     )
+
+
+[Famílias GBS por Empresa] =
+CALCULATE(
+    DISTINCTCOUNT( Cargos[FAMÍLIA GBS] ),
+    ALLEXCEPT( Cargos, Cargos[EMPRESA] )
+)
+
+
+// ────────────────────────────────────────────────────────────
+// 6. ANÁLISE POR GRUPO HIERÁRQUICO
+// ────────────────────────────────────────────────────────────
+
+[Cargos Ativos por Hierarquia] =
+CALCULATE(
+    [Total Cargos Ativos],
+    ALLEXCEPT( Cargos, Cargos[GRUPO HIERARQUICO] )
+)
+
+
+[% Hierarquia sobre Total Ativo] =
+DIVIDE(
+    [Total Cargos Ativos],
+    CALCULATE( [Total Cargos Ativos], ALL( Cargos[GRUPO HIERARQUICO] ) ),
+    0
+)
+
+
+// ────────────────────────────────────────────────────────────
+// 7. ANÁLISE POR GRADE CATEGORY
+// ────────────────────────────────────────────────────────────
+
+[Cargos Low Grade (2-5)] =
+CALCULATE(
+    COUNTROWS( Cargos ),
+    Cargos[GradeCategory] = "Low (2-5)"
+)
+
+
+[Cargos Mid Grade (6-9)] =
+CALCULATE(
+    COUNTROWS( Cargos ),
+    Cargos[GradeCategory] = "Mid (6-9)"
+)
+
+
+[Cargos Senior Grade (10-13)] =
+CALCULATE(
+    COUNTROWS( Cargos ),
+    Cargos[GradeCategory] = "Senior (10-13)"
+)
+
+
+// ────────────────────────────────────────────────────────────
+// 8. PLACEHOLDER – COMPA-RATIO (requer dados salariais)
+// ────────────────────────────────────────────────────────────
+//
+// INSTRUÇÃO: Para calcular Compa-Ratio você precisará conectar
+// uma tabela de salários reais (ex: TabSalarios) com os campos:
+//   - CÓDIGO CARGO (chave de relacionamento com Cargos)
+//   - SALARIO_BASE (salário atual do colaborador)
+//   - MIDPOINT (ponto médio da faixa salarial do grade)
+//
+// Relacione TabSalarios[CÓDIGO CARGO] → Cargos[CÓDIGO CARGO]
+//
+// Após conectar os dados, substitua o comentário abaixo pela
+// fórmula real:
+
+[Compa-Ratio Médio] =
+// DIVIDE(
+//     AVERAGE( TabSalarios[SALARIO_BASE] ),
+//     AVERAGE( TabSalarios[MIDPOINT] ),
+//     BLANK()
+// )
+// Nota: Compa-Ratio = Salário Real / Midpoint da Faixa
+// Resultado < 1.0 = abaixo do mercado
+// Resultado = 1.0 = alinhado ao mercado
+// Resultado > 1.0 = acima do mercado
+BLANK()   // Remova esta linha quando conectar os dados salariais
+
+
+[Compa-Ratio por Grade] =
+// Usar em visual de tabela/matriz com GRADE no eixo:
+// DIVIDE(
+//     AVERAGEX( RELATEDTABLE( TabSalarios ), TabSalarios[SALARIO_BASE] ),
+//     AVERAGEX( RELATEDTABLE( TabSalarios ), TabSalarios[MIDPOINT] ),
+//     BLANK()
+// )
+BLANK()   // Remova esta linha quando conectar os dados salariais
+
+
+// ────────────────────────────────────────────────────────────
+// 9. MEDIDAS DE TÍTULO DINÂMICO (úteis em visuais)
+// ────────────────────────────────────────────────────────────
+
+[Título Empresa Selecionada] =
+VAR Sel = SELECTEDVALUE( Cargos[EMPRESA], "Todas as Empresas" )
+RETURN
+    "Análise: " & Sel
+
+
+[Título Família Selecionada] =
+VAR Sel = SELECTEDVALUE( Cargos[FAMÍLIA GBS], "Todas as Famílias" )
+RETURN
+    "Família: " & Sel
+
+
+// ────────────────────────────────────────────────────────────
+// 10. MEDIDA DE COBERTURA MERCER PARA GAUGE
+// ────────────────────────────────────────────────────────────
+
+// Uso no visual Gauge:
+//   Valor:  [% Cobertura Mercer 2026]
+//   Mínimo: 0
+//   Máximo: [Gauge Max Mercer]
+//   Meta:   [Gauge Meta Mercer]
+
+[Gauge Max Mercer] = 1       // 100%
+
+[Gauge Meta Mercer] = 0.95   // Meta: 95% de cobertura
