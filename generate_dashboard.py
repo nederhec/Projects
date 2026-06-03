@@ -1,55 +1,46 @@
 """
-Generate Dashboard_Cargos_GBS.xlsx from HR data.
+Dashboard Generator - Cargos GBS
+Generates Dashboard_Cargos_GBS.xlsx with 6 sheets.
 """
+
 import pandas as pd
 import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import (
-    PatternFill, Font, Alignment, Border, Side, numbers
+    PatternFill, Font, Alignment, Border, Side
 )
-from openpyxl.chart import BarChart, Reference
-from openpyxl.chart.series import DataPoint
 from openpyxl.utils import get_column_letter
-from openpyxl.utils.dataframe import dataframe_to_rows
-import warnings
-warnings.filterwarnings("ignore")
+from openpyxl.chart import BarChart, Reference
 
-# ── colours ──────────────────────────────────────────────────────────────────
+SOURCE = '/root/.claude/uploads/39518091-0fb9-4665-a41a-ed8e752c52fd/88b7cf84-Cargos_GBS.xlsx'
+OUTPUT = '/home/user/Projects/Dashboard_Cargos_GBS.xlsx'
+
+# ── colour palette ──────────────────────────────────────────────────────────
 DARK_BLUE   = "1F3864"
-LIGHT_BLUE  = "BDD7EE"
 MID_BLUE    = "2E75B6"
-ALT_ROW     = "DEEAF1"
+LIGHT_BLUE  = "BDD7EE"
+LIGHT_GREY  = "F2F2F2"
+DARK_GREY   = "595959"
 WHITE       = "FFFFFF"
-ORANGE      = "F4B942"
-GREEN       = "70AD47"
-RED_LIGHT   = "FFE0E0"
+ALT_ROW     = "DEEAF1"
 
-# ── helper styles ─────────────────────────────────────────────────────────────
-def hdr_fill(hex_color):
+def solid(hex_color):
     return PatternFill("solid", fgColor=hex_color)
 
 def thin_border():
-    s = Side(style="thin")
+    s = Side(style='thin', color="BFBFBF")
     return Border(left=s, right=s, top=s, bottom=s)
 
-def apply_header_row(ws, row_idx, num_cols, bg=DARK_BLUE, fg=WHITE, bold=True):
-    for col in range(1, num_cols + 1):
-        cell = ws.cell(row=row_idx, column=col)
-        cell.fill = hdr_fill(bg)
-        cell.font = Font(color=fg, bold=bold, name="Calibri")
-        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-        cell.border = thin_border()
+def header_font(white=True, size=11):
+    return Font(bold=True, color=WHITE if white else DARK_BLUE, size=size)
 
-def apply_data_row(ws, row_idx, num_cols, alternate=False):
-    bg = ALT_ROW if alternate else WHITE
-    for col in range(1, num_cols + 1):
-        cell = ws.cell(row=row_idx, column=col)
-        cell.fill = hdr_fill(bg)
-        cell.font = Font(name="Calibri", size=10)
-        cell.alignment = Alignment(horizontal="center", vertical="center")
-        cell.border = thin_border()
+def normal_font(bold=False, size=10):
+    return Font(bold=bold, size=size)
 
-def auto_width(ws):
+def center():
+    return Alignment(horizontal='center', vertical='center', wrap_text=False)
+
+def auto_width(ws, min_w=8, max_w=50):
     for col in ws.columns:
         max_len = 0
         col_letter = get_column_letter(col[0].column)
@@ -59,498 +50,468 @@ def auto_width(ws):
                     max_len = max(max_len, len(str(cell.value)))
             except Exception:
                 pass
-        ws.column_dimensions[col_letter].width = min(max_len + 4, 40)
+        ws.column_dimensions[col_letter].width = min(max_w, max(min_w, max_len + 2))
 
-# ── load data ─────────────────────────────────────────────────────────────────
-SOURCE = "/root/.claude/uploads/39518091-0fb9-4665-a41a-ed8e752c52fd/88b7cf84-Cargos_GBS.xlsx"
+def style_header_row(ws, row, cols, bg=DARK_BLUE, font_size=11):
+    for c in range(1, cols + 1):
+        cell = ws.cell(row=row, column=c)
+        cell.fill = solid(bg)
+        cell.font = header_font(white=True, size=font_size)
+        cell.alignment = center()
+        cell.border = thin_border()
+
+
+# ── Load data ────────────────────────────────────────────────────────────────
 df = pd.read_excel(SOURCE)
+df['SITUAÇÃO'] = df['SITUAÇÃO'].str.strip()
+df['GRUPO'] = df['GRUPO'].str.strip()
+df['FAMÍLIA GBS'] = df['FAMÍLIA GBS'].str.strip()
+df['GRUPO HIERARQUICO'] = df['GRUPO HIERARQUICO'].str.strip()
+df['EMPRESA'] = df['EMPRESA'].str.strip()
+
+ativos   = df[df['SITUAÇÃO'] == 'ATIVO']
+inativos = df[df['SITUAÇÃO'] == 'INATIVO']
+
+total     = len(df)
+n_ativo   = len(ativos)
+n_inativo = len(inativos)
+n_emp     = df['EMPRESA'].nunique()
+n_fam     = df['FAMÍLIA GBS'].nunique()
+n_grp_h   = df['GRUPO HIERARQUICO'].nunique()
+n_sem_m26 = df['Cod. Mercer 2026'].isna().sum()
+n_corp    = (df['GRUPO'] == 'Corporativo').sum()
+n_neg     = (df['GRUPO'] == 'Negócios & operações').sum()
 
 wb = Workbook()
 wb.remove(wb.active)   # remove default sheet
 
-# ══════════════════════════════════════════════════════════════════════════════
+
+# ════════════════════════════════════════════════════════════════════════════
 # SHEET 1 – KPIs Executivos
-# ══════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
 ws1 = wb.create_sheet("KPIs Executivos")
 ws1.sheet_view.showGridLines = False
 
 # Title
-ws1.merge_cells("A1:F1")
-title = ws1["A1"]
-title.value = "KPIs EXECUTIVOS – CARGOS GBS"
-title.fill = hdr_fill(DARK_BLUE)
-title.font = Font(color=WHITE, bold=True, size=16, name="Calibri")
-title.alignment = Alignment(horizontal="center", vertical="center")
+ws1.merge_cells('A1:F1')
+title = ws1['A1']
+title.value = "DASHBOARD – CARGOS GBS"
+title.fill  = solid(DARK_BLUE)
+title.font  = Font(bold=True, color=WHITE, size=16)
+title.alignment = center()
 ws1.row_dimensions[1].height = 36
 
-# Sub-header
-ws1.merge_cells("A2:F2")
-sub = ws1["A2"]
-sub.value = "Estrutura de Cargos – Visão Geral"
-sub.fill = hdr_fill(MID_BLUE)
-sub.font = Font(color=WHITE, bold=False, size=11, name="Calibri")
-sub.alignment = Alignment(horizontal="center", vertical="center")
-ws1.row_dimensions[2].height = 22
+ws1.merge_cells('A2:F2')
+sub = ws1['A2']
+sub.value = "Visão Executiva de KPIs"
+sub.fill  = solid(MID_BLUE)
+sub.font  = Font(bold=True, color=WHITE, size=12)
+sub.alignment = center()
+ws1.row_dimensions[2].height = 24
 
-ws1.append([])  # blank row 3
-
-# Helper to write a KPI box (label row + value row)
-def write_kpi(ws, start_row, start_col, label, value, note="", label_color=MID_BLUE):
-    # label cell (merged 2 cols)
-    ws.merge_cells(
-        start_row=start_row, start_column=start_col,
-        end_row=start_row,   end_column=start_col + 1
-    )
-    lbl = ws.cell(row=start_row, column=start_col)
+def kpi_box(ws, row, col, label, value, sub_val=None, bg=LIGHT_BLUE):
+    ws.merge_cells(start_row=row,   start_column=col,
+                   end_row=row,     end_column=col + 1)
+    ws.merge_cells(start_row=row+1, start_column=col,
+                   end_row=row+1,   end_column=col + 1)
+    lbl = ws.cell(row=row, column=col)
     lbl.value = label
-    lbl.fill = hdr_fill(label_color)
-    lbl.font = Font(color=WHITE, bold=True, size=10, name="Calibri")
-    lbl.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-    lbl.border = thin_border()
-    ws.row_dimensions[start_row].height = 30
-
-    # value cell
-    ws.merge_cells(
-        start_row=start_row + 1, start_column=start_col,
-        end_row=start_row + 1,   end_column=start_col + 1
-    )
-    val = ws.cell(row=start_row + 1, column=start_col)
+    lbl.fill  = solid(DARK_BLUE)
+    lbl.font  = Font(bold=True, color=WHITE, size=10)
+    lbl.alignment = center()
+    val = ws.cell(row=row+1, column=col)
     val.value = value
-    val.fill = hdr_fill(LIGHT_BLUE)
-    val.font = Font(bold=True, size=18, name="Calibri", color=DARK_BLUE)
-    val.alignment = Alignment(horizontal="center", vertical="center")
-    val.border = thin_border()
-    ws.row_dimensions[start_row + 1].height = 40
+    val.fill  = solid(bg)
+    val.font  = Font(bold=True, color=DARK_BLUE, size=14)
+    val.alignment = center()
+    if sub_val is not None:
+        ws.merge_cells(start_row=row+2, start_column=col,
+                       end_row=row+2,   end_column=col + 1)
+        sv = ws.cell(row=row+2, column=col)
+        sv.value = sub_val
+        sv.fill  = solid(bg)
+        sv.font  = Font(color=DARK_GREY, size=9)
+        sv.alignment = center()
 
-    if note:
-        ws.merge_cells(
-            start_row=start_row + 2, start_column=start_col,
-            end_row=start_row + 2,   end_column=start_col + 1
-        )
-        n = ws.cell(row=start_row + 2, column=start_col)
-        n.value = note
-        n.font = Font(size=9, italic=True, name="Calibri", color="555555")
-        n.alignment = Alignment(horizontal="center")
-        ws.row_dimensions[start_row + 2].height = 16
+# Row 4-6
+kpi_box(ws1, 4, 1, "Total de Cargos",       total,        None,                             LIGHT_BLUE)
+kpi_box(ws1, 4, 3, "Cargos Ativos",         f"{n_ativo}", f"{n_ativo/total*100:.1f}% do total",  "C6EFCE")
+kpi_box(ws1, 4, 5, "Cargos Inativos",       f"{n_inativo}",f"{n_inativo/total*100:.1f}% do total","FFEB9C")
 
-total       = len(df)
-ativos      = (df["SITUAÇÃO"] == "ATIVO").sum()
-inativos    = (df["SITUAÇÃO"] == "INATIVO").sum()
-empresas    = df["EMPRESA"].nunique()
-familias    = df["FAMÍLIA GBS"].nunique()
-hierarquias = df["GRUPO HIERARQUICO"].nunique()
-sem_mercer  = df["Cod. Mercer 2026"].isna().sum()
-corp        = (df["GRUPO"] == "Corporativo").sum()
-neg_op      = (df["GRUPO"] == "Negócios & operações").sum()
+# Row 8-10
+kpi_box(ws1, 8, 1, "Total de Empresas",     n_emp,  None, LIGHT_BLUE)
+kpi_box(ws1, 8, 3, "Famílias GBS",          n_fam,  None, LIGHT_BLUE)
+kpi_box(ws1, 8, 5, "Grupos Hierárquicos",   n_grp_h,None, LIGHT_BLUE)
 
-kpis = [
-    ("Total de Cargos",             total,        "",                                       4, MID_BLUE),
-    ("Cargos Ativos",               ativos,       f"{ativos/total:.1%} do total",           4, GREEN),
-    ("Cargos Inativos",             inativos,     f"{inativos/total:.1%} do total",         4, "C00000"),
-    ("Total de Empresas",           empresas,     "",                                       8, MID_BLUE),
-    ("Famílias GBS",                familias,     "",                                       8, MID_BLUE),
-    ("Grupos Hierárquicos",         hierarquias,  "",                                       8, MID_BLUE),
-    ("Sem Cod. Mercer 2026",        sem_mercer,   f"{sem_mercer/total:.1%} dos cargos",    12, ORANGE),
-    ("Cargos Corporativos",         corp,         f"{corp/total:.1%} do total",            12, MID_BLUE),
-    ("Cargos Negócios & Operações", neg_op,       f"{neg_op/total:.1%} do total",          12, MID_BLUE),
-]
+# Row 12-14
+kpi_box(ws1, 12, 1, "Sem Cod. Mercer 2026",  f"{n_sem_m26}", f"{n_sem_m26/total*100:.1f}% do total","FFEB9C")
+kpi_box(ws1, 12, 3, "Corporativo",           n_corp, f"{n_corp/total*100:.1f}% do total", LIGHT_BLUE)
+kpi_box(ws1, 12, 5, "Negócios & Operações",  n_neg,  f"{n_neg/total*100:.1f}% do total",  LIGHT_BLUE)
 
-# Lay out 3 KPIs per row, 2 cols each (cols A-B, D-E, G-H)
-col_offsets = [1, 4, 7]
-row_start = 4
-for idx, (label, value, note, _, color) in enumerate(kpis):
-    r = row_start + (idx // 3) * 4
-    c = col_offsets[idx % 3]
-    write_kpi(ws1, r, c, label, value, note, color)
+for r in [3, 7, 11, 15]:
+    ws1.row_dimensions[r].height = 8
+for r in [4, 5, 6, 8, 9, 10, 12, 13, 14]:
+    ws1.row_dimensions[r].height = 22
+for c in range(1, 7):
+    ws1.column_dimensions[get_column_letter(c)].width = 18
 
-# Distribution table at bottom
-dist_row = row_start + 3 * 4 + 2
-ws1.merge_cells(f"A{dist_row}:F{dist_row}")
-h = ws1.cell(row=dist_row, column=1)
-h.value = "Distribuição por GRUPO"
-h.fill = hdr_fill(DARK_BLUE)
-h.font = Font(color=WHITE, bold=True, size=12, name="Calibri")
-h.alignment = Alignment(horizontal="center", vertical="center")
-ws1.row_dimensions[dist_row].height = 28
 
-dist_row += 1
-headers = ["GRUPO", "Total", "Ativos", "Inativos", "% Ativos", "% do Total"]
-for ci, h_text in enumerate(headers, 1):
-    c = ws1.cell(row=dist_row, column=ci)
-    c.value = h_text
-    c.fill = hdr_fill(MID_BLUE)
-    c.font = Font(color=WHITE, bold=True, name="Calibri")
-    c.alignment = Alignment(horizontal="center", vertical="center")
-    c.border = thin_border()
-ws1.row_dimensions[dist_row].height = 24
-
-grupos = df.groupby("GRUPO")
-for i, (grp, gdf) in enumerate(grupos):
-    dist_row += 1
-    tot_g  = len(gdf)
-    ativ_g = (gdf["SITUAÇÃO"] == "ATIVO").sum()
-    inat_g = (gdf["SITUAÇÃO"] == "INATIVO").sum()
-    row_data = [grp, tot_g, ativ_g, inat_g, f"{ativ_g/tot_g:.1%}", f"{tot_g/total:.1%}"]
-    for ci, val in enumerate(row_data, 1):
-        c = ws1.cell(row=dist_row, column=ci)
-        c.value = val
-        c.fill = hdr_fill(ALT_ROW if i % 2 else WHITE)
-        c.font = Font(name="Calibri", size=10)
-        c.alignment = Alignment(horizontal="center")
-        c.border = thin_border()
-    ws1.row_dimensions[dist_row].height = 20
-
-# column widths
-for col_letter, width in zip("ABCDEFG", [30, 6, 14, 14, 14, 14, 14]):
-    ws1.column_dimensions[col_letter].width = width
-
-# ══════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
 # SHEET 2 – Distribuição por Grade
-# ══════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
 ws2 = wb.create_sheet("Distribuição por Grade")
 ws2.sheet_view.showGridLines = False
 
-ws2.merge_cells("A1:E1")
-t = ws2["A1"]
-t.value = "DISTRIBUIÇÃO POR GRADE"
-t.fill = hdr_fill(DARK_BLUE)
-t.font = Font(color=WHITE, bold=True, size=14, name="Calibri")
-t.alignment = Alignment(horizontal="center", vertical="center")
-ws2.row_dimensions[1].height = 32
+all_grades = sorted(df['GRADE'].unique())
 
-headers2 = ["Grade", "Ativos", "Inativos", "Total", "% do Total"]
-for ci, h in enumerate(headers2, 1):
-    c = ws2.cell(row=2, column=ci)
-    c.value = h
-    c.fill = hdr_fill(MID_BLUE)
-    c.font = Font(color=WHITE, bold=True, name="Calibri")
-    c.alignment = Alignment(horizontal="center", vertical="center")
-    c.border = thin_border()
-ws2.row_dimensions[2].height = 24
+ws2.merge_cells('A1:E1')
+t = ws2['A1']
+t.value = "Distribuição de Cargos por Grade"
+t.fill  = solid(DARK_BLUE)
+t.font  = Font(bold=True, color=WHITE, size=14)
+t.alignment = center()
+ws2.row_dimensions[1].height = 30
 
-all_grades = sorted(df["GRADE"].dropna().unique())
-grade_rows = []
+for c, h in enumerate(["Grade", "Ativos", "Inativos", "Total", "% do Total"], 1):
+    cell = ws2.cell(row=2, column=c)
+    cell.value = h
+    cell.fill  = solid(MID_BLUE)
+    cell.font  = header_font()
+    cell.alignment = center()
+    cell.border = thin_border()
+
+data_start = 3
 for i, grade in enumerate(all_grades):
-    gdf   = df[df["GRADE"] == grade]
-    ativ  = (gdf["SITUAÇÃO"] == "ATIVO").sum()
-    inat  = (gdf["SITUAÇÃO"] == "INATIVO").sum()
-    tot   = ativ + inat
-    pct   = tot / total
-    grade_rows.append([int(grade), ativ, inat, tot, pct])
-    row_idx = i + 3
-    row_data = [int(grade), ativ, inat, tot, f"{pct:.1%}"]
-    for ci, val in enumerate(row_data, 1):
-        c = ws2.cell(row=row_idx, column=ci)
-        c.value = val
-        c.fill = hdr_fill(ALT_ROW if i % 2 else WHITE)
-        c.font = Font(name="Calibri", size=10)
-        c.alignment = Alignment(horizontal="center")
-        c.border = thin_border()
-    ws2.row_dimensions[row_idx].height = 20
+    r = data_start + i
+    na = len(df[(df['GRADE'] == grade) & (df['SITUAÇÃO'] == 'ATIVO')])
+    ni = len(df[(df['GRADE'] == grade) & (df['SITUAÇÃO'] == 'INATIVO')])
+    tot2 = na + ni
+    bg = ALT_ROW if i % 2 == 0 else WHITE
+    for c, v in enumerate([grade, na, ni, tot2, tot2/total], 1):
+        cell = ws2.cell(row=r, column=c)
+        cell.value = v
+        cell.fill  = solid(bg)
+        cell.font  = normal_font()
+        cell.alignment = center()
+        cell.border = thin_border()
+        if c == 5:
+            cell.number_format = '0.0%'
 
-# totals row
-tot_row = len(all_grades) + 3
-ws2.cell(row=tot_row, column=1).value = "TOTAL"
-ws2.cell(row=tot_row, column=2).value = ativos
-ws2.cell(row=tot_row, column=3).value = inativos
-ws2.cell(row=tot_row, column=4).value = total
-ws2.cell(row=tot_row, column=5).value = "100,0%"
-apply_header_row(ws2, tot_row, 5, DARK_BLUE)
+tot_row = data_start + len(all_grades)
+for c, v in enumerate(["TOTAL", n_ativo, n_inativo, total, 1.0], 1):
+    cell = ws2.cell(row=tot_row, column=c)
+    cell.value = v
+    cell.fill  = solid(DARK_BLUE)
+    cell.font  = header_font()
+    cell.alignment = center()
+    cell.border = thin_border()
+    if c == 5:
+        cell.number_format = '0.0%'
 
-# Bar chart – ativos por grade
-chart2 = BarChart()
-chart2.type     = "col"
-chart2.title    = "Cargos Ativos por Grade"
-chart2.y_axis.title = "Quantidade"
-chart2.x_axis.title = "Grade"
-chart2.style    = 10
-chart2.width    = 18
-chart2.height   = 12
+# Bar chart
+chart = BarChart()
+chart.type   = "col"
+chart.title  = "Cargos Ativos por Grade"
+chart.y_axis.title = "Quantidade"
+chart.x_axis.title = "Grade"
+chart.style  = 10
+chart.height = 12
+chart.width  = 18
+data_ref = Reference(ws2, min_col=2, max_col=2, min_row=2, max_row=data_start + len(all_grades) - 1)
+cats_ref = Reference(ws2, min_col=1, min_row=data_start, max_row=data_start + len(all_grades) - 1)
+chart.add_data(data_ref, titles_from_data=True)
+chart.set_categories(cats_ref)
+chart.series[0].graphicalProperties.solidFill = MID_BLUE
+ws2.add_chart(chart, "G2")
+auto_width(ws2)
 
-data_ref   = Reference(ws2, min_col=2, max_col=2, min_row=2, max_row=len(all_grades) + 2)
-cats_ref   = Reference(ws2, min_col=1, min_row=3, max_row=len(all_grades) + 2)
-chart2.add_data(data_ref, titles_from_data=True)
-chart2.set_categories(cats_ref)
-chart2.series[0].graphicalProperties.solidFill = MID_BLUE
-ws2.add_chart(chart2, "G2")
 
-for col_letter, width in zip("ABCDE", [10, 12, 12, 12, 14]):
-    ws2.column_dimensions[col_letter].width = width
-
-# ══════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
 # SHEET 3 – Análise por Família GBS
-# ══════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
 ws3 = wb.create_sheet("Análise por Família GBS")
 ws3.sheet_view.showGridLines = False
 
-hier_order = ["GA", "GS", "Coordenador", "Supervisor", "Especialista", "Analista", "Assistente", "Auxiliar"]
-hier_present = [h for h in hier_order if h in df["GRUPO HIERARQUICO"].unique()]
+families    = sorted(df['FAMÍLIA GBS'].unique())
+hier_order  = ['GA', 'GS', 'Coordenador', 'Supervisor', 'Especialista',
+               'Analista', 'Assistente', 'Auxiliar']
+hier_present= [h for h in hier_order if h in df['GRUPO HIERARQUICO'].unique()]
 
-pivot = df.groupby(["FAMÍLIA GBS", "GRUPO HIERARQUICO"]).size().unstack(fill_value=0)
-# reorder columns
-cols_ordered = [h for h in hier_present if h in pivot.columns]
-pivot = pivot[cols_ordered]
-pivot["TOTAL"] = pivot.sum(axis=1)
+total_cols3 = 3 + len(hier_present)
+ws3.merge_cells('A1:' + get_column_letter(total_cols3) + '1')
+t = ws3['A1']
+t.value = "Análise por Família GBS × Grupo Hierárquico"
+t.fill  = solid(DARK_BLUE)
+t.font  = Font(bold=True, color=WHITE, size=14)
+t.alignment = center()
+ws3.row_dimensions[1].height = 30
 
-ws3.merge_cells(f"A1:{get_column_letter(len(cols_ordered) + 3)}1")
-t = ws3["A1"]
-t.value = "ANÁLISE POR FAMÍLIA GBS × GRUPO HIERÁRQUICO"
-t.fill = hdr_fill(DARK_BLUE)
-t.font = Font(color=WHITE, bold=True, size=14, name="Calibri")
-t.alignment = Alignment(horizontal="center", vertical="center")
-ws3.row_dimensions[1].height = 32
+ws3.cell(row=2, column=1).value = "Família GBS"
+ws3.cell(row=2, column=2).value = "Sub Família"
+for ci, h in enumerate(hier_present, 3):
+    ws3.cell(row=2, column=ci).value = h
+ws3.cell(row=2, column=total_cols3).value = "TOTAL"
+style_header_row(ws3, 2, total_cols3, bg=MID_BLUE)
 
-# header row
-header_row = ["FAMÍLIA GBS"] + cols_ordered + ["TOTAL"]
-for ci, h in enumerate(header_row, 1):
-    c = ws3.cell(row=2, column=ci)
-    c.value = h
-    c.fill = hdr_fill(MID_BLUE)
-    c.font = Font(color=WHITE, bold=True, name="Calibri", size=10)
-    c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-    c.border = thin_border()
-ws3.row_dimensions[2].height = 30
-
-for i, (familia, row_data) in enumerate(pivot.iterrows()):
-    r = i + 3
-    ws3.cell(row=r, column=1).value = familia
-    ws3.cell(row=r, column=1).font = Font(name="Calibri", size=10, bold=True)
-    ws3.cell(row=r, column=1).fill = hdr_fill(ALT_ROW if i % 2 else WHITE)
-    ws3.cell(row=r, column=1).border = thin_border()
-    for ci, val in enumerate(row_data.values, 2):
-        c = ws3.cell(row=r, column=ci)
-        c.value = int(val)
-        c.fill = hdr_fill(ALT_ROW if i % 2 else WHITE)
-        c.font = Font(name="Calibri", size=10)
-        c.alignment = Alignment(horizontal="center")
-        c.border = thin_border()
-    ws3.row_dimensions[r].height = 20
+r = 3
+for fam_i, fam in enumerate(families):
+    sub = df[df['FAMÍLIA GBS'] == fam]
+    subfams = sorted(sub['SUB FAMÍLIA'].unique())
+    for sf in subfams:
+        sub2 = sub[sub['SUB FAMÍLIA'] == sf]
+        bg = "EBF3FB" if fam_i % 2 == 0 else WHITE
+        ws3.cell(row=r, column=1).value = fam if sf == subfams[0] else ""
+        ws3.cell(row=r, column=2).value = sf
+        row_total = 0
+        for ci, h in enumerate(hier_present, 3):
+            cnt = len(sub2[sub2['GRUPO HIERARQUICO'] == h])
+            ws3.cell(row=r, column=ci).value = cnt if cnt > 0 else ""
+            row_total += cnt
+        ws3.cell(row=r, column=total_cols3).value = row_total
+        for c in range(1, total_cols3 + 1):
+            cell = ws3.cell(row=r, column=c)
+            cell.fill  = solid(bg)
+            cell.font  = normal_font()
+            cell.alignment = center()
+            cell.border = thin_border()
+        ws3.cell(row=r, column=1).alignment = Alignment(horizontal='left', vertical='center')
+        ws3.cell(row=r, column=2).alignment = Alignment(horizontal='left', vertical='center')
+        r += 1
+    # Subtotal
+    ws3.cell(row=r, column=1).value = f"Subtotal – {fam}"
+    ws3.merge_cells(start_row=r, start_column=1, end_row=r, end_column=2)
+    fam_total = 0
+    for ci, h in enumerate(hier_present, 3):
+        cnt = len(sub[sub['GRUPO HIERARQUICO'] == h])
+        ws3.cell(row=r, column=ci).value = cnt if cnt > 0 else ""
+        fam_total += cnt
+    ws3.cell(row=r, column=total_cols3).value = fam_total
+    for c in range(1, total_cols3 + 1):
+        cell = ws3.cell(row=r, column=c)
+        cell.fill  = solid(LIGHT_BLUE)
+        cell.font  = Font(bold=True, size=10, color=DARK_BLUE)
+        cell.alignment = center()
+        cell.border = thin_border()
+    ws3.cell(row=r, column=1).alignment = Alignment(horizontal='left', vertical='center')
+    r += 1
 
 # Grand total
-gt_row = len(pivot) + 3
-ws3.cell(row=gt_row, column=1).value = "GRAND TOTAL"
-totals = [pivot[c].sum() for c in cols_ordered] + [pivot["TOTAL"].sum()]
-for ci, val in enumerate(totals, 2):
-    ws3.cell(row=gt_row, column=ci).value = int(val)
-apply_header_row(ws3, gt_row, len(header_row), DARK_BLUE)
+ws3.cell(row=r, column=1).value = "TOTAL GERAL"
+ws3.merge_cells(start_row=r, start_column=1, end_row=r, end_column=2)
+grand = 0
+for ci, h in enumerate(hier_present, 3):
+    cnt = len(df[df['GRUPO HIERARQUICO'] == h])
+    ws3.cell(row=r, column=ci).value = cnt
+    grand += cnt
+ws3.cell(row=r, column=total_cols3).value = grand
+for c in range(1, total_cols3 + 1):
+    cell = ws3.cell(row=r, column=c)
+    cell.fill  = solid(DARK_BLUE)
+    cell.font  = header_font()
+    cell.alignment = center()
+    cell.border = thin_border()
+auto_width(ws3, max_w=40)
 
-ws3.column_dimensions["A"].width = 32
-for col_idx in range(2, len(header_row) + 2):
-    ws3.column_dimensions[get_column_letter(col_idx)].width = 14
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
 # SHEET 4 – Análise por Empresa
-# ══════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
 ws4 = wb.create_sheet("Análise por Empresa")
 ws4.sheet_view.showGridLines = False
 
-ws4.merge_cells("A1:G1")
-t = ws4["A1"]
-t.value = "ANÁLISE POR EMPRESA"
-t.fill = hdr_fill(DARK_BLUE)
-t.font = Font(color=WHITE, bold=True, size=14, name="Calibri")
-t.alignment = Alignment(horizontal="center", vertical="center")
-ws4.row_dimensions[1].height = 32
+ws4.merge_cells('A1:G1')
+t = ws4['A1']
+t.value = "Análise por Empresa"
+t.fill  = solid(DARK_BLUE)
+t.font  = Font(bold=True, color=WHITE, size=14)
+t.alignment = center()
+ws4.row_dimensions[1].height = 30
 
-headers4 = ["EMPRESA", "Total Cargos", "Ativos", "Inativos", "% Ativo", "Grades Distintos", "Famílias GBS Distintas"]
-for ci, h in enumerate(headers4, 1):
-    c = ws4.cell(row=2, column=ci)
-    c.value = h
-    c.fill = hdr_fill(MID_BLUE)
-    c.font = Font(color=WHITE, bold=True, name="Calibri")
-    c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-    c.border = thin_border()
-ws4.row_dimensions[2].height = 28
+for c, h in enumerate(["Empresa","Total Cargos","Ativos","Inativos",
+                        "% Ativo","Grades Distintos","Famílias GBS Distintas"], 1):
+    cell = ws4.cell(row=2, column=c)
+    cell.value = h
+    cell.fill  = solid(MID_BLUE)
+    cell.font  = header_font()
+    cell.alignment = center()
+    cell.border = thin_border()
 
-empresas_sorted = df.groupby("EMPRESA").size().sort_values(ascending=False).index
-for i, emp in enumerate(empresas_sorted):
-    edf    = df[df["EMPRESA"] == emp]
-    tot_e  = len(edf)
-    ativ_e = (edf["SITUAÇÃO"] == "ATIVO").sum()
-    inat_e = (edf["SITUAÇÃO"] == "INATIVO").sum()
-    pct_a  = ativ_e / tot_e
-    grades = edf["GRADE"].nunique()
-    fams   = edf["FAMÍLIA GBS"].nunique()
-    r = i + 3
-    row_data = [emp, tot_e, ativ_e, inat_e, f"{pct_a:.1%}", grades, fams]
-    for ci, val in enumerate(row_data, 1):
-        c = ws4.cell(row=r, column=ci)
-        c.value = val
-        c.fill = hdr_fill(ALT_ROW if i % 2 else WHITE)
-        c.font = Font(name="Calibri", size=10)
-        c.alignment = Alignment(horizontal="center" if ci > 1 else "left", vertical="center")
-        c.border = thin_border()
-    ws4.row_dimensions[r].height = 20
+for i, emp in enumerate(sorted(df['EMPRESA'].unique())):
+    r = 3 + i
+    sub = df[df['EMPRESA'] == emp]
+    na2 = len(sub[sub['SITUAÇÃO'] == 'ATIVO'])
+    ni2 = len(sub[sub['SITUAÇÃO'] == 'INATIVO'])
+    tot2 = len(sub)
+    bg = ALT_ROW if i % 2 == 0 else WHITE
+    for c, v in enumerate([emp, tot2, na2, ni2, na2/tot2 if tot2 > 0 else 0,
+                            sub['GRADE'].nunique(), sub['FAMÍLIA GBS'].nunique()], 1):
+        cell = ws4.cell(row=r, column=c)
+        cell.value = v
+        cell.fill  = solid(bg)
+        cell.font  = normal_font()
+        cell.alignment = center()
+        cell.border = thin_border()
+        if c == 5:
+            cell.number_format = '0.0%'
 
-# totals
-last_r = len(list(empresas_sorted)) + 3
-ws4.cell(row=last_r, column=1).value = "TOTAL"
-ws4.cell(row=last_r, column=2).value = total
-ws4.cell(row=last_r, column=3).value = ativos
-ws4.cell(row=last_r, column=4).value = inativos
-ws4.cell(row=last_r, column=5).value = f"{ativos/total:.1%}"
-ws4.cell(row=last_r, column=6).value = df["GRADE"].nunique()
-ws4.cell(row=last_r, column=7).value = df["FAMÍLIA GBS"].nunique()
-apply_header_row(ws4, last_r, 7, DARK_BLUE)
+n_emp_rows = df['EMPRESA'].nunique()
+for c, v in enumerate(["TOTAL", total, n_ativo, n_inativo, n_ativo/total, "", ""], 1):
+    cell = ws4.cell(row=3 + n_emp_rows, column=c)
+    cell.value = v
+    cell.fill  = solid(DARK_BLUE)
+    cell.font  = header_font()
+    cell.alignment = center()
+    cell.border = thin_border()
+    if c == 5 and isinstance(v, float):
+        cell.number_format = '0.0%'
+auto_width(ws4)
 
-ws4.column_dimensions["A"].width = 20
-for col_letter, w in zip("BCDEFG", [14, 10, 10, 12, 18, 22]):
-    ws4.column_dimensions[col_letter].width = w
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
 # SHEET 5 – Benchmarking Mercer
-# ══════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
 ws5 = wb.create_sheet("Benchmarking Mercer")
 ws5.sheet_view.showGridLines = False
 
-ws5.merge_cells("A1:F1")
-t = ws5["A1"]
-t.value = "BENCHMARKING MERCER – COBERTURA DE CARGOS"
-t.fill = hdr_fill(DARK_BLUE)
-t.font = Font(color=WHITE, bold=True, size=14, name="Calibri")
-t.alignment = Alignment(horizontal="center", vertical="center")
-ws5.row_dimensions[1].height = 32
+ws5.merge_cells('A1:F1')
+t = ws5['A1']
+t.value = "Benchmarking Mercer – Cobertura 2025 vs 2026"
+t.fill  = solid(DARK_BLUE)
+t.font  = Font(bold=True, color=WHITE, size=14)
+t.alignment = center()
+ws5.row_dimensions[1].height = 30
 
-com_2025    = df["Cod. Mercer 2025"].notna().sum()
-com_2026    = df["Cod. Mercer 2026"].notna().sum()
-sem_2026    = df["Cod. Mercer 2026"].isna().sum()
-cobertura   = com_2026 / total
+n_m25  = df['Cod. Mercer 2025'].notna().sum()
+n_m26  = df['Cod. Mercer 2026'].notna().sum()
+n_s26  = df['Cod. Mercer 2026'].isna().sum()
+pct_cob= n_m26 / total
 
-summary_data = [
-    ("Cargos com Cod. Mercer 2025",  com_2025,  f"{com_2025/total:.1%}"),
-    ("Cargos com Cod. Mercer 2026",  com_2026,  f"{com_2026/total:.1%}"),
-    ("Cargos SEM Cod. Mercer 2026",  sem_2026,  f"{sem_2026/total:.1%}"),
-    ("% Cobertura Mercer 2026",      f"{cobertura:.1%}", ""),
+summ_data = [
+    ("Indicador",              "Quantidade", "% Total"),
+    ("Cargos com Mercer 2025", n_m25,         n_m25/total),
+    ("Cargos com Mercer 2026", n_m26,         n_m26/total),
+    ("Cargos SEM Mercer 2026", n_s26,         n_s26/total),
+    ("% Cobertura Mercer 2026","",            pct_cob),
 ]
+for ri, row_data in enumerate(summ_data):
+    r = 3 + ri
+    for c, v in enumerate(row_data, 2):
+        cell = ws5.cell(row=r, column=c)
+        cell.value = v
+        if ri == 0:
+            cell.fill  = solid(MID_BLUE)
+            cell.font  = header_font()
+        else:
+            bg_map = {1: "C6EFCE", 2: "C6EFCE", 3: "FFEB9C", 4: LIGHT_BLUE}
+            cell.fill  = solid(bg_map.get(ri, WHITE))
+            cell.font  = Font(bold=(c == 2), size=10)
+        cell.alignment = center()
+        cell.border = thin_border()
+        if c == 4 and ri > 0 and isinstance(v, float):
+            cell.number_format = '0.0%'
 
-ws5.cell(row=2, column=1).value = "Indicador"
-ws5.cell(row=2, column=2).value = "Quantidade"
-ws5.cell(row=2, column=3).value = "% do Total"
-apply_header_row(ws5, 2, 3, MID_BLUE)
+# List of cargos SEM Mercer 2026
+sem_df = df[df['Cod. Mercer 2026'].isna()][['CARGO','EMPRESA','GRADE','FAMÍLIA GBS','SITUAÇÃO']].copy()
+sem_df = sem_df.sort_values(['FAMÍLIA GBS', 'GRADE'])
 
-for i, (label, qty, pct) in enumerate(summary_data):
-    r = i + 3
-    is_alt = i % 2 == 0
-    for ci, val in enumerate([label, qty, pct], 1):
-        c = ws5.cell(row=r, column=ci)
-        c.value = val
-        bg = RED_LIGHT if "SEM" in label else (ALT_ROW if is_alt else WHITE)
-        c.fill = hdr_fill(bg)
-        c.font = Font(name="Calibri", size=10,
-                      bold=("SEM" in label or "Cobertura" in label))
-        c.alignment = Alignment(horizontal="center" if ci > 1 else "left")
-        c.border = thin_border()
-    ws5.row_dimensions[r].height = 20
+row_offset = 11
+ws5.merge_cells(f'A{row_offset}:E{row_offset}')
+hdr = ws5.cell(row=row_offset, column=1)
+hdr.value = f"Cargos SEM Cod. Mercer 2026 ({len(sem_df)} cargos)"
+hdr.fill  = solid(DARK_BLUE)
+hdr.font  = Font(bold=True, color=WHITE, size=12)
+hdr.alignment = center()
+ws5.row_dimensions[row_offset].height = 24
 
-# Gap list
-ws5.merge_cells("A8:F8")
-gap_hdr = ws5["A8"]
-gap_hdr.value = "CARGOS SEM COD. MERCER 2026 (lista detalhada)"
-gap_hdr.fill = hdr_fill(ORANGE)
-gap_hdr.font = Font(bold=True, name="Calibri", size=11, color=DARK_BLUE)
-gap_hdr.alignment = Alignment(horizontal="center")
-ws5.row_dimensions[8].height = 26
+for c, h in enumerate(["Cargo","Empresa","Grade","Família GBS","Situação"], 1):
+    cell = ws5.cell(row=row_offset + 1, column=c)
+    cell.value = h
+    cell.fill  = solid(MID_BLUE)
+    cell.font  = header_font()
+    cell.alignment = center()
+    cell.border = thin_border()
 
-gap_cols = ["CARGO", "EMPRESA", "GRADE", "FAMÍLIA GBS", "GRUPO HIERARQUICO", "Cod. Mercer 2025"]
-for ci, h in enumerate(gap_cols, 1):
-    c = ws5.cell(row=9, column=ci)
-    c.value = h
-    c.fill = hdr_fill(MID_BLUE)
-    c.font = Font(color=WHITE, bold=True, name="Calibri")
-    c.alignment = Alignment(horizontal="center", wrap_text=True)
-    c.border = thin_border()
-ws5.row_dimensions[9].height = 24
+for i, (_, row_d) in enumerate(sem_df.iterrows()):
+    r = row_offset + 2 + i
+    bg = ALT_ROW if i % 2 == 0 else WHITE
+    for c, v in enumerate([row_d['CARGO'], row_d['EMPRESA'], row_d['GRADE'],
+                            row_d['FAMÍLIA GBS'], row_d['SITUAÇÃO']], 1):
+        cell = ws5.cell(row=r, column=c)
+        cell.value = v
+        cell.fill  = solid(bg)
+        cell.font  = normal_font()
+        cell.alignment = Alignment(horizontal='left' if c in [1, 4] else 'center',
+                                    vertical='center')
+        cell.border = thin_border()
+auto_width(ws5, max_w=55)
 
-gap_df = df[df["Cod. Mercer 2026"].isna()][gap_cols].sort_values(["EMPRESA", "GRADE"])
-for i, (_, row) in enumerate(gap_df.iterrows()):
-    r = i + 10
-    for ci, col in enumerate(gap_cols, 1):
-        c = ws5.cell(row=r, column=ci)
-        c.value = row[col]
-        c.fill = hdr_fill(ALT_ROW if i % 2 else WHITE)
-        c.font = Font(name="Calibri", size=10)
-        c.alignment = Alignment(horizontal="center" if ci > 1 else "left", wrap_text=True)
-        c.border = thin_border()
-    ws5.row_dimensions[r].height = 20
 
-ws5.column_dimensions["A"].width = 45
-ws5.column_dimensions["B"].width = 18
-ws5.column_dimensions["C"].width = 10
-ws5.column_dimensions["D"].width = 30
-ws5.column_dimensions["E"].width = 22
-ws5.column_dimensions["F"].width = 20
-
-# ══════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
 # SHEET 6 – Pirâmide Hierárquica
-# ══════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
 ws6 = wb.create_sheet("Pirâmide Hierárquica")
 ws6.sheet_view.showGridLines = False
 
-ws6.merge_cells("A1:D1")
-t = ws6["A1"]
-t.value = "PIRÂMIDE HIERÁRQUICA – CARGOS ATIVOS"
-t.fill = hdr_fill(DARK_BLUE)
-t.font = Font(color=WHITE, bold=True, size=14, name="Calibri")
-t.alignment = Alignment(horizontal="center", vertical="center")
-ws6.row_dimensions[1].height = 32
+ws6.merge_cells('A1:D1')
+t = ws6['A1']
+t.value = "Pirâmide Hierárquica – Cargos Ativos"
+t.fill  = solid(DARK_BLUE)
+t.font  = Font(bold=True, color=WHITE, size=14)
+t.alignment = center()
+ws6.row_dimensions[1].height = 30
 
-headers6 = ["Grupo Hierárquico", "Cargos Ativos", "% do Total", "Ordem"]
-for ci, h in enumerate(headers6, 1):
-    c = ws6.cell(row=2, column=ci)
-    c.value = h
-    c.fill = hdr_fill(MID_BLUE)
-    c.font = Font(color=WHITE, bold=True, name="Calibri")
-    c.alignment = Alignment(horizontal="center")
-    c.border = thin_border()
-ws6.row_dimensions[2].height = 24
+for c, h in enumerate(["Grupo Hierárquico","Cargos Ativos","Cargos Inativos","Total"], 1):
+    cell = ws6.cell(row=2, column=c)
+    cell.value = h
+    cell.fill  = solid(MID_BLUE)
+    cell.font  = header_font()
+    cell.alignment = center()
+    cell.border = thin_border()
 
-ativos_df = df[df["SITUAÇÃO"] == "ATIVO"]
-hier_counts = ativos_df.groupby("GRUPO HIERARQUICO").size()
-hier_ordered = [(h, hier_counts.get(h, 0)) for h in hier_order if h in hier_counts.index]
-total_ativos = sum(v for _, v in hier_ordered)
+hier_full = ['GA','GS','Coordenador','Supervisor','Especialista','Analista','Assistente','Auxiliar']
+present_order = [h for h in hier_full if h in df['GRUPO HIERARQUICO'].unique()]
+present_order += [h for h in df['GRUPO HIERARQUICO'].unique() if h not in present_order]
 
-for i, (grp, cnt) in enumerate(hier_ordered):
-    r = i + 3
-    pct = cnt / total_ativos if total_ativos else 0
-    for ci, val in enumerate([grp, cnt, f"{pct:.1%}", i + 1], 1):
-        c = ws6.cell(row=r, column=ci)
-        c.value = val
-        c.fill = hdr_fill(ALT_ROW if i % 2 else WHITE)
-        c.font = Font(name="Calibri", size=10, bold=(ci == 1))
-        c.alignment = Alignment(horizontal="center" if ci > 1 else "left")
-        c.border = thin_border()
-    ws6.row_dimensions[r].height = 22
+for i, grp in enumerate(present_order):
+    r = 3 + i
+    na2 = len(ativos[ativos['GRUPO HIERARQUICO'] == grp])
+    ni2 = len(inativos[inativos['GRUPO HIERARQUICO'] == grp])
+    bg = ALT_ROW if i % 2 == 0 else WHITE
+    for c, v in enumerate([grp, na2, ni2, na2 + ni2], 1):
+        cell = ws6.cell(row=r, column=c)
+        cell.value = v
+        cell.fill  = solid(bg)
+        cell.font  = normal_font()
+        cell.alignment = center()
+        cell.border = thin_border()
 
-# total row
-tot_r = len(hier_ordered) + 3
-ws6.cell(row=tot_r, column=1).value = "TOTAL"
-ws6.cell(row=tot_r, column=2).value = total_ativos
-ws6.cell(row=tot_r, column=3).value = "100,0%"
-ws6.cell(row=tot_r, column=4).value = ""
-apply_header_row(ws6, tot_r, 4, DARK_BLUE)
+tot_r6 = 3 + len(present_order)
+for c, v in enumerate(["TOTAL", n_ativo, n_inativo, total], 1):
+    cell = ws6.cell(row=tot_r6, column=c)
+    cell.value = v
+    cell.fill  = solid(DARK_BLUE)
+    cell.font  = header_font()
+    cell.alignment = center()
+    cell.border = thin_border()
 
 # Horizontal bar chart
 chart6 = BarChart()
-chart6.type      = "bar"       # horizontal
-chart6.title     = "Pirâmide de Cargos Ativos por Nível Hierárquico"
+chart6.type   = "bar"
+chart6.title  = "Cargos Ativos por Grupo Hierárquico"
 chart6.x_axis.title = "Quantidade"
-chart6.style     = 10
-chart6.width     = 20
-chart6.height    = 14
-
-data6 = Reference(ws6, min_col=2, max_col=2, min_row=2, max_row=len(hier_ordered) + 2)
-cats6 = Reference(ws6, min_col=1, min_row=3, max_row=len(hier_ordered) + 2)
+chart6.y_axis.title = "Grupo Hierárquico"
+chart6.style  = 10
+chart6.height = 14
+chart6.width  = 20
+data6 = Reference(ws6, min_col=2, max_col=2, min_row=2, max_row=2 + len(present_order))
+cats6 = Reference(ws6, min_col=1, min_row=3, max_row=2 + len(present_order))
 chart6.add_data(data6, titles_from_data=True)
 chart6.set_categories(cats6)
 chart6.series[0].graphicalProperties.solidFill = MID_BLUE
 ws6.add_chart(chart6, "F2")
+auto_width(ws6)
 
-ws6.column_dimensions["A"].width = 22
-ws6.column_dimensions["B"].width = 16
-ws6.column_dimensions["C"].width = 14
-ws6.column_dimensions["D"].width = 10
 
-# ── save ──────────────────────────────────────────────────────────────────────
-OUTPUT = "/home/user/Projects/Dashboard_Cargos_GBS.xlsx"
+# ── Save ─────────────────────────────────────────────────────────────────────
 wb.save(OUTPUT)
 print(f"Saved: {OUTPUT}")
