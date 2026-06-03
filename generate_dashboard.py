@@ -1,517 +1,491 @@
 """
 Dashboard Generator - Cargos GBS
-Generates Dashboard_Cargos_GBS.xlsx with 6 sheets.
+Gera Dashboard_Cargos_GBS.xlsx com fórmulas em PT-BR.
+Aba "Dados" contém os dados brutos; todas as outras abas referenciam via fórmulas.
 """
 
 import pandas as pd
 import openpyxl
 from openpyxl import Workbook
-from openpyxl.styles import (
-    PatternFill, Font, Alignment, Border, Side
-)
+from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.chart import BarChart, Reference
 
 SOURCE = '/root/.claude/uploads/39518091-0fb9-4665-a41a-ed8e752c52fd/88b7cf84-Cargos_GBS.xlsx'
 OUTPUT = '/home/user/Projects/Dashboard_Cargos_GBS.xlsx'
 
-# ── colour palette ──────────────────────────────────────────────────────────
-DARK_BLUE   = "1F3864"
-MID_BLUE    = "2E75B6"
-LIGHT_BLUE  = "BDD7EE"
-LIGHT_GREY  = "F2F2F2"
-DARK_GREY   = "595959"
-WHITE       = "FFFFFF"
-ALT_ROW     = "DEEAF1"
+# Mapeamento de colunas na aba Dados (letra)
+# A=EMPRESA, B=EMPRESA(SAP), C=CÓDIGO CARGO, D=CARGO, E=GRADE, F=SITUAÇÃO,
+# G=GRUPO, H=FAMÍLIA GBS, I=SUB FAMÍLIA, J=GRUPO HIERARQUICO, K=NÍVEL,
+# L=CBO, M=REGRA CONTROLE JORNADA, N=CONTROLE JORNADA, O=COTA APRENDIZ,
+# P=TIPO CONTRATO, Q=SINDICATO, R=MERCADO SELECIONADO, S=DESCRIÇÃO SUMÁRIA,
+# T=Cod. Mercer 2025, U=Cod. Mercer 2026
+LAST_ROW = 195  # linha 2 a 195 = 194 registros
 
-def solid(hex_color):
-    return PatternFill("solid", fgColor=hex_color)
+# ── Paleta ───────────────────────────────────────────────────────────────────
+DARK_BLUE  = "1F3864"
+MID_BLUE   = "2E75B6"
+LIGHT_BLUE = "BDD7EE"
+ALT_ROW    = "DEEAF1"
+WHITE      = "FFFFFF"
+DARK_GREY  = "595959"
+GREEN_FILL = "C6EFCE"
+YELLOW_FILL= "FFEB9C"
 
-def thin_border():
+def solid(h):
+    return PatternFill("solid", fgColor=h)
+
+def border():
     s = Side(style='thin', color="BFBFBF")
     return Border(left=s, right=s, top=s, bottom=s)
 
-def header_font(white=True, size=11):
-    return Font(bold=True, color=WHITE if white else DARK_BLUE, size=size)
+def hfont(size=11):
+    return Font(bold=True, color=WHITE, size=size)
 
-def normal_font(bold=False, size=10):
-    return Font(bold=bold, size=size)
+def nfont(bold=False, size=10):
+    return Font(bold=bold, size=size, color="000000")
 
 def center():
-    return Alignment(horizontal='center', vertical='center', wrap_text=False)
+    return Alignment(horizontal='center', vertical='center')
+
+def left():
+    return Alignment(horizontal='left', vertical='center')
 
 def auto_width(ws, min_w=8, max_w=50):
     for col in ws.columns:
-        max_len = 0
-        col_letter = get_column_letter(col[0].column)
-        for cell in col:
-            try:
-                if cell.value:
-                    max_len = max(max_len, len(str(cell.value)))
-            except Exception:
-                pass
-        ws.column_dimensions[col_letter].width = min(max_w, max(min_w, max_len + 2))
+        ml = max((len(str(c.value)) for c in col if c.value), default=0)
+        ws.column_dimensions[get_column_letter(col[0].column)].width = min(max_w, max(min_w, ml + 2))
 
-def style_header_row(ws, row, cols, bg=DARK_BLUE, font_size=11):
-    for c in range(1, cols + 1):
+def style_row(ws, row, ncols, bg, bold=False, font_color=None):
+    for c in range(1, ncols + 1):
         cell = ws.cell(row=row, column=c)
         cell.fill = solid(bg)
-        cell.font = header_font(white=True, size=font_size)
+        cell.font = Font(bold=bold, size=10,
+                         color=font_color if font_color else ("FFFFFF" if bg == DARK_BLUE else "000000"))
         cell.alignment = center()
-        cell.border = thin_border()
+        cell.border = border()
 
+def title_row(ws, text, ncols, row=1):
+    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=ncols)
+    c = ws.cell(row=row, column=1)
+    c.value = text
+    c.fill = solid(DARK_BLUE)
+    c.font = Font(bold=True, color=WHITE, size=14)
+    c.alignment = center()
+    ws.row_dimensions[row].height = 30
 
-# ── Load data ────────────────────────────────────────────────────────────────
+def header_cells(ws, row, headers, bg=MID_BLUE):
+    for c, h in enumerate(headers, 1):
+        cell = ws.cell(row=row, column=c)
+        cell.value = h
+        cell.fill = solid(bg)
+        cell.font = hfont(11)
+        cell.alignment = center()
+        cell.border = border()
+
+# ── Carregar dados para copiar na aba Dados ───────────────────────────────────
 df = pd.read_excel(SOURCE)
-df['SITUAÇÃO'] = df['SITUAÇÃO'].str.strip()
-df['GRUPO'] = df['GRUPO'].str.strip()
-df['FAMÍLIA GBS'] = df['FAMÍLIA GBS'].str.strip()
-df['GRUPO HIERARQUICO'] = df['GRUPO HIERARQUICO'].str.strip()
-df['EMPRESA'] = df['EMPRESA'].str.strip()
-
-ativos   = df[df['SITUAÇÃO'] == 'ATIVO']
-inativos = df[df['SITUAÇÃO'] == 'INATIVO']
-
-total     = len(df)
-n_ativo   = len(ativos)
-n_inativo = len(inativos)
-n_emp     = df['EMPRESA'].nunique()
-n_fam     = df['FAMÍLIA GBS'].nunique()
-n_grp_h   = df['GRUPO HIERARQUICO'].nunique()
-n_sem_m26 = df['Cod. Mercer 2026'].isna().sum()
-n_corp    = (df['GRUPO'] == 'Corporativo').sum()
-n_neg     = (df['GRUPO'] == 'Negócios & operações').sum()
 
 wb = Workbook()
-wb.remove(wb.active)   # remove default sheet
+wb.remove(wb.active)
+
+# ════════════════════════════════════════════════════════════════════════════
+# ABA 0 – Dados (dados brutos, referenciados pelas fórmulas)
+# ════════════════════════════════════════════════════════════════════════════
+ws0 = wb.create_sheet("Dados")
+
+# Cabeçalho
+for c, col in enumerate(df.columns, 1):
+    cell = ws0.cell(row=1, column=c)
+    cell.value = col
+    cell.fill = solid(DARK_BLUE)
+    cell.font = hfont(10)
+    cell.alignment = center()
+    cell.border = border()
+
+# Dados
+for r_i, row_data in df.iterrows():
+    for c_i, val in enumerate(row_data, 1):
+        cell = ws0.cell(row=r_i + 2, column=c_i)
+        cell.value = val
+        cell.border = border()
+        cell.font = nfont(size=9)
+        cell.alignment = left()
+
+auto_width(ws0, max_w=40)
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# SHEET 1 – KPIs Executivos
+# ABA 1 – KPIs Executivos  (fórmulas PT-BR)
 # ════════════════════════════════════════════════════════════════════════════
 ws1 = wb.create_sheet("KPIs Executivos")
 ws1.sheet_view.showGridLines = False
 
-# Title
 ws1.merge_cells('A1:F1')
-title = ws1['A1']
-title.value = "DASHBOARD – CARGOS GBS"
-title.fill  = solid(DARK_BLUE)
-title.font  = Font(bold=True, color=WHITE, size=16)
-title.alignment = center()
+c = ws1['A1']
+c.value = "DASHBOARD – CARGOS GBS"
+c.fill = solid(DARK_BLUE)
+c.font = Font(bold=True, color=WHITE, size=16)
+c.alignment = center()
 ws1.row_dimensions[1].height = 36
 
 ws1.merge_cells('A2:F2')
-sub = ws1['A2']
-sub.value = "Visão Executiva de KPIs"
-sub.fill  = solid(MID_BLUE)
-sub.font  = Font(bold=True, color=WHITE, size=12)
-sub.alignment = center()
+c = ws1['A2']
+c.value = "Visão Executiva de KPIs"
+c.fill = solid(MID_BLUE)
+c.font = Font(bold=True, color=WHITE, size=12)
+c.alignment = center()
 ws1.row_dimensions[2].height = 24
 
-def kpi_box(ws, row, col, label, value, sub_val=None, bg=LIGHT_BLUE):
-    ws.merge_cells(start_row=row,   start_column=col,
-                   end_row=row,     end_column=col + 1)
-    ws.merge_cells(start_row=row+1, start_column=col,
-                   end_row=row+1,   end_column=col + 1)
+def kpi_box(ws, row, col, label, formula_value, formula_pct=None, bg=LIGHT_BLUE):
+    ws.merge_cells(start_row=row,   start_column=col, end_row=row,   end_column=col+1)
+    ws.merge_cells(start_row=row+1, start_column=col, end_row=row+1, end_column=col+1)
     lbl = ws.cell(row=row, column=col)
     lbl.value = label
-    lbl.fill  = solid(DARK_BLUE)
-    lbl.font  = Font(bold=True, color=WHITE, size=10)
+    lbl.fill = solid(DARK_BLUE)
+    lbl.font = Font(bold=True, color=WHITE, size=10)
     lbl.alignment = center()
     val = ws.cell(row=row+1, column=col)
-    val.value = value
-    val.fill  = solid(bg)
-    val.font  = Font(bold=True, color=DARK_BLUE, size=14)
+    val.value = formula_value
+    val.fill = solid(bg)
+    val.font = Font(bold=True, color=DARK_BLUE, size=14)
     val.alignment = center()
-    if sub_val is not None:
-        ws.merge_cells(start_row=row+2, start_column=col,
-                       end_row=row+2,   end_column=col + 1)
+    if formula_pct is not None:
+        ws.merge_cells(start_row=row+2, start_column=col, end_row=row+2, end_column=col+1)
         sv = ws.cell(row=row+2, column=col)
-        sv.value = sub_val
-        sv.fill  = solid(bg)
-        sv.font  = Font(color=DARK_GREY, size=9)
+        sv.value = formula_pct
+        sv.fill = solid(bg)
+        sv.font = Font(color=DARK_GREY, size=9)
         sv.alignment = center()
+        sv.number_format = '0,0%'
 
-# Row 4-6
-kpi_box(ws1, 4, 1, "Total de Cargos",       total,        None,                             LIGHT_BLUE)
-kpi_box(ws1, 4, 3, "Cargos Ativos",         f"{n_ativo}", f"{n_ativo/total*100:.1f}% do total",  "C6EFCE")
-kpi_box(ws1, 4, 5, "Cargos Inativos",       f"{n_inativo}",f"{n_inativo/total*100:.1f}% do total","FFEB9C")
+# Linha 4-6
+kpi_box(ws1, 4, 1, "Total de Cargos",
+        f'=CONT.VALORES(Dados!A2:A{LAST_ROW})',
+        None, LIGHT_BLUE)
 
-# Row 8-10
-kpi_box(ws1, 8, 1, "Total de Empresas",     n_emp,  None, LIGHT_BLUE)
-kpi_box(ws1, 8, 3, "Famílias GBS",          n_fam,  None, LIGHT_BLUE)
-kpi_box(ws1, 8, 5, "Grupos Hierárquicos",   n_grp_h,None, LIGHT_BLUE)
+kpi_box(ws1, 4, 3, "Cargos Ativos",
+        f'=CONT.SE(Dados!F2:F{LAST_ROW},"ATIVO")',
+        f'=CONT.SE(Dados!F2:F{LAST_ROW},"ATIVO")/CONT.VALORES(Dados!A2:A{LAST_ROW})',
+        GREEN_FILL)
 
-# Row 12-14
-kpi_box(ws1, 12, 1, "Sem Cod. Mercer 2026",  f"{n_sem_m26}", f"{n_sem_m26/total*100:.1f}% do total","FFEB9C")
-kpi_box(ws1, 12, 3, "Corporativo",           n_corp, f"{n_corp/total*100:.1f}% do total", LIGHT_BLUE)
-kpi_box(ws1, 12, 5, "Negócios & Operações",  n_neg,  f"{n_neg/total*100:.1f}% do total",  LIGHT_BLUE)
+kpi_box(ws1, 4, 5, "Cargos Inativos",
+        f'=CONT.SE(Dados!F2:F{LAST_ROW},"INATIVO")',
+        f'=CONT.SE(Dados!F2:F{LAST_ROW},"INATIVO")/CONT.VALORES(Dados!A2:A{LAST_ROW})',
+        YELLOW_FILL)
+
+# Linha 8-10
+kpi_box(ws1, 8, 1, "Total de Empresas",
+        f'=CONT.VALORES(ÚNICO(Dados!A2:A{LAST_ROW}))',
+        None, LIGHT_BLUE)
+
+kpi_box(ws1, 8, 3, "Famílias GBS",
+        f'=CONT.VALORES(ÚNICO(Dados!H2:H{LAST_ROW}))',
+        None, LIGHT_BLUE)
+
+kpi_box(ws1, 8, 5, "Grupos Hierárquicos",
+        f'=CONT.VALORES(ÚNICO(Dados!J2:J{LAST_ROW}))',
+        None, LIGHT_BLUE)
+
+# Linha 12-14
+kpi_box(ws1, 12, 1, "Sem Cod. Mercer 2026",
+        f'=CONT.SE(Dados!U2:U{LAST_ROW},"")',
+        f'=CONT.SE(Dados!U2:U{LAST_ROW},"")/CONT.VALORES(Dados!A2:A{LAST_ROW})',
+        YELLOW_FILL)
+
+kpi_box(ws1, 12, 3, "Corporativo",
+        f'=CONT.SE(Dados!G2:G{LAST_ROW},"Corporativo")',
+        f'=CONT.SE(Dados!G2:G{LAST_ROW},"Corporativo")/CONT.VALORES(Dados!A2:A{LAST_ROW})',
+        LIGHT_BLUE)
+
+kpi_box(ws1, 12, 5, "Negócios & Operações",
+        f'=CONT.SE(Dados!G2:G{LAST_ROW},"Negócios & operações")',
+        f'=CONT.SE(Dados!G2:G{LAST_ROW},"Negócios & operações")/CONT.VALORES(Dados!A2:A{LAST_ROW})',
+        LIGHT_BLUE)
 
 for r in [3, 7, 11, 15]:
     ws1.row_dimensions[r].height = 8
 for r in [4, 5, 6, 8, 9, 10, 12, 13, 14]:
-    ws1.row_dimensions[r].height = 22
-for c in range(1, 7):
-    ws1.column_dimensions[get_column_letter(c)].width = 18
+    ws1.row_dimensions[r].height = 24
+for col in range(1, 7):
+    ws1.column_dimensions[get_column_letter(col)].width = 20
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# SHEET 2 – Distribuição por Grade
+# ABA 2 – Distribuição por Grade
 # ════════════════════════════════════════════════════════════════════════════
 ws2 = wb.create_sheet("Distribuição por Grade")
 ws2.sheet_view.showGridLines = False
 
-all_grades = sorted(df['GRADE'].unique())
+grades = [2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+title_row(ws2, "Distribuição de Cargos por Grade", 5)
+header_cells(ws2, 2, ["Grade", "Ativos", "Inativos", "Total", "% do Total"])
 
-ws2.merge_cells('A1:E1')
-t = ws2['A1']
-t.value = "Distribuição de Cargos por Grade"
-t.fill  = solid(DARK_BLUE)
-t.font  = Font(bold=True, color=WHITE, size=14)
-t.alignment = center()
-ws2.row_dimensions[1].height = 30
-
-for c, h in enumerate(["Grade", "Ativos", "Inativos", "Total", "% do Total"], 1):
-    cell = ws2.cell(row=2, column=c)
-    cell.value = h
-    cell.fill  = solid(MID_BLUE)
-    cell.font  = header_font()
-    cell.alignment = center()
-    cell.border = thin_border()
-
-data_start = 3
-for i, grade in enumerate(all_grades):
-    r = data_start + i
-    na = len(df[(df['GRADE'] == grade) & (df['SITUAÇÃO'] == 'ATIVO')])
-    ni = len(df[(df['GRADE'] == grade) & (df['SITUAÇÃO'] == 'INATIVO')])
-    tot2 = na + ni
+for i, g in enumerate(grades):
+    r = 3 + i
     bg = ALT_ROW if i % 2 == 0 else WHITE
-    for c, v in enumerate([grade, na, ni, tot2, tot2/total], 1):
-        cell = ws2.cell(row=r, column=c)
-        cell.value = v
-        cell.fill  = solid(bg)
-        cell.font  = normal_font()
-        cell.alignment = center()
-        cell.border = thin_border()
-        if c == 5:
-            cell.number_format = '0.0%'
+    # Escreve o valor do grade como número
+    ws2.cell(row=r, column=1).value = g
+    # Fórmulas CONT.SES
+    ws2.cell(row=r, column=2).value = (
+        f'=CONT.SES(Dados!E$2:E${LAST_ROW},A{r},Dados!F$2:F${LAST_ROW},"ATIVO")')
+    ws2.cell(row=r, column=3).value = (
+        f'=CONT.SES(Dados!E$2:E${LAST_ROW},A{r},Dados!F$2:F${LAST_ROW},"INATIVO")')
+    ws2.cell(row=r, column=4).value = f'=B{r}+C{r}'
+    ws2.cell(row=r, column=5).value = f'=D{r}/CONT.VALORES(Dados!A$2:A${LAST_ROW})'
+    ws2.cell(row=r, column=5).number_format = '0,0%'
+    style_row(ws2, r, 5, bg)
 
-tot_row = data_start + len(all_grades)
-for c, v in enumerate(["TOTAL", n_ativo, n_inativo, total, 1.0], 1):
-    cell = ws2.cell(row=tot_row, column=c)
-    cell.value = v
-    cell.fill  = solid(DARK_BLUE)
-    cell.font  = header_font()
-    cell.alignment = center()
-    cell.border = thin_border()
-    if c == 5:
-        cell.number_format = '0.0%'
+# Linha de total
+tr = 3 + len(grades)
+ws2.cell(row=tr, column=1).value = "TOTAL"
+ws2.cell(row=tr, column=2).value = f'=SOMA(B3:B{tr-1})'
+ws2.cell(row=tr, column=3).value = f'=SOMA(C3:C{tr-1})'
+ws2.cell(row=tr, column=4).value = f'=SOMA(D3:D{tr-1})'
+ws2.cell(row=tr, column=5).value = f'=SOMA(E3:E{tr-1})'
+ws2.cell(row=tr, column=5).number_format = '0,0%'
+style_row(ws2, tr, 5, DARK_BLUE, bold=True)
 
-# Bar chart
+# Gráfico
 chart = BarChart()
-chart.type   = "col"
-chart.title  = "Cargos Ativos por Grade"
+chart.type = "col"
+chart.title = "Cargos Ativos por Grade"
 chart.y_axis.title = "Quantidade"
 chart.x_axis.title = "Grade"
-chart.style  = 10
+chart.style = 10
 chart.height = 12
-chart.width  = 18
-data_ref = Reference(ws2, min_col=2, max_col=2, min_row=2, max_row=data_start + len(all_grades) - 1)
-cats_ref = Reference(ws2, min_col=1, min_row=data_start, max_row=data_start + len(all_grades) - 1)
-chart.add_data(data_ref, titles_from_data=True)
-chart.set_categories(cats_ref)
+chart.width = 18
+chart.add_data(Reference(ws2, min_col=2, max_col=2, min_row=2, max_row=2+len(grades)),
+               titles_from_data=True)
+chart.set_categories(Reference(ws2, min_col=1, min_row=3, max_row=2+len(grades)))
 chart.series[0].graphicalProperties.solidFill = MID_BLUE
 ws2.add_chart(chart, "G2")
 auto_width(ws2)
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# SHEET 3 – Análise por Família GBS
+# ABA 3 – Análise por Família GBS
 # ════════════════════════════════════════════════════════════════════════════
 ws3 = wb.create_sheet("Análise por Família GBS")
 ws3.sheet_view.showGridLines = False
 
-families    = sorted(df['FAMÍLIA GBS'].unique())
-hier_order  = ['GA', 'GS', 'Coordenador', 'Supervisor', 'Especialista',
-               'Analista', 'Assistente', 'Auxiliar']
-hier_present= [h for h in hier_order if h in df['GRUPO HIERARQUICO'].unique()]
+families = ['Administração & Serviços', 'Arquitetura & Engenharia',
+            'Atuarial, modelagem e dados', 'Privacidade de dados']
+subfamilies_map = {
+    'Administração & Serviços':    ['Facilities e Serviços Gerais','Secretaria',
+                                    'Serviços administrativos','Serviços operacionais'],
+    'Arquitetura & Engenharia':    ['Arquitetura','Engenharia'],
+    'Atuarial, modelagem e dados': ['Atuarial','Ciência de Dados','Informações Gerenciais'],
+    'Privacidade de dados':        ['Privacidade de dados'],
+}
+hier = ['GA','GS','Coordenador','Supervisor','Especialista','Analista','Assistente','Auxiliar']
+ncols3 = 2 + len(hier) + 1  # Família + SubFamília + 8 hierarquias + Total
 
-total_cols3 = 3 + len(hier_present)
-ws3.merge_cells('A1:' + get_column_letter(total_cols3) + '1')
-t = ws3['A1']
-t.value = "Análise por Família GBS × Grupo Hierárquico"
-t.fill  = solid(DARK_BLUE)
-t.font  = Font(bold=True, color=WHITE, size=14)
-t.alignment = center()
-ws3.row_dimensions[1].height = 30
-
-ws3.cell(row=2, column=1).value = "Família GBS"
-ws3.cell(row=2, column=2).value = "Sub Família"
-for ci, h in enumerate(hier_present, 3):
-    ws3.cell(row=2, column=ci).value = h
-ws3.cell(row=2, column=total_cols3).value = "TOTAL"
-style_header_row(ws3, 2, total_cols3, bg=MID_BLUE)
+title_row(ws3, "Análise por Família GBS × Grupo Hierárquico", ncols3)
+headers3 = ["Família GBS", "Sub Família"] + hier + ["TOTAL"]
+header_cells(ws3, 2, headers3)
 
 r = 3
-for fam_i, fam in enumerate(families):
-    sub = df[df['FAMÍLIA GBS'] == fam]
-    subfams = sorted(sub['SUB FAMÍLIA'].unique())
-    for sf in subfams:
-        sub2 = sub[sub['SUB FAMÍLIA'] == sf]
-        bg = "EBF3FB" if fam_i % 2 == 0 else WHITE
-        ws3.cell(row=r, column=1).value = fam if sf == subfams[0] else ""
+for fi, fam in enumerate(families):
+    subs = subfamilies_map[fam]
+    bg_fam = "EBF3FB" if fi % 2 == 0 else WHITE
+    for sf in subs:
+        ws3.cell(row=r, column=1).value = fam if sf == subs[0] else ""
         ws3.cell(row=r, column=2).value = sf
-        row_total = 0
-        for ci, h in enumerate(hier_present, 3):
-            cnt = len(sub2[sub2['GRUPO HIERARQUICO'] == h])
-            ws3.cell(row=r, column=ci).value = cnt if cnt > 0 else ""
-            row_total += cnt
-        ws3.cell(row=r, column=total_cols3).value = row_total
-        for c in range(1, total_cols3 + 1):
-            cell = ws3.cell(row=r, column=c)
-            cell.fill  = solid(bg)
-            cell.font  = normal_font()
-            cell.alignment = center()
-            cell.border = thin_border()
-        ws3.cell(row=r, column=1).alignment = Alignment(horizontal='left', vertical='center')
-        ws3.cell(row=r, column=2).alignment = Alignment(horizontal='left', vertical='center')
+        col_start = 3
+        for hi, h in enumerate(hier):
+            col = col_start + hi
+            col_letter = get_column_letter(col)
+            ws3.cell(row=r, column=col).value = (
+                f'=CONT.SES(Dados!H$2:H${LAST_ROW},"{fam}",'
+                f'Dados!I$2:I${LAST_ROW},"{sf}",'
+                f'Dados!J$2:J${LAST_ROW},"{h}")')
+        tot_col = col_start + len(hier)
+        ws3.cell(row=r, column=tot_col).value = (
+            f'=SOMA({get_column_letter(col_start)}{r}:{get_column_letter(col_start+len(hier)-1)}{r})')
+        style_row(ws3, r, ncols3, bg_fam)
+        ws3.cell(row=r, column=1).alignment = left()
+        ws3.cell(row=r, column=2).alignment = left()
         r += 1
-    # Subtotal
+    # Subtotal da família
     ws3.cell(row=r, column=1).value = f"Subtotal – {fam}"
     ws3.merge_cells(start_row=r, start_column=1, end_row=r, end_column=2)
-    fam_total = 0
-    for ci, h in enumerate(hier_present, 3):
-        cnt = len(sub[sub['GRUPO HIERARQUICO'] == h])
-        ws3.cell(row=r, column=ci).value = cnt if cnt > 0 else ""
-        fam_total += cnt
-    ws3.cell(row=r, column=total_cols3).value = fam_total
-    for c in range(1, total_cols3 + 1):
-        cell = ws3.cell(row=r, column=c)
-        cell.fill  = solid(LIGHT_BLUE)
-        cell.font  = Font(bold=True, size=10, color=DARK_BLUE)
-        cell.alignment = center()
-        cell.border = thin_border()
-    ws3.cell(row=r, column=1).alignment = Alignment(horizontal='left', vertical='center')
+    sub_start_row = r - len(subs)
+    for hi in range(len(hier)):
+        col = 3 + hi
+        cl = get_column_letter(col)
+        ws3.cell(row=r, column=col).value = (
+            f'=SOMA({cl}{sub_start_row}:{cl}{r-1})')
+    tot_col = 3 + len(hier)
+    ws3.cell(row=r, column=tot_col).value = (
+        f'=SOMA({get_column_letter(3)}{r}:{get_column_letter(2+len(hier))}{r})')
+    style_row(ws3, r, ncols3, LIGHT_BLUE, bold=True, font_color=DARK_BLUE)
+    ws3.cell(row=r, column=1).alignment = left()
     r += 1
 
-# Grand total
+# Total geral
 ws3.cell(row=r, column=1).value = "TOTAL GERAL"
 ws3.merge_cells(start_row=r, start_column=1, end_row=r, end_column=2)
-grand = 0
-for ci, h in enumerate(hier_present, 3):
-    cnt = len(df[df['GRUPO HIERARQUICO'] == h])
-    ws3.cell(row=r, column=ci).value = cnt
-    grand += cnt
-ws3.cell(row=r, column=total_cols3).value = grand
-for c in range(1, total_cols3 + 1):
-    cell = ws3.cell(row=r, column=c)
-    cell.fill  = solid(DARK_BLUE)
-    cell.font  = header_font()
-    cell.alignment = center()
-    cell.border = thin_border()
+for hi in range(len(hier)):
+    col = 3 + hi
+    ws3.cell(row=r, column=col).value = (
+        f'=CONT.SES(Dados!J$2:J${LAST_ROW},"{hier[hi]}")')
+tot_col = 3 + len(hier)
+ws3.cell(row=r, column=tot_col).value = (
+    f'=SOMA({get_column_letter(3)}{r}:{get_column_letter(2+len(hier))}{r})')
+style_row(ws3, r, ncols3, DARK_BLUE, bold=True)
+ws3.cell(row=r, column=1).alignment = left()
 auto_width(ws3, max_w=40)
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# SHEET 4 – Análise por Empresa
+# ABA 4 – Análise por Empresa
 # ════════════════════════════════════════════════════════════════════════════
 ws4 = wb.create_sheet("Análise por Empresa")
 ws4.sheet_view.showGridLines = False
 
-ws4.merge_cells('A1:G1')
-t = ws4['A1']
-t.value = "Análise por Empresa"
-t.fill  = solid(DARK_BLUE)
-t.font  = Font(bold=True, color=WHITE, size=14)
-t.alignment = center()
-ws4.row_dimensions[1].height = 30
+empresas = ['AFFINITY','BARE','BSP','BVP','CAP','HOLDING','MEDSERVICE','NOVAMED','SAUDE','SAUDE OPERADORA']
+title_row(ws4, "Análise por Empresa", 5)
+header_cells(ws4, 2, ["Empresa", "Total Cargos", "Ativos", "Inativos", "% Ativo"])
 
-for c, h in enumerate(["Empresa","Total Cargos","Ativos","Inativos",
-                        "% Ativo","Grades Distintos","Famílias GBS Distintas"], 1):
-    cell = ws4.cell(row=2, column=c)
-    cell.value = h
-    cell.fill  = solid(MID_BLUE)
-    cell.font  = header_font()
-    cell.alignment = center()
-    cell.border = thin_border()
-
-for i, emp in enumerate(sorted(df['EMPRESA'].unique())):
+for i, emp in enumerate(empresas):
     r = 3 + i
-    sub = df[df['EMPRESA'] == emp]
-    na2 = len(sub[sub['SITUAÇÃO'] == 'ATIVO'])
-    ni2 = len(sub[sub['SITUAÇÃO'] == 'INATIVO'])
-    tot2 = len(sub)
     bg = ALT_ROW if i % 2 == 0 else WHITE
-    for c, v in enumerate([emp, tot2, na2, ni2, na2/tot2 if tot2 > 0 else 0,
-                            sub['GRADE'].nunique(), sub['FAMÍLIA GBS'].nunique()], 1):
-        cell = ws4.cell(row=r, column=c)
-        cell.value = v
-        cell.fill  = solid(bg)
-        cell.font  = normal_font()
-        cell.alignment = center()
-        cell.border = thin_border()
-        if c == 5:
-            cell.number_format = '0.0%'
+    ws4.cell(row=r, column=1).value = emp
+    ws4.cell(row=r, column=2).value = f'=CONT.SE(Dados!A$2:A${LAST_ROW},"{emp}")'
+    ws4.cell(row=r, column=3).value = (
+        f'=CONT.SES(Dados!A$2:A${LAST_ROW},"{emp}",Dados!F$2:F${LAST_ROW},"ATIVO")')
+    ws4.cell(row=r, column=4).value = (
+        f'=CONT.SES(Dados!A$2:A${LAST_ROW},"{emp}",Dados!F$2:F${LAST_ROW},"INATIVO")')
+    ws4.cell(row=r, column=5).value = f'=SE(B{r}>0,C{r}/B{r},0)'
+    ws4.cell(row=r, column=5).number_format = '0,0%'
+    style_row(ws4, r, 5, bg)
+    ws4.cell(row=r, column=1).alignment = left()
 
-n_emp_rows = df['EMPRESA'].nunique()
-for c, v in enumerate(["TOTAL", total, n_ativo, n_inativo, n_ativo/total, "", ""], 1):
-    cell = ws4.cell(row=3 + n_emp_rows, column=c)
-    cell.value = v
-    cell.fill  = solid(DARK_BLUE)
-    cell.font  = header_font()
-    cell.alignment = center()
-    cell.border = thin_border()
-    if c == 5 and isinstance(v, float):
-        cell.number_format = '0.0%'
+tr4 = 3 + len(empresas)
+ws4.cell(row=tr4, column=1).value = "TOTAL"
+ws4.cell(row=tr4, column=2).value = f'=SOMA(B3:B{tr4-1})'
+ws4.cell(row=tr4, column=3).value = f'=SOMA(C3:C{tr4-1})'
+ws4.cell(row=tr4, column=4).value = f'=SOMA(D3:D{tr4-1})'
+ws4.cell(row=tr4, column=5).value = f'=SE(B{tr4}>0,C{tr4}/B{tr4},0)'
+ws4.cell(row=tr4, column=5).number_format = '0,0%'
+style_row(ws4, tr4, 5, DARK_BLUE, bold=True)
+ws4.cell(row=tr4, column=1).alignment = left()
 auto_width(ws4)
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# SHEET 5 – Benchmarking Mercer
+# ABA 5 – Benchmarking Mercer
 # ════════════════════════════════════════════════════════════════════════════
 ws5 = wb.create_sheet("Benchmarking Mercer")
 ws5.sheet_view.showGridLines = False
 
-ws5.merge_cells('A1:F1')
-t = ws5['A1']
-t.value = "Benchmarking Mercer – Cobertura 2025 vs 2026"
-t.fill  = solid(DARK_BLUE)
-t.font  = Font(bold=True, color=WHITE, size=14)
-t.alignment = center()
-ws5.row_dimensions[1].height = 30
+title_row(ws5, "Benchmarking Mercer – Cobertura 2025 vs 2026", 4)
+header_cells(ws5, 2, ["Indicador", "Quantidade", "% Total"])
 
-n_m25  = df['Cod. Mercer 2025'].notna().sum()
-n_m26  = df['Cod. Mercer 2026'].notna().sum()
-n_s26  = df['Cod. Mercer 2026'].isna().sum()
-pct_cob= n_m26 / total
-
-summ_data = [
-    ("Indicador",              "Quantidade", "% Total"),
-    ("Cargos com Mercer 2025", n_m25,         n_m25/total),
-    ("Cargos com Mercer 2026", n_m26,         n_m26/total),
-    ("Cargos SEM Mercer 2026", n_s26,         n_s26/total),
-    ("% Cobertura Mercer 2026","",            pct_cob),
+mercer_rows = [
+    ("Cargos com Mercer 2025",
+     f'=CONT.SE(Dados!T$2:T${LAST_ROW},"<>"&"")',
+     f'=B3/CONT.VALORES(Dados!A$2:A${LAST_ROW})'),
+    ("Cargos com Mercer 2026",
+     f'=CONT.SE(Dados!U$2:U${LAST_ROW},"<>"&"")',
+     f'=B4/CONT.VALORES(Dados!A$2:A${LAST_ROW})'),
+    ("Cargos SEM Mercer 2026",
+     f'=CONT.SE(Dados!U$2:U${LAST_ROW},"")',
+     f'=B5/CONT.VALORES(Dados!A$2:A${LAST_ROW})'),
+    ("% Cobertura Mercer 2026",
+     "",
+     f'=B4/CONT.VALORES(Dados!A$2:A${LAST_ROW})'),
 ]
-for ri, row_data in enumerate(summ_data):
+bg_map = {3: GREEN_FILL, 4: GREEN_FILL, 5: YELLOW_FILL, 6: LIGHT_BLUE}
+for ri, (label, qty_f, pct_f) in enumerate(mercer_rows):
     r = 3 + ri
-    for c, v in enumerate(row_data, 2):
-        cell = ws5.cell(row=r, column=c)
-        cell.value = v
-        if ri == 0:
-            cell.fill  = solid(MID_BLUE)
-            cell.font  = header_font()
-        else:
-            bg_map = {1: "C6EFCE", 2: "C6EFCE", 3: "FFEB9C", 4: LIGHT_BLUE}
-            cell.fill  = solid(bg_map.get(ri, WHITE))
-            cell.font  = Font(bold=(c == 2), size=10)
-        cell.alignment = center()
-        cell.border = thin_border()
-        if c == 4 and ri > 0 and isinstance(v, float):
-            cell.number_format = '0.0%'
+    ws5.cell(row=r, column=1).value = label
+    ws5.cell(row=r, column=2).value = qty_f if qty_f else ""
+    ws5.cell(row=r, column=3).value = pct_f
+    ws5.cell(row=r, column=3).number_format = '0,0%'
+    style_row(ws5, r, 3, bg_map.get(r, WHITE))
+    ws5.cell(row=r, column=1).alignment = left()
 
-# List of cargos SEM Mercer 2026
-sem_df = df[df['Cod. Mercer 2026'].isna()][['CARGO','EMPRESA','GRADE','FAMÍLIA GBS','SITUAÇÃO']].copy()
-sem_df = sem_df.sort_values(['FAMÍLIA GBS', 'GRADE'])
+# Lista de cargos sem Mercer 2026 — copiados diretamente (dados estáticos da análise)
+import pandas as pd
+df2 = pd.read_excel(SOURCE)
+df2['EMPRESA'] = df2['EMPRESA'].str.strip()
+df2['FAMÍLIA GBS'] = df2['FAMÍLIA GBS'].str.strip()
+sem_m26 = df2[df2['Cod. Mercer 2026'].isna()][
+    ['CARGO','EMPRESA','GRADE','FAMÍLIA GBS','SITUAÇÃO']].sort_values(['FAMÍLIA GBS','GRADE'])
 
-row_offset = 11
+row_offset = 9
 ws5.merge_cells(f'A{row_offset}:E{row_offset}')
 hdr = ws5.cell(row=row_offset, column=1)
-hdr.value = f"Cargos SEM Cod. Mercer 2026 ({len(sem_df)} cargos)"
-hdr.fill  = solid(DARK_BLUE)
-hdr.font  = Font(bold=True, color=WHITE, size=12)
+hdr.value = f"Cargos SEM Cod. Mercer 2026  —  total: {len(sem_m26)}"
+hdr.fill = solid(DARK_BLUE)
+hdr.font = Font(bold=True, color=WHITE, size=12)
 hdr.alignment = center()
 ws5.row_dimensions[row_offset].height = 24
 
-for c, h in enumerate(["Cargo","Empresa","Grade","Família GBS","Situação"], 1):
-    cell = ws5.cell(row=row_offset + 1, column=c)
-    cell.value = h
-    cell.fill  = solid(MID_BLUE)
-    cell.font  = header_font()
-    cell.alignment = center()
-    cell.border = thin_border()
-
-for i, (_, row_d) in enumerate(sem_df.iterrows()):
+header_cells(ws5, row_offset + 1, ["Cargo","Empresa","Grade","Família GBS","Situação"])
+for i, (_, row_d) in enumerate(sem_m26.iterrows()):
     r = row_offset + 2 + i
     bg = ALT_ROW if i % 2 == 0 else WHITE
-    for c, v in enumerate([row_d['CARGO'], row_d['EMPRESA'], row_d['GRADE'],
-                            row_d['FAMÍLIA GBS'], row_d['SITUAÇÃO']], 1):
+    vals = [row_d['CARGO'], row_d['EMPRESA'], row_d['GRADE'],
+            row_d['FAMÍLIA GBS'], row_d['SITUAÇÃO']]
+    for c, v in enumerate(vals, 1):
         cell = ws5.cell(row=r, column=c)
         cell.value = v
-        cell.fill  = solid(bg)
-        cell.font  = normal_font()
-        cell.alignment = Alignment(horizontal='left' if c in [1, 4] else 'center',
-                                    vertical='center')
-        cell.border = thin_border()
+        cell.fill = solid(bg)
+        cell.font = nfont(size=10)
+        cell.alignment = left() if c in [1, 4] else center()
+        cell.border = border()
 auto_width(ws5, max_w=55)
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# SHEET 6 – Pirâmide Hierárquica
+# ABA 6 – Pirâmide Hierárquica
 # ════════════════════════════════════════════════════════════════════════════
 ws6 = wb.create_sheet("Pirâmide Hierárquica")
 ws6.sheet_view.showGridLines = False
 
-ws6.merge_cells('A1:D1')
-t = ws6['A1']
-t.value = "Pirâmide Hierárquica – Cargos Ativos"
-t.fill  = solid(DARK_BLUE)
-t.font  = Font(bold=True, color=WHITE, size=14)
-t.alignment = center()
-ws6.row_dimensions[1].height = 30
+hier_order = ['GA','GS','Coordenador','Supervisor','Especialista','Analista','Assistente','Auxiliar']
+title_row(ws6, "Pirâmide Hierárquica – Cargos Ativos", 4)
+header_cells(ws6, 2, ["Grupo Hierárquico","Cargos Ativos","Cargos Inativos","Total"])
 
-for c, h in enumerate(["Grupo Hierárquico","Cargos Ativos","Cargos Inativos","Total"], 1):
-    cell = ws6.cell(row=2, column=c)
-    cell.value = h
-    cell.fill  = solid(MID_BLUE)
-    cell.font  = header_font()
-    cell.alignment = center()
-    cell.border = thin_border()
-
-hier_full = ['GA','GS','Coordenador','Supervisor','Especialista','Analista','Assistente','Auxiliar']
-present_order = [h for h in hier_full if h in df['GRUPO HIERARQUICO'].unique()]
-present_order += [h for h in df['GRUPO HIERARQUICO'].unique() if h not in present_order]
-
-for i, grp in enumerate(present_order):
+for i, grp in enumerate(hier_order):
     r = 3 + i
-    na2 = len(ativos[ativos['GRUPO HIERARQUICO'] == grp])
-    ni2 = len(inativos[inativos['GRUPO HIERARQUICO'] == grp])
     bg = ALT_ROW if i % 2 == 0 else WHITE
-    for c, v in enumerate([grp, na2, ni2, na2 + ni2], 1):
-        cell = ws6.cell(row=r, column=c)
-        cell.value = v
-        cell.fill  = solid(bg)
-        cell.font  = normal_font()
-        cell.alignment = center()
-        cell.border = thin_border()
+    ws6.cell(row=r, column=1).value = grp
+    ws6.cell(row=r, column=2).value = (
+        f'=CONT.SES(Dados!J$2:J${LAST_ROW},"{grp}",Dados!F$2:F${LAST_ROW},"ATIVO")')
+    ws6.cell(row=r, column=3).value = (
+        f'=CONT.SES(Dados!J$2:J${LAST_ROW},"{grp}",Dados!F$2:F${LAST_ROW},"INATIVO")')
+    ws6.cell(row=r, column=4).value = f'=B{r}+C{r}'
+    style_row(ws6, r, 4, bg)
+    ws6.cell(row=r, column=1).alignment = left()
 
-tot_r6 = 3 + len(present_order)
-for c, v in enumerate(["TOTAL", n_ativo, n_inativo, total], 1):
-    cell = ws6.cell(row=tot_r6, column=c)
-    cell.value = v
-    cell.fill  = solid(DARK_BLUE)
-    cell.font  = header_font()
-    cell.alignment = center()
-    cell.border = thin_border()
+tr6 = 3 + len(hier_order)
+ws6.cell(row=tr6, column=1).value = "TOTAL"
+ws6.cell(row=tr6, column=2).value = f'=SOMA(B3:B{tr6-1})'
+ws6.cell(row=tr6, column=3).value = f'=SOMA(C3:C{tr6-1})'
+ws6.cell(row=tr6, column=4).value = f'=SOMA(D3:D{tr6-1})'
+style_row(ws6, tr6, 4, DARK_BLUE, bold=True)
+ws6.cell(row=tr6, column=1).alignment = left()
 
-# Horizontal bar chart
+# Gráfico de barras horizontal
 chart6 = BarChart()
-chart6.type   = "bar"
-chart6.title  = "Cargos Ativos por Grupo Hierárquico"
+chart6.type = "bar"
+chart6.title = "Cargos Ativos por Grupo Hierárquico"
 chart6.x_axis.title = "Quantidade"
-chart6.y_axis.title = "Grupo Hierárquico"
-chart6.style  = 10
+chart6.style = 10
 chart6.height = 14
-chart6.width  = 20
-data6 = Reference(ws6, min_col=2, max_col=2, min_row=2, max_row=2 + len(present_order))
-cats6 = Reference(ws6, min_col=1, min_row=3, max_row=2 + len(present_order))
-chart6.add_data(data6, titles_from_data=True)
-chart6.set_categories(cats6)
+chart6.width = 20
+chart6.add_data(Reference(ws6, min_col=2, max_col=2, min_row=2, max_row=2+len(hier_order)),
+                titles_from_data=True)
+chart6.set_categories(Reference(ws6, min_col=1, min_row=3, max_row=2+len(hier_order)))
 chart6.series[0].graphicalProperties.solidFill = MID_BLUE
 ws6.add_chart(chart6, "F2")
 auto_width(ws6)
 
 
-# ── Save ─────────────────────────────────────────────────────────────────────
+# ── Salvar ────────────────────────────────────────────────────────────────────
 wb.save(OUTPUT)
-print(f"Saved: {OUTPUT}")
+print(f"Salvo: {OUTPUT}")
