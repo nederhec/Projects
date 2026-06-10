@@ -1035,12 +1035,20 @@
       .floating-whatsapp { width: 54px; height: 54px; right: 14px; bottom: 14px; }
     }
 
+    .btn--pdf { gap: 6px; }
+
+    @media (max-width: 640px) {
+      .btn--pdf { display: none; }
+    }
+
     @media print {
       .nav, .floating-whatsapp { display: none !important; }
       .hero { min-height: 760px; }
       .reveal { opacity: 1 !important; transform: none !important; }
       section { break-inside: avoid; }
       body { background: white; }
+      .service-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      .steps { grid-template-columns: repeat(2, 1fr) !important; }
     }
   </style>
 </head>
@@ -1060,6 +1068,10 @@
         <a href="#servicos">Serviços</a>
         <a href="#processo">Como funciona</a>
         <a href="#contato" class="btn btn--accent btn--small">Pedir orçamento</a>
+        <button class="btn btn--ghost btn--small btn--pdf" onclick="exportPDF()" title="Salvar como PDF" aria-label="Exportar página como PDF">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v13M8 12l4 4 4-4M5 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          PDF
+        </button>
       </div>
     </div>
   </nav>
@@ -1221,6 +1233,28 @@
               <p>Regulagens, vedação, aplicação de acessórios e pequenos reparos que devolvem o bom funcionamento.</p>
             </div>
             <div class="service-card__tag">Detalhe + acabamento</div>
+          </article>
+
+          <article class="service-card reveal">
+            <div>
+              <div class="service-card__icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22c-4.4 0-8-3.6-8-8 0-3 1.6-5.6 4-7M12 2v6M8 5l4-3 4 3M16 7c2.4 1.4 4 4 4 7 0 4.4-3.6 8-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <h3>Reforma de plantas</h3>
+              <p>Replantio, reposicionamento, troca de vasos e revitalização de plantas de interior e exterior.</p>
+            </div>
+            <div class="service-card__tag">Cuidado + renovação</div>
+          </article>
+
+          <article class="service-card reveal">
+            <div>
+              <div class="service-card__icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 20v-8M8 20v-4M16 20v-6M4 20h16M7 10c0-3.3 2.3-6 5-6s5 2.7 5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <h3>Jardinagem</h3>
+              <p>Poda, adubação, limpeza de canteiros, organização de jardins e manutenção de áreas verdes residenciais.</p>
+            </div>
+            <div class="service-card__tag">Verde + harmonia</div>
           </article>
 
           <article class="service-card reveal">
@@ -1422,6 +1456,14 @@
     }, { threshold: 0.10 });
 
     document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+
+    function exportPDF() {
+      document.querySelectorAll(".reveal").forEach((el) => el.classList.add("is-visible"));
+      const title = document.title;
+      document.title = "André Lucas — Soluções Residenciais";
+      window.print();
+      document.title = title;
+    }
   </script>
 </body>
 </html>
