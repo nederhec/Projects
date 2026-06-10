@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="André Lucas — soluções residenciais, instalações, montagens e pequenos reparos na Bela Vista e região, em São Paulo." />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta property="og:title" content="André Lucas | Soluções residenciais" />
+  <meta property="og:description" content="Atendimento organizado, cuidadoso e sem complicação para pequenos reparos e instalações." />
+  <title>André Lucas | Marido de Aluguel em São Paulo</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    :root {
+      --ink: #0a0a0a;
+      --ink-2: #111111;
+      --paper: #f8f5f0;
+      --paper-2: #ede8e0;
+      --accent: #ff5c28;
+      --accent-2: #ff3d00;
+      --accent-glow: rgba(255,92,40,.22);
+      --white: #ffffff;
+      --muted: #6b6b6b;
+      --line: rgba(0,0,0,.09);
+      --shadow: 0 30px 90px rgba(0,0,0,.16);
+      --radius: 28px;
+      --radius-sm: 18px;
+      --max: 1180px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      color: var(--ink);
+      background: var(--paper);
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+
+    .wrap {
+      width: min(calc(100% - 40px), var(--max));
+      margin-inline: auto;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: .7rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 24px;
+      height: 2px;
+      background: currentColor;
+      border-radius: 99px;
+      flex: 0 0 auto;
+    }
+
+    .display {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 400;
+      letter-spacing: -.055em;
+      line-height: .93;
+      margin: 0;
+    }
+
+    /* ── NAV ── */
+    .nav {
+      position: fixed;
+      inset: 16px 0 auto;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    .nav__inner {
+      width: min(calc(100% - 28px), 1160px);
+      margin: 0 auto;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(10,10,10,.92);
+      backdrop-filter: blur(20px);
+      color: var(--white);
+      border-radius: 999px;
+      padding: 8px 8px 8px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+      pointer-events: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand__mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: var(--white);
+      font-weight: 900;
+      font-size: .78rem;
+      letter-spacing: -.03em;
+      flex: 0 0 auto;
+    }
+
+    .brand__text strong {
+      display: block;
+      line-height: 1;
+      font-size: .93rem;
+      font-weight: 700;
+    }
+
+    .brand__text span {
+      display: block;
+      margin-top: 3px;
+      color: rgba(255,255,255,.45);
+      font-size: .68rem;
+    }
+
+    .nav__links {
+      display: flex;
+      gap: 26px;
+      align-items: center;
+      font-size: .8rem;
+      font-weight: 600;
+    }
+
+    .nav__links a { opacity: .65; transition: opacity .2s; }
+    .nav__links a:hover { opacity: 1; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 52px;
+      padding: 0 24px;
+      border: 0;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: .88rem;
+      cursor: pointer;
+      transition: transform .22s ease, box-shadow .22s ease, background .22s ease, opacity .22s;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+
+    .btn--accent {
+      background: var(--accent);
+      color: var(--white);
+      box-shadow: 0 14px 36px var(--accent-glow);
+    }
+    .btn--accent:hover {
+      background: #ff6e44;
+      box-shadow: 0 18px 46px rgba(255,92,40,.38);
+    }
+
+    .btn--ghost {
+      color: var(--white);
+      border: 1.5px solid rgba(255,255,255,.22);
+      background: transparent;
+    }
+    .btn--ghost:hover { border-color: rgba(255,255,255,.5); }
+
+    .btn--dark {
+      color: var(--white);
+      background: var(--ink);
+    }
+
+    .btn--small { min-height: 40px; padding-inline: 18px; font-size: .76rem; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 960px;
+      background: var(--ink);
+      color: var(--white);
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 150px 0 100px;
+      isolation: isolate;
+      overflow: hidden;
+    }
+
+    .hero__bg-orb {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .hero__bg-orb--1 {
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(255,92,40,.28) 0%, transparent 70%);
+      right: -160px;
+      top: -180px;
+    }
+    .hero__bg-orb--2 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(255,92,40,.12) 0%, transparent 70%);
+      left: -100px;
+      bottom: -80px;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: .06;
+      background-image:
+        linear-gradient(rgba(255,255,255,.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.2) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+    }
+
+    .hero__grid {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(320px, .7fr);
+      gap: 70px;
+      align-items: center;
+    }
+
+    .hero h1 {
+      max-width: 820px;
+      font-size: clamp(4.2rem, 8.8vw, 8.5rem);
+    }
+
+    .hero h1 em {
+      color: var(--accent);
+      font-style: italic;
+    }
+
+    .hero__lead {
+      max-width: 640px;
+      margin: 28px 0 0;
+      color: rgba(255,255,255,.65);
+      font-size: clamp(.98rem, 1.4vw, 1.18rem);
+      line-height: 1.78;
+    }
+
+    .hero__actions {
+      margin-top: 42px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hero__meta {
+      margin-top: 46px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 22px;
+      color: rgba(255,255,255,.5);
+      font-size: .8rem;
+    }
+
+    .hero__meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(255,92,40,.18);
+      flex: 0 0 auto;
+    }
+
+    /* ── PORTRAIT CARD ── */
+    .portrait-card {
+      position: relative;
+      min-height: 600px;
+      border-radius: 36px;
+      background: #161616;
+      border: 1px solid rgba(255,255,255,.08);
+      padding: 28px;
+      box-shadow: 0 60px 130px rgba(0,0,0,.5);
+      overflow: hidden;
+    }
+
+    .portrait-card::before {
+      content: "";
+      position: absolute;
+      width: 340px;
+      height: 340px;
+      border-radius: 50%;
+      background: var(--accent);
+      right: -110px;
+      top: -90px;
+      opacity: .9;
+      filter: blur(2px);
+    }
+
+    .portrait-card::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 50%;
+      left: -100px;
+      bottom: 70px;
+    }
+
+    .portrait-card__content {
+      height: 100%;
+      min-height: 544px;
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .monogram {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      display: grid;
+      place-items: center;
+      font-family: Georgia, serif;
+      font-size: 4.4rem;
+      letter-spacing: -.08em;
+      color: var(--white);
+    }
+
+    .portrait-card__quote {
+      max-width: 320px;
+      font-family: Georgia, serif;
+      font-size: 1.85rem;
+      line-height: 1.15;
+      letter-spacing: -.03em;
+      color: var(--white);
+    }
+
+    .portrait-card__footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 20px;
+      color: rgba(255,255,255,.55);
+      font-size: .76rem;
+      line-height: 1.55;
+    }
+
+    .seal {
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      border: 1px dashed rgba(255,92,40,.6);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      font-size: .58rem;
+      line-height: 1.2;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      transform: rotate(8deg);
+      color: rgba(255,255,255,.55);
+      flex: 0 0 auto;
+    }
+
+    /* ── SECTIONS ── */
+    section { padding: 116px 0; }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: .65fr 1.35fr;
+      gap: 60px;
+      align-items: end;
+      margin-bottom: 64px;
+    }
+
+    .section-head h2 {
+      font-size: clamp(3.4rem, 6vw, 6.4rem);
+    }
+
+    .section-head p {
+      color: var(--muted);
+      font-size: 1.06rem;
+      line-height: 1.78;
+      max-width: 580px;
+      margin: 0 0 10px;
+    }
+
+    /* ── ABOUT ── */
+    .about { background: var(--paper); }
+
+    .about__grid {
+      display: grid;
+      grid-template-columns: .9fr 1.1fr;
+      gap: 20px;
+    }
+
+    .about-card {
+      border-radius: var(--radius);
+      padding: 44px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      min-height: 360px;
+    }
+
+    .about-card--dark {
+      background: var(--ink);
+      color: var(--white);
+      border-color: transparent;
+    }
+
+    .about-card h3 {
+      margin: 0 0 18px;
+      font-family: Georgia, serif;
+      font-size: 2.1rem;
+      font-weight: 400;
+      letter-spacing: -.04em;
+    }
+
+    .about-card p {
+      margin: 0;
+      font-size: .98rem;
+      line-height: 1.82;
+      color: var(--muted);
+    }
+
+    .about-card--dark p { color: rgba(255,255,255,.6); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 40px;
+    }
+
+    .stat {
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,.12);
+    }
+
+    .stat strong {
+      display: block;
+      font-family: Georgia, serif;
+      font-size: 2.2rem;
+      font-weight: 400;
+      color: var(--accent);
+    }
+
+    .stat span {
+      color: rgba(255,255,255,.48);
+      font-size: .73rem;
+      line-height: 1.4;
+    }
+
+    .manifesto {
+      margin-top: 30px;
+      padding: 30px;
+      border-radius: var(--radius);
+      background: var(--ink);
+      color: var(--white);
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .manifesto__number {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--white);
+      display: grid;
+      place-items: center;
+      font-family: Georgia, serif;
+      font-size: 1.4rem;
+      flex: 0 0 auto;
+    }
+
+    .manifesto p {
+      margin: 0;
+      font-family: Georgia, serif;
+      font-size: clamp(1.25rem, 2.2vw, 2rem);
+      line-height: 1.22;
+      letter-spacing: -.03em;
+    }
+
+    /* ── SERVICES ── */
+    .services {
+      background: var(--ink);
+      color: var(--white);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .services::before {
+      content: "";
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,92,40,.14) 0%, transparent 70%);
+      right: -200px;
+      bottom: -200px;
+      pointer-events: none;
+    }
+
+    .services .section-head p { color: rgba(255,255,255,.52); }
+
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .service-card {
+      min-height: 340px;
+      padding: 32px;
+      border-radius: 24px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform .3s ease, background .3s ease, border-color .3s ease;
+    }
+
+    .service-card:hover {
+      transform: translateY(-6px);
+      background: rgba(255,92,40,.07);
+      border-color: rgba(255,92,40,.3);
+    }
+
+    .service-card__icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: var(--white);
+    }
+
+    .service-card h3 {
+      margin: 36px 0 10px;
+      font-family: Georgia, serif;
+      font-weight: 400;
+      font-size: 1.65rem;
+      letter-spacing: -.03em;
+    }
+
+    .service-card p {
+      margin: 0;
+      color: rgba(255,255,255,.52);
+      line-height: 1.68;
+      font-size: .88rem;
+    }
+
+    .service-card__tag {
+      margin-top: 26px;
+      color: var(--accent);
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      font-weight: 700;
+    }
+
+    /* ── PROCESS ── */
+    .process { background: var(--paper-2); }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .step {
+      position: relative;
+      min-height: 320px;
+      padding: 32px;
+      border-radius: 24px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      transition: transform .3s ease, box-shadow .3s ease;
+    }
+
+    .step:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 50px rgba(0,0,0,.08);
+    }
+
+    .step__num {
+      font-family: Georgia, serif;
+      font-size: 3.2rem;
+      color: var(--accent);
+      letter-spacing: -.08em;
+      opacity: .5;
+    }
+
+    .step h3 {
+      margin: 52px 0 10px;
+      font-size: .98rem;
+      font-weight: 700;
+      letter-spacing: -.01em;
+    }
+
+    .step p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.68;
+      font-size: .86rem;
+    }
+
+    /* ── PROMISE ── */
+    .promise {
+      padding-bottom: 0;
+      background: var(--paper);
+    }
+
+    .promise__panel {
+      border-radius: 38px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      min-height: 570px;
+    }
+
+    .promise__copy {
+      padding: 72px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: var(--ink);
+      color: var(--white);
+    }
+
+    .promise__copy h2 {
+      font-size: clamp(3.4rem, 5.8vw, 6rem);
+      margin-top: 22px;
+      color: var(--white);
+    }
+
+    .promise__copy p {
+      font-size: 1.03rem;
+      line-height: 1.78;
+      max-width: 520px;
+      margin: 26px 0 0;
+      color: rgba(255,255,255,.62);
+    }
+
+    .promise__visual {
+      background: var(--accent);
+      color: var(--white);
+      padding: 56px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .promise__visual .eyebrow {
+      color: rgba(255,255,255,.8);
+    }
+
+    .promise-list {
+      display: grid;
+      gap: 4px;
+      margin-top: 24px;
+    }
+
+    .promise-item {
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(255,255,255,.18);
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      font-size: .9rem;
+      font-weight: 600;
+    }
+
+    .promise-item:last-child { border-bottom: 0; }
+
+    .check {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      color: var(--accent);
+      background: var(--white);
+      font-size: .72rem;
+      font-weight: 900;
+    }
+
+    /* ── COVERAGE ── */
+    .coverage { background: var(--paper); }
+
+    .coverage__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .map-card {
+      min-height: 520px;
+      border-radius: var(--radius);
+      background: var(--ink);
+      color: var(--white);
+      padding: 44px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .map-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: .08;
+      background-image:
+        repeating-linear-gradient(22deg, transparent 0 26px, rgba(255,255,255,.3) 27px 28px),
+        repeating-linear-gradient(112deg, transparent 0 52px, rgba(255,255,255,.15) 53px 54px);
+    }
+
+    .map-card::after {
+      content: "";
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,92,40,.4) 0%, transparent 70%);
+      right: -60px;
+      bottom: -60px;
+    }
+
+    .map-pin {
+      position: absolute;
+      inset: 50% auto auto 50%;
+      width: 88px;
+      height: 88px;
+      transform: translate(-50%, -50%);
+      border-radius: 50% 50% 50% 0;
+      rotate: -45deg;
+      background: var(--accent);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 0 16px rgba(255,92,40,.14);
+    }
+
+    .map-pin::after {
+      content: "";
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--white);
+    }
+
+    .map-card__copy {
+      position: relative;
+      z-index: 2;
+      max-width: 360px;
+    }
+
+    .map-card__copy h3 {
+      margin: 16px 0 10px;
+      font-family: Georgia, serif;
+      font-weight: 400;
+      font-size: 2.4rem;
+      letter-spacing: -.04em;
+    }
+
+    .map-card__copy p {
+      margin: 0;
+      color: rgba(255,255,255,.58);
+      line-height: 1.72;
+    }
+
+    /* ── FAQ ── */
+    .faq-card {
+      border-radius: var(--radius);
+      background: var(--white);
+      border: 1px solid var(--line);
+      padding: 44px;
+    }
+
+    details {
+      border-bottom: 1px solid var(--line);
+      padding: 22px 0;
+    }
+
+    details:last-child { border-bottom: 0; }
+
+    summary {
+      cursor: pointer;
+      list-style: none;
+      font-weight: 700;
+      font-size: .95rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: center;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    summary::after {
+      content: "+";
+      color: var(--accent);
+      font-size: 1.5rem;
+      font-weight: 300;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
+
+    details[open] summary::after { content: "–"; }
+
+    details p {
+      color: var(--muted);
+      line-height: 1.72;
+      margin: 14px 0 0;
+      font-size: .9rem;
+    }
+
+    /* ── CONTACT ── */
+    .contact {
+      background: var(--ink);
+      color: var(--white);
+      padding: 116px 0 44px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .contact::before {
+      content: "";
+      position: absolute;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,92,40,.18) 0%, transparent 70%);
+      left: -200px;
+      bottom: -250px;
+      pointer-events: none;
+    }
+
+    .contact__grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 64px;
+      align-items: end;
+    }
+
+    .contact h2 {
+      font-size: clamp(4.4rem, 8.2vw, 8.2rem);
+      max-width: 840px;
+      margin-top: 22px;
+    }
+
+    .contact h2 em {
+      color: var(--accent);
+      font-style: italic;
+    }
+
+    .contact__lead {
+      color: rgba(255,255,255,.58);
+      font-size: 1.04rem;
+      line-height: 1.78;
+      max-width: 580px;
+      margin: 28px 0 38px;
+    }
+
+    .contact-card {
+      border-radius: 28px;
+      background: #161616;
+      border: 1px solid rgba(255,255,255,.08);
+      color: var(--white);
+      padding: 30px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .contact-card strong {
+      display: block;
+      font-family: Georgia, serif;
+      font-size: 1.5rem;
+      letter-spacing: -.03em;
+      font-weight: 400;
+    }
+
+    .contact-card span {
+      display: block;
+      margin-top: 6px;
+      color: rgba(255,255,255,.45);
+      font-size: .82rem;
+    }
+
+    .qr {
+      width: 120px;
+      height: 120px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--white);
+      padding: 7px;
+      flex: 0 0 auto;
+    }
+    .qr img { width: 100%; height: 100%; display: block; }
+
+    .footer {
+      margin-top: 90px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      color: rgba(255,255,255,.35);
+      font-size: .72rem;
+    }
+
+    /* ── FLOATING WHATSAPP ── */
+    .floating-whatsapp {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 60;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: var(--white);
+      box-shadow: 0 16px 40px rgba(255,92,40,.4);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+    .floating-whatsapp:hover {
+      transform: translateY(-4px) scale(1.04);
+      box-shadow: 0 22px 50px rgba(255,92,40,.55);
+    }
+
+    /* ── REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(26px);
+      transition: opacity .75s ease, transform .75s ease;
+    }
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .legal-note {
+      margin-top: 32px;
+      color: rgba(255,255,255,.35);
+      font-size: .7rem;
+      line-height: 1.65;
+      max-width: 660px;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 980px) {
+      .nav__links a:not(.btn) { display: none; }
+      .hero { min-height: auto; }
+      .hero__grid,
+      .section-head,
+      .about__grid,
+      .promise__panel,
+      .coverage__grid,
+      .contact__grid { grid-template-columns: 1fr; }
+      .portrait-card { min-height: 490px; }
+      .portrait-card__content { min-height: 438px; }
+      .service-grid { grid-template-columns: repeat(2, 1fr); }
+      .steps { grid-template-columns: repeat(2, 1fr); }
+      .section-head { gap: 22px; }
+      .promise__copy { padding: 56px 44px; }
+    }
+
+    @media (max-width: 640px) {
+      .wrap { width: min(calc(100% - 24px), var(--max)); }
+      .nav { inset: 10px 0 auto; }
+      .nav__inner { width: calc(100% - 16px); padding-left: 12px; }
+      .brand__text span { display: none; }
+      .nav .btn { min-height: 38px; padding-inline: 13px; font-size: .72rem; }
+      .hero { padding: 120px 0 62px; }
+      .hero__grid { gap: 46px; }
+      .hero h1 { font-size: clamp(3.6rem, 18vw, 5.4rem); }
+      .hero__actions .btn { width: 100%; }
+      .hero__meta { gap: 12px 18px; }
+      .portrait-card { min-height: 460px; border-radius: 26px; }
+      .portrait-card__content { min-height: 408px; }
+      .monogram { width: 144px; height: 144px; font-size: 3.4rem; }
+      .portrait-card__quote { font-size: 1.6rem; }
+      section { padding: 80px 0; }
+      .section-head { margin-bottom: 38px; }
+      .section-head h2 { font-size: clamp(3rem, 15vw, 4.6rem); }
+      .about-card, .faq-card { padding: 28px; }
+      .stats { grid-template-columns: 1fr; }
+      .manifesto { grid-template-columns: 1fr; }
+      .service-grid, .steps { grid-template-columns: 1fr; }
+      .service-card { min-height: 290px; }
+      .promise__copy { padding: 44px 28px; }
+      .promise__visual { padding: 36px 28px; }
+      .map-card { min-height: 440px; padding: 30px; }
+      .contact { padding-top: 80px; }
+      .contact-card { grid-template-columns: 1fr; }
+      .qr { width: 100%; height: auto; max-width: 170px; }
+      .footer { flex-direction: column; margin-top: 60px; }
+      .floating-whatsapp { width: 54px; height: 54px; right: 14px; bottom: 14px; }
+    }
+
+    @media print {
+      .nav, .floating-whatsapp { display: none !important; }
+      .hero { min-height: 760px; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+      section { break-inside: avoid; }
+      body { background: white; }
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="nav" aria-label="Navegação principal">
+    <div class="nav__inner">
+      <a class="brand" href="#inicio" aria-label="André Lucas - início">
+        <span class="brand__mark">AL</span>
+        <span class="brand__text">
+          <strong>André Lucas</strong>
+          <span>Soluções residenciais</span>
+        </span>
+      </a>
+      <div class="nav__links">
+        <a href="#sobre">Sobre</a>
+        <a href="#servicos">Serviços</a>
+        <a href="#processo">Como funciona</a>
+        <a href="#contato" class="btn btn--accent btn--small">Pedir orçamento</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero" id="inicio">
+      <div class="hero__bg-orb hero__bg-orb--1"></div>
+      <div class="hero__bg-orb hero__bg-orb--2"></div>
+      <div class="wrap hero__grid">
+        <div class="reveal">
+          <span class="eyebrow">Bela Vista · São Paulo</span>
+          <h1 class="display">Sua casa em ordem.<br><em>Sem complicação.</em></h1>
+          <p class="hero__lead">
+            Pequenos reparos, instalações e montagens conduzidos com organização, cuidado e atenção ao acabamento.
+            Você mostra o que precisa. André entende, orienta e resolve.
+          </p>
+          <div class="hero__actions">
+            <a class="btn btn--accent" href="https://wa.me/5511990020689?text=Ol%C3%A1%2C%20Andr%C3%A9!%20Vi%20seu%20portf%C3%B3lio%20e%20gostaria%20de%20solicitar%20um%20or%C3%A7amento." target="_blank" rel="noopener">
+              Solicitar orçamento
+              <span aria-hidden="true">↗</span>
+            </a>
+            <a class="btn btn--ghost" href="#servicos">Conhecer serviços</a>
+          </div>
+          <div class="hero__meta" aria-label="Informações principais">
+            <span><i class="dot"></i> Atendimento sob agendamento</span>
+            <span><i class="dot"></i> Bela Vista e região</span>
+            <span><i class="dot"></i> Orçamento por WhatsApp</span>
+          </div>
+        </div>
+
+        <aside class="portrait-card reveal" aria-label="Apresentação de André Lucas">
+          <div class="portrait-card__content">
+            <div class="monogram">AL</div>
+            <blockquote class="portrait-card__quote">
+              "Resolver bem também é saber planejar, proteger o ambiente e cuidar do detalhe."
+            </blockquote>
+            <div class="portrait-card__footer">
+              <div>
+                André Lucas<br />
+                38 anos · Eng. de Produção
+              </div>
+              <div class="seal">Método<br/>Cuidado<br/>Entrega</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="about" id="sobre">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div><span class="eyebrow">Quem é André</span></div>
+          <div>
+            <h2 class="display">Praticidade com método.</h2>
+            <p>
+              Morador da Bela Vista, André tem 38 anos e é formado em Engenharia de Produção.
+              Leva para cada atendimento uma combinação rara: raciocínio prático, organização e cuidado com a execução.
+            </p>
+          </div>
+        </div>
+
+        <div class="about__grid">
+          <article class="about-card about-card--dark reveal">
+            <h3>Mais do que executar, entender.</h3>
+            <p>
+              Antes de começar, André procura compreender a necessidade, avaliar o melhor caminho e alinhar expectativas.
+              Isso reduz improvisos, retrabalho e surpresas durante o serviço.
+            </p>
+            <div class="stats">
+              <div class="stat"><strong>38</strong><span>anos</span></div>
+              <div class="stat"><strong>01</strong><span>ponto de contato do início ao fim</span></div>
+              <div class="stat"><strong>SP</strong><span>base na Bela Vista</span></div>
+            </div>
+          </article>
+
+          <article class="about-card reveal">
+            <h3>Engenharia aplicada à rotina da casa.</h3>
+            <p>
+              A formação em Engenharia de Produção contribui para uma atuação mais estruturada:
+              análise do problema, preparação do ambiente, sequência de execução, conferência e acabamento.
+              O objetivo é simples: entregar uma solução funcional e deixar o espaço melhor do que estava.
+            </p>
+            <div class="manifesto">
+              <div class="manifesto__number">AL</div>
+              <p>Seu tempo vale mais do que aquela lista de pequenos reparos.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section class="services" id="servicos">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div><span class="eyebrow" style="color:rgba(255,255,255,.55)">O que André resolve</span></div>
+          <div>
+            <h2 class="display">Pequenos serviços.<br>Grande alívio.</h2>
+            <p>
+              Atendimento residencial para demandas do dia a dia, sempre com avaliação prévia do escopo,
+              dos materiais e da complexidade.
+            </p>
+          </div>
+        </div>
+
+        <div class="service-grid">
+          <article class="service-card reveal">
+            <div>
+              <div class="service-card__icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M7 4v16M17 4v16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </div>
+              <h3>Montagem</h3>
+              <p>Móveis, nichos, prateleiras, suportes e itens que exigem montagem ou ajuste final.</p>
+            </div>
+            <div class="service-card__tag">Organização + precisão</div>
+          </article>
+
+          <article class="service-card reveal">
+            <div>
+              <div class="service-card__icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 12h18M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </div>
+              <h3>Fixação</h3>
+              <p>Quadros, espelhos, varais, cortinas, suportes, acessórios e objetos de decoração.</p>
+            </div>
+            <div class="service-card__tag">Alinhamento + segurança</div>
+          </article>
+
+          <article class="service-card reveal">
+            <div>
+              <div class="service-card__icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M13 2 5 14h6l-1 8 9-13h-6V2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+              </div>
+              <h3>Elétrica leve</h3>
+              <p>Troca de tomadas, interruptores, luminárias e pequenos ajustes, após avaliação de segurança.</p>
+            </div>
+            <div class="service-card__tag">Avaliação prévia</div>
+          </article>
+
+          <article class="service-card reveal">
+            <div>
+              <div class="service-card__icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3s5 5.2 5 10a5 5 0 0 1-10 0c0-4.8 5-10 5-10Z" stroke="currentColor" stroke-width="1.8"/></svg>
+              </div>
+              <h3>Hidráulica leve</h3>
+              <p>Troca de torneiras, sifões, duchas, vedações e correções simples de uso cotidiano.</p>
+            </div>
+            <div class="service-card__tag">Funcionalidade + cuidado</div>
+          </article>
+
+          <article class="service-card reveal">
+            <div>
+              <div class="service-card__icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="m4 20 5-5m0 0 6-6m-6 6 3 3 6-6-3-3m0 0 2-2a2.8 2.8 0 0 0-4-4l-2 2 4 4Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <h3>Ajustes e acabamento</h3>
+              <p>Regulagens, vedação, aplicação de acessórios e pequenos reparos que devolvem o bom funcionamento.</p>
+            </div>
+            <div class="service-card__tag">Detalhe + acabamento</div>
+          </article>
+
+          <article class="service-card reveal">
+            <div>
+              <div class="service-card__icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v14H4zM8 9h8M8 13h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <h3>Serviço sob medida</h3>
+              <p>Tem uma demanda diferente? Envie fotos e uma descrição. André avalia a viabilidade antes de confirmar.</p>
+            </div>
+            <div class="service-card__tag">Conversa + orientação</div>
+          </article>
+        </div>
+
+        <p class="legal-note">
+          Serviços sujeitos à avaliação de viabilidade. Atividades técnicas regulamentadas, intervenções estruturais
+          ou demandas de maior complexidade podem exigir profissional legalmente habilitado.
+        </p>
+      </div>
+    </section>
+
+    <!-- PROCESS -->
+    <section class="process" id="processo">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div><span class="eyebrow">Como funciona</span></div>
+          <div>
+            <h2 class="display">Do pedido à entrega.</h2>
+            <p>
+              Um processo simples para reduzir dúvidas, organizar o atendimento e alinhar exatamente o que será feito.
+            </p>
+          </div>
+        </div>
+
+        <div class="steps">
+          <article class="step reveal">
+            <div class="step__num">01</div>
+            <h3>Envie sua demanda</h3>
+            <p>Compartilhe fotos, vídeos, medidas e uma breve descrição pelo WhatsApp.</p>
+          </article>
+          <article class="step reveal">
+            <div class="step__num">02</div>
+            <h3>Receba a orientação</h3>
+            <p>André avalia o escopo, indica materiais e sinaliza o melhor caminho para execução.</p>
+          </article>
+          <article class="step reveal">
+            <div class="step__num">03</div>
+            <h3>Combine o atendimento</h3>
+            <p>Data, horário, endereço, condições de acesso e valor são alinhados previamente.</p>
+          </article>
+          <article class="step reveal">
+            <div class="step__num">04</div>
+            <h3>Execução e conferência</h3>
+            <p>O serviço é realizado com proteção do ambiente, organização e validação final com o cliente.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROMISE -->
+    <section class="promise">
+      <div class="wrap">
+        <div class="promise__panel reveal">
+          <div class="promise__copy">
+            <span class="eyebrow">O padrão André</span>
+            <h2 class="display">O detalhe faz a diferença.</h2>
+            <p>
+              Entrar na casa de alguém exige respeito. Por isso, o atendimento considera tanto a solução técnica
+              quanto a experiência: comunicação clara, cuidado com o espaço e compromisso com o combinado.
+            </p>
+          </div>
+          <div class="promise__visual">
+            <div>
+              <span class="eyebrow">Compromissos</span>
+              <div class="promise-list">
+                <div class="promise-item"><span class="check">✓</span> Explicação simples e alinhamento prévio</div>
+                <div class="promise-item"><span class="check">✓</span> Proteção e organização do ambiente</div>
+                <div class="promise-item"><span class="check">✓</span> Pontualidade e comunicação de imprevistos</div>
+                <div class="promise-item"><span class="check">✓</span> Conferência do funcionamento ao final</div>
+                <div class="promise-item"><span class="check">✓</span> Respeito aos limites técnicos do serviço</div>
+              </div>
+            </div>
+            <div class="portrait-card__footer" style="margin-top:28px">
+              <div style="color:rgba(255,255,255,.75);font-size:.82rem;line-height:1.55">Confiança não é discurso.<br/>É a soma dos pequenos cuidados.</div>
+              <div class="seal" style="border-color:rgba(255,255,255,.5);color:rgba(255,255,255,.7)">Bela Vista<br/>São Paulo<br/>Brasil</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COVERAGE -->
+    <section class="coverage">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div><span class="eyebrow">Atendimento</span></div>
+          <div>
+            <h2 class="display">Perto de você.</h2>
+            <p>
+              Base na Bela Vista, região central de São Paulo. Atendimentos em outros bairros podem ser combinados
+              conforme distância, agenda e natureza do serviço.
+            </p>
+          </div>
+        </div>
+
+        <div class="coverage__grid">
+          <article class="map-card reveal">
+            <div class="map-card__copy">
+              <span class="eyebrow" style="color:rgba(255,255,255,.5)">Ponto de partida</span>
+              <h3>Bela Vista, São Paulo.</h3>
+              <p>Atendimento residencial sob agendamento. Consulte disponibilidade para o seu bairro.</p>
+            </div>
+            <div class="map-pin" aria-hidden="true"></div>
+          </article>
+
+          <article class="faq-card reveal">
+            <span class="eyebrow">Dúvidas frequentes</span>
+            <details open>
+              <summary>Como pedir um orçamento?</summary>
+              <p>Envie pelo WhatsApp fotos, vídeos, medidas, endereço aproximado e uma descrição do que precisa ser feito.</p>
+            </details>
+            <details>
+              <summary>Os materiais estão incluídos?</summary>
+              <p>O formato é alinhado previamente. Dependendo do serviço, o cliente pode fornecer os materiais ou solicitar orientação para compra.</p>
+            </details>
+            <details>
+              <summary>Atende fora da Bela Vista?</summary>
+              <p>Sim, mediante consulta de disponibilidade, deslocamento e viabilidade do atendimento.</p>
+            </details>
+            <details>
+              <summary>Faz qualquer tipo de reparo?</summary>
+              <p>Não. A demanda é avaliada antes. Serviços regulamentados, estruturais ou de maior risco podem exigir outro profissional habilitado.</p>
+            </details>
+            <details>
+              <summary>Como o valor é definido?</summary>
+              <p>O orçamento considera escopo, tempo estimado, complexidade, deslocamento, materiais e condições de execução.</p>
+            </details>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="contact" id="contato">
+      <div class="wrap">
+        <div class="contact__grid">
+          <div class="reveal">
+            <span class="eyebrow">Fale com André</span>
+            <h2 class="display">Você chama.<br><em>André resolve.</em></h2>
+            <p class="contact__lead">
+              Envie sua demanda pelo WhatsApp e receba uma orientação inicial.
+              Quanto mais detalhes você compartilhar, mais precisa será a avaliação.
+            </p>
+            <div class="hero__actions">
+              <a class="btn btn--accent" href="https://wa.me/5511990020689?text=Ol%C3%A1%2C%20Andr%C3%A9!%20Vi%20seu%20portf%C3%B3lio%20e%20gostaria%20de%20solicitar%20um%20or%C3%A7amento." target="_blank" rel="noopener">
+                Chamar no WhatsApp
+                <span aria-hidden="true">↗</span>
+              </a>
+              <a class="btn btn--ghost" href="tel:+5511990020689">Ligar agora</a>
+            </div>
+          </div>
+
+          <aside class="contact-card reveal">
+            <div>
+              <strong>+55 11 99002-0689</strong>
+              <span>WhatsApp e celular</span>
+              <span>@andrelucasrj</span>
+              <span>Bela Vista · São Paulo/SP</span>
+            </div>
+            <div class="qr"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAhIAAAISCAIAAAAWX7HoAAANmUlEQVR4nO3dO5JcvZlFUVHBcWgScnr+VjuahAyaNDiCdmV0IP4tEMSHrLX8fGfVjmucxLdfP3/8DQD+mr/ffgIAvEQ2AAhkA4BANgAIZAOAQDYACGQDgEA2AAhkA4BANgAIZAOAQDYACGQDgEA2AAhkA4BANgAIZAOAQDYACGQDgOD7zo3/8c//+V3PY4h//+t/rzzuzju585zXj3vuns958Tnfsn6vdr4b575XO869ohftfAquNgAIZAOAQDYACGQDgEA2AAhkA4BANgAIZAOAQDYACLZW4mu3tqBrn7f23HFuGXtrRXzu8z33fb71btzagX/e3+BX+1/nagOAQDYACGQDgEA2AAhkA4BANgAIZAOAQDYACGQDgODgSnzt89a8a+tndWtVe+uez31GtzbVazMX5i/+CsDazP35i//r1lxtABDIBgCBbAAQyAYAgWwAEMgGAIFsABDIBgCBbAAQXFuJf56Zp2ffWqe/eLryuXdj5mr61lZ/5rPir3O1AUAgGwAEsgFAIBsABLIBQCAbAASyAUAgGwAEsgFAYCX+29w6x/jWIvfW+efn3HrOtz6jtRcX9Xbgf4arDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0Agmsr8a+257Sp/k+33o1bp3avndv5zzxnfm3mOeQ7Zj6rHa42AAhkA4BANgAIZAOAQDYACGQDgEA2AAhkA4BANgAIDq7EX1w+77i19b3lxRXx2sxz12feedu1m9/nc6535F3qOqw0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAIKtlfjnnZF7y4ub6pmPu+Pzvs+3NvMz9+fnHvercbUBQCAbAASyAUAgGwAEsgFAIBsABLIBQCAbAASyAUDw7dfPH//1jb/a+dhr5xaqO259RrfeyZnfq7UXF8i+VxPc+ua42gAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAINhaia/NPKd65g781j3PdOvzXZu5i759z32/e9u1mc9q7dzjutoAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAIKtlfjnnZF7y4ub6pmPu+Pzvs+3NvMz9+fnHvercbUBQCAbAASyAUAgGwAEsgFAIBsABLIBQCAbAASyAUDw7dfPH//1jb/a+dhr5xaqO259RrfeyZnfq7UXF8i+VxPc+ua42gAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAINhaia/NPKd65g781j3PdOvzXZu5i759z32/e9u1mc9q7dzjutoAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAIKtlfjnnZF7y4ub6pmPu+Pzvs+3NvMz9+fnHvercbUBQCAbAASyAUAgGwAEsgFAIBsABLIBQCAbAASyAUDw7dfPH//1jb/a+dhr5xaqO259RrfeyZnfq7UXF8i+VxPc+ua42gAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAINhaia/NPKd65g781j3PdOvzXZu5i759z32/e9u1mc9q7dzjutoAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAg2FqJr81cP55bxs58vTPXrV9tNX1rFT/zfV6beUb9534nd7jaACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAg2FqJr81cP55bxs58vTPXrV9tNX1rFT/zfV6beUb9534nd7jaACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAg2FqJr81cP55bxs58vTPXrV9tNX1rFT/zfV6beUb9534nd7jaACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAg2FqJr81cP55bxs58vTPXrV9tNX1rFT/zfV6beUb9534nd7jaACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0Agu07N559YvCttfatr+9Yi/rP++Z8tS33zN9EOOfcs5q5XV9ztQFAIBsABLIBQCAbAASyAUAgGwAEsgFAIBsABLIBQLB1lvjMM5DXXjxNeofHnf+4txbXM5ftMz/BW2Z+gq42AAhkA4BANgAIZAOAQDYACGQDgEA2AAhkA4BANgAIDq7Ed8zcr94yc4G8NnONvzbznVybeZa4/wy/y8xvnasNAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQCCayvxWyvTc148aXzNs/pdPm+7/uKp7F/tu3HucV1tABDIBgCBbAAQyAYAgWwAEMgGAIFsABDIBgCBbAAQbK3E1148TXrt5ir+xZO3Zy7Md5x7N2feedu1m9/nc6535F3qOqw0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACC4tvPeynQr0618t+LdineouNqAQDYACGQDgEA2AAhkA4BANgAIZAOAQDYACGQDgEA2AAgursQ/b3zuNwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIBXyAYAgWwAEMgGAIFsABDIBgCBbAAQyAYAgWwAEMgGAIFsABDIBgCBbAAQyAYAgWwAEMgGAIFsABDIBgCBbAAQyAYAgWwAEHzfufF//PO/fderuOOff+O/rzzuzju585zXj3vuns858TnfMnuvbr4b575XO869ohftfAquNgAIZAOAQDYACGQDgEA2AAhkA4BANgAIZAOAQDYACLZW4mu3tqBrn7f23HFuGXtrRXzu8z33fb71btzagX/e3+BX+1/nagOAQDYACGQDgEA2AAhkA4BANgAIZAOAQDYACGQDgODgSnzt89a8a+tndWtVe+uez31GtzbVazMX5i/+CsDazP35i//r1lxtABDIBgCBbAAQyAYAgWwAEMgGAIFsABDIBgCBbAAQbK3E124tGG+dtnTu69a+8j7nm3Pr27V/m1XP5x7XtZk78Mz3a+3c07jaACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgOLgSX3vxcz7nXHtVe26fe+/WdXv1bh17c6t96xO8ZeYm6GoDgEA2AAhkA4BANgAIZAOAQDYACGQDgEA2AAhkA4Dg267fP1ceeOYi99aWc+3FXfSL51TvmLlq//bivXfL+ua42gAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALZACCQDQAC2QAgkA0AAtkAIJANAALQDAeC7YJpIGAAAAABJRU5ErkJggg==" alt="QR Code para falar com André pelo WhatsApp" /></div>
+          </aside>
+        </div>
+
+        <div class="footer">
+          <span>© <span id="year"></span> André Lucas · Soluções residenciais</span>
+          <span>Atendimento sob agendamento · Bela Vista e região</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <a class="floating-whatsapp" href="https://wa.me/5511990020689?text=Ol%C3%A1%2C%20Andr%C3%A9!%20Vi%20seu%20portf%C3%B3lio%20e%20gostaria%20de%20solicitar%20um%20or%C3%A7amento." target="_blank" rel="noopener" aria-label="Falar com André pelo WhatsApp">
+    <svg width="27" height="27" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M20.5 11.6a8.5 8.5 0 0 1-12.6 7.5L3 20.5l1.4-4.7A8.5 8.5 0 1 1 20.5 11.6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M8.2 7.8c.3-.6.6-.6.9-.6h.5c.2 0 .4.1.5.4l.8 1.8c.1.3.1.5-.1.7l-.6.8c-.2.2-.1.5 0 .7.5.9 1.2 1.7 2 2.2.9.6 1.7.8 2 .9.3.1.5 0 .7-.2l.9-1.1c.2-.3.5-.3.7-.2l1.8.9c.3.1.4.3.4.5 0 .3-.1 1.4-.7 2-.5.6-1.3.9-2.1.9-1.2 0-3.2-.7-5.3-2.5-2.6-2.2-3.5-4.8-3.5-5.9 0-.5.2-1 .4-1.3Z" fill="currentColor"/>
+    </svg>
+  </a>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.10 });
+
+    document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+  </script>
+</body>
+</html>
