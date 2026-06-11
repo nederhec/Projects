@@ -116,7 +116,8 @@
     .hero-content { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-16); align-items: center; padding-block: var(--space-20); }
     .hero-eyebrow { font-family: var(--font-display); font-size: var(--text-xs); color: var(--color-primary); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: var(--space-6); display: flex; align-items: center; gap: var(--space-3); }
     .hero-eyebrow::before { content:''; display:block; width:28px; height:1px; background:var(--color-primary); }
-    .hero-name { font-family: var(--font-display); font-size: var(--text-hero); font-weight: 700; line-height: 0.88; letter-spacing: -0.02em; color: var(--color-text); margin-bottom: var(--space-4); }
+    .hero-name { font-family: var(--font-display); font-size: var(--text-hero); font-weight: 700; line-height: 0.88; letter-spacing: -0.02em; color: var(--color-text); margin-bottom: var(--space-4); position: relative; cursor: default; }
+    .hero-name:hover { color: var(--color-primary); text-shadow: 0 0 20px var(--color-primary-dim); }
     .hero-name .glow {
       display: block;
       background: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
@@ -157,7 +158,10 @@
     .section--alt { background: var(--color-surface); border-top: 1px solid var(--color-divider); border-bottom: 1px solid var(--color-divider); }
     .section-eyebrow { font-family: var(--font-display); font-size: var(--text-xs); color: var(--color-primary); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-3); }
     .section-eyebrow::before { content:''; display:block; width:24px; height:1px; background:var(--color-primary); }
-    .section-title { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; line-height: 1.1; margin-bottom: var(--space-6); color: var(--color-text); }
+    .section-title { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; line-height: 1.1; margin-bottom: var(--space-6); color: var(--color-text); position: relative; transition: color var(--transition), text-shadow var(--transition); }
+    .section-title::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover)); transition: width var(--transition); }
+    .section-title:hover { color: var(--color-primary); }
+    .section-title:hover::after { width: 100%; }
     .section-body { font-size: var(--text-base); color: var(--color-text-muted); max-width: 65ch; line-height: 1.8; }
 
     .bio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-16); align-items: start; }
@@ -180,7 +184,8 @@
     .release-card img { width: 100%; aspect-ratio: 1; object-fit: cover; }
     .release-card-body { padding: var(--space-4); }
     .release-label { font-size: var(--text-xs); color: var(--color-primary); font-family: var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: var(--space-1); }
-    .release-title { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; margin-bottom: var(--space-1); color: var(--color-text); }
+    .release-title { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; margin-bottom: var(--space-1); color: var(--color-text); transition: color var(--transition); }
+    .release-title a:hover { color: var(--color-primary); }
     .release-meta { font-size: var(--text-xs); color: var(--color-text-faint); }
     .player-mini { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--color-divider); }
     .play-btn { width: 32px; height: 32px; border-radius: var(--radius-full); border: 1px solid var(--color-primary); color: var(--color-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; text-decoration:none; }
@@ -192,7 +197,8 @@
     .perf-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--space-4); margin-top: var(--space-10); }
     .perf-card { padding: var(--space-8); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
     .perf-icon { width: 40px; height: 40px; color: var(--color-primary); margin-bottom: var(--space-4); }
-    .perf-title { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; margin-bottom: var(--space-3); text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text); }
+    .perf-title { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; margin-bottom: var(--space-3); text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text); transition: color var(--transition); }
+    .perf-card:hover .perf-title { color: var(--color-primary); }
     .perf-body { font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.7; }
     .perf-body strong { color: var(--color-text); display: block; margin-bottom: var(--space-1); }
 
@@ -207,7 +213,10 @@
     .contact-section { text-align: center; padding-block: clamp(var(--space-20), 10vw, var(--space-32)); position: relative; overflow: hidden; }
     .contact-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 80% at 50% 50%, var(--color-primary-dim) 0%, transparent 70%); }
     .contact-content { position: relative; z-index: 1; }
-    .contact-title { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 700; line-height: 1.1; margin-bottom: var(--space-4); color: var(--color-text); }
+    .contact-title { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 700; line-height: 1.1; margin-bottom: var(--space-4); color: var(--color-text); position: relative; transition: color var(--transition), text-shadow var(--transition); }
+    .contact-title::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 3px; background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover)); border-radius: var(--radius-full); transition: width var(--transition); }
+    .contact-title:hover { color: var(--color-primary); text-shadow: 0 0 20px var(--color-primary-dim); }
+    .contact-title:hover::after { width: 100%; }
     .contact-sub { font-size: var(--text-lg); color: var(--color-text-muted); max-width: 40ch; margin-inline: auto; margin-bottom: var(--space-10); }
     .contact-email { font-family: var(--font-display); font-size: var(--text-xl); color: var(--color-primary); text-decoration: none; display: inline-block; }
     .contact-email:hover { text-shadow: 0 0 20px oklch(from #ec4899 l c h / 0.6); }
