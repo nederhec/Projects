@@ -308,6 +308,33 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (req.method === 'GET' && (req.url === '/presskit' || req.url === '/presskit.html')) {
+    const filePath = path.join(__dirname, 'presskit.html');
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        res.writeHead(404, SECURITY_HEADERS);
+        res.end('Not found');
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', ...SECURITY_HEADERS });
+      res.end(data);
+    });
+    return;
+  }
+
+  const staticExts = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml', '.webp': 'image/webp' };
+  const url = new URL(req.url, 'http://localhost');
+  const ext = path.extname(url.pathname).toLowerCase();
+  if (req.method === 'GET' && staticExts[ext]) {
+    const filePath = path.join(__dirname, url.pathname);
+    fs.readFile(filePath, (err, data) => {
+      if (err) { res.writeHead(404, SECURITY_HEADERS); res.end('Not found'); return; }
+      res.writeHead(200, { 'Content-Type': staticExts[ext], ...SECURITY_HEADERS });
+      res.end(data);
+    });
+    return;
+  }
+
   res.writeHead(404, SECURITY_HEADERS);
   res.end('Not found');
 });
