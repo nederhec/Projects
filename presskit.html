@@ -3,354 +3,798 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DJ Famosa — Press Kit Oficial</title>
-  <meta name="description" content="Press Kit oficial da DJ Famosa (@famosasouza) — DJ, produtora e presença marcante na cena eletrônica e tribal brasileira.">
+  <title>DJ Famosa — Press Kit Official</title>
+  <meta name="description" content="Press Kit oficial da DJ Famosa — DJ, produtora e ícone LGBTQIA+ na cena eletrônica tribal brasileira.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --text-xs:   clamp(0.75rem,  0.7rem  + 0.25vw, 0.875rem);
-      --text-sm:   clamp(0.875rem, 0.8rem  + 0.35vw, 1rem);
-      --text-base: clamp(1rem,     0.95rem + 0.25vw, 1.125rem);
-      --text-lg:   clamp(1.125rem, 1rem    + 0.75vw, 1.5rem);
-      --text-xl:   clamp(1.5rem,   1.2rem  + 1.25vw, 2.25rem);
-      --text-2xl:  clamp(2rem,     1.2rem  + 2.5vw,  3.5rem);
-      --text-3xl:  clamp(2.5rem,   1rem    + 4vw,    5rem);
-      --text-hero: clamp(3rem,     0.5rem  + 7vw,    8rem);
+      --text-xs:   0.75rem;
+      --text-sm:   0.875rem;
+      --text-base: 1rem;
+      --text-lg:   1.125rem;
+      --text-xl:   1.5rem;
+      --text-2xl:  2rem;
+      --text-3xl:  2.5rem;
+      --text-4xl:  3.5rem;
+      --text-5xl:  4.5rem;
 
       --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem;
       --space-4: 1rem; --space-6: 1.5rem; --space-8: 2rem;
       --space-10: 2.5rem; --space-12: 3rem; --space-16: 4rem;
       --space-20: 5rem; --space-24: 6rem; --space-32: 8rem;
 
-      --radius-sm: 0.25rem; --radius-md: 0.5rem; --radius-lg: 0.75rem;
-      --radius-xl: 1rem; --radius-full: 9999px;
-      --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+      --radius-sm: 0.375rem; --radius-md: 0.75rem; --radius-lg: 1.25rem;
+      --radius-xl: 1.75rem; --radius-2xl: 2.5rem; --radius-full: 9999px;
+
+      --dur-fast: 150ms; --dur-base: 250ms; --dur-slow: 350ms;
+      --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
       --font-display: 'Space Mono', 'Courier New', monospace;
-      --font-body: 'Space Grotesk', 'Helvetica Neue', sans-serif;
+      --font-body: 'Space Grotesk', sans-serif;
     }
 
     [data-theme="dark"], :root {
-      --color-bg:             #060608;
-      --color-surface:        #0c0c10;
-      --color-surface-2:      #111118;
-      --color-surface-offset: #18181f;
-      --color-divider:        #1c1c24;
-      --color-border:         #28283a;
-      --color-text:           #f0eeff;
-      --color-text-muted:     #8888aa;
-      --color-text-faint:     #44445a;
-      --color-text-inverse:   #060608;
+      --color-bg:             #0a0a0e;
+      --color-surface:        #0f0f15;
+      --color-surface-2:      #14141d;
+      --color-surface-3:      #1a1a28;
+      --color-divider:        #2a2a3a;
+      --color-border:         #3a3a52;
+      --color-text:           #f5f3ff;
+      --color-text-secondary: #9a96b8;
+      --color-text-tertiary:  #5a5a76;
       --color-primary:        #ec4899;
-      --color-primary-hover:  #f97316;
-      --color-primary-dim:    oklch(from #ec4899 l c h / 0.09);
-      --color-accent2:        #7c3aed;
-      --color-accent2-glow:   oklch(from #7c3aed l c h / 0.15);
-      --shadow-pink: 0 0 30px oklch(from #ec4899 l c h / 0.25), 0 0 60px oklch(from #ec4899 l c h / 0.1);
-    }
-
-    [data-theme="light"] {
-      --color-bg:             #f8f6ff;
-      --color-surface:        #ffffff;
-      --color-surface-2:      #f2f0fb;
-      --color-surface-offset: #ebe8f7;
-      --color-divider:        #e2dff5;
-      --color-border:         #d0ccee;
-      --color-text:           #1a1830;
-      --color-text-muted:     #5a5580;
-      --color-text-faint:     #9990c0;
-      --color-text-inverse:   #f8f6ff;
-      --color-primary:        #d63384;
-      --color-primary-hover:  #ea6c10;
-      --color-primary-dim:    rgba(214,51,132,0.08);
-      --shadow-pink: 0 0 30px rgba(214,51,132,0.2), 0 0 60px rgba(214,51,132,0.08);
+      --color-primary-alt:    #f97316;
+      --color-primary-dark:   #be123c;
+      --color-accent:         #7c3aed;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+      --shadow-glow: 0 0 30px rgba(236, 72, 153, 0.2);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; scroll-padding-top: 80px; }
+    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; scroll-behavior: smooth; }
     body {
-      min-height: 100dvh;
       font-family: var(--font-body);
       font-size: var(--text-base);
+      line-height: 1.6;
       color: var(--color-text);
       background: var(--color-bg);
-      line-height: 1.6;
+      min-height: 100vh;
       overflow-x: hidden;
     }
-    img { display: block; max-width: 100%; height: auto; }
-    a, button { transition: color var(--transition), background var(--transition), box-shadow var(--transition), opacity var(--transition); }
-    button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
 
-    .container { max-width: 960px; margin-inline: auto; padding-inline: clamp(var(--space-4), 4vw, var(--space-12)); }
-    .container--wide { max-width: 1200px; margin-inline: auto; padding-inline: clamp(var(--space-4), 4vw, var(--space-12)); }
+    img { display: block; max-width: 100%; height: auto; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 var(--space-4); }
+    .container-sm { max-width: 960px; margin: 0 auto; padding: 0 var(--space-4); }
+
+    /* ─── HEADER / NAVIGATION ─── */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: rgba(10, 10, 14, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--color-divider);
+      transition: background var(--dur-base) var(--ease-smooth);
+    }
+    header.scrolled { background: rgba(10, 10, 14, 0.95); }
 
     nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      padding: var(--space-4) 0;
-      background: oklch(from var(--color-bg) l c h / 0.88);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--color-divider);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-4) var(--space-6);
+      height: 80px;
     }
-    .nav-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); }
-    .logo { display: flex; align-items: center; gap: var(--space-3); text-decoration: none; }
-    .logo-wordmark { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; letter-spacing: 0.08em; color: var(--color-text); line-height: 1; }
-    .logo-wordmark span { color: var(--color-primary); }
-    .logo-role { font-size: var(--text-xs); color: var(--color-text-muted); font-family: var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; }
-    .nav-links { display: flex; gap: var(--space-8); list-style: none; }
-    .nav-links a { font-size: var(--text-sm); color: var(--color-text-muted); text-decoration: none; letter-spacing: 0.05em; text-transform: uppercase; }
+
+    .logo {
+      display: flex; align-items: center; gap: var(--space-3);
+      font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      font-size: var(--text-sm); font-family: var(--font-display);
+      transition: color var(--dur-fast) var(--ease-smooth);
+    }
+    .logo:hover { color: var(--color-primary); }
+    .logo span { color: var(--color-primary); }
+
+    .nav-links {
+      display: flex; gap: var(--space-8); list-style: none;
+    }
+    .nav-links a {
+      font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--color-text-secondary);
+      transition: color var(--dur-fast) var(--ease-smooth);
+      position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 1px; background: var(--color-primary);
+      transition: width var(--dur-base) var(--ease-smooth);
+    }
     .nav-links a:hover { color: var(--color-primary); }
-    .nav-actions { display: flex; align-items: center; gap: var(--space-3); }
-    .theme-toggle { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--radius-full); border: 1px solid var(--color-border); color: var(--color-text-muted); }
-    .theme-toggle:hover { color: var(--color-primary); border-color: var(--color-primary); }
-    .btn-booking { padding: var(--space-2) var(--space-5); background: var(--color-primary); color: var(--color-text-inverse); font-family: var(--font-display); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; border-radius: var(--radius-sm); text-decoration: none; }
-    .btn-booking:hover { background: var(--color-primary-hover); box-shadow: var(--shadow-pink); }
+    .nav-links a:hover::after { width: 100%; }
 
-    .hero {
-      position: relative; min-height: 100dvh;
-      display: flex; align-items: center; overflow: hidden; padding-top: 80px;
+    .nav-actions { display: flex; align-items: center; gap: var(--space-4); }
+    .btn-theme { width: 40px; height: 40px; border-radius: var(--radius-full);
+      border: 1px solid var(--color-border); background: transparent;
+      color: var(--color-text-secondary); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--dur-base) var(--ease-smooth);
     }
-    .hero-bg { position: absolute; inset: 0; z-index: 0; }
-    .hero-bg-noise { position: absolute; inset: 0; background-image: radial-gradient(ellipse 70% 50% at 65% 50%, var(--color-primary-dim), transparent 70%), radial-gradient(ellipse 40% 40% at 15% 80%, var(--color-primary-dim), transparent 60%); }
-    .hero-bg-grid { position: absolute; inset: 0; background-image: linear-gradient(var(--color-divider) 1px, transparent 1px), linear-gradient(90deg, var(--color-divider) 1px, transparent 1px); background-size: 48px 48px; opacity: 0.35; }
-    .hero-content { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-16); align-items: center; padding-block: var(--space-20); }
-    .hero-eyebrow { font-family: var(--font-display); font-size: var(--text-xs); color: var(--color-primary); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: var(--space-6); display: flex; align-items: center; gap: var(--space-3); }
-    .hero-eyebrow::before { content:''; display:block; width:28px; height:1px; background:var(--color-primary); }
-    .hero-name { font-family: var(--font-display); font-size: var(--text-hero); font-weight: 700; line-height: 0.88; letter-spacing: -0.02em; color: var(--color-text); margin-bottom: var(--space-4); position: relative; cursor: default; }
-    .hero-name:hover { color: var(--color-primary); text-shadow: 0 0 20px var(--color-primary-dim); }
-    .hero-name .glow {
-      display: block;
-      background: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
-      color: transparent;
-      background-clip: text;
-      -webkit-background-clip: text;
+    .btn-theme:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+    .btn-booking {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-alt));
+      color: white; padding: var(--space-2) var(--space-6); border-radius: var(--radius-md);
+      font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em;
+      border: none; cursor: pointer; text-transform: uppercase;
+      transition: all var(--dur-base) var(--ease-smooth);
+      box-shadow: 0 4px 16px rgba(236, 72, 153, 0.2);
     }
-    .hero-tagline { font-size: var(--text-lg); color: var(--color-text-muted); margin-bottom: var(--space-8); max-width: 42ch; line-height: 1.6; }
-    .hero-tags { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-10); }
-    .tag { padding: var(--space-1) var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: var(--text-xs); font-family: var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-muted); }
-    .tag--primary { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-dim); }
-    .tag--purple { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-dim); }
-
-    .hero-ctas { display: flex; gap: var(--space-4); flex-wrap: wrap; align-items: center; }
-    .btn-primary { padding: var(--space-3) var(--space-8); background: var(--color-primary); color: var(--color-text-inverse); font-family: var(--font-display); font-size: var(--text-sm); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; border-radius: var(--radius-sm); text-decoration: none; display: inline-flex; align-items: center; gap: var(--space-2); }
-    .btn-primary:hover { box-shadow: var(--shadow-pink); background: var(--color-primary-hover); }
-    .btn-ghost { padding: var(--space-3) var(--space-8); border: 1px solid var(--color-border); color: var(--color-text-muted); font-family: var(--font-display); font-size: var(--text-sm); letter-spacing: 0.1em; text-transform: uppercase; border-radius: var(--radius-sm); text-decoration: none; display: inline-flex; align-items: center; gap: var(--space-2); }
-    .btn-ghost:hover { border-color: var(--color-primary); color: var(--color-primary); }
-
-    .insta-badge { display: inline-flex; align-items: center; gap: var(--space-2); margin-top: var(--space-10); padding: var(--space-2) var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-full); text-decoration: none; color: var(--color-text-muted); font-size: var(--text-xs); font-family: var(--font-display); letter-spacing: 0.08em; background: var(--color-surface); }
-    .insta-badge:hover { border-color: var(--color-primary); color: var(--color-primary); }
-    .insta-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-primary); animation: pulse-dot 2s ease-in-out infinite; }
-    @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
-
-    .hero-visual { position: relative; display: flex; justify-content: center; }
-    .hero-photo-frame { position: relative; width: 100%; max-width: 400px; }
-    .hero-photo-frame::before { content: ''; position: absolute; inset: -2px; border-radius: var(--radius-xl); z-index: 0; background: linear-gradient(135deg, #ec4899, #f97316 60%, transparent); }
-    .hero-photo { position: relative; z-index: 1; width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: calc(var(--radius-xl) - 2px); }
-
-    .stats-strip { background: var(--color-surface); border-top: 1px solid var(--color-divider); border-bottom: 1px solid var(--color-divider); padding: var(--space-8) 0; }
-    .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); }
-    .stat-item { text-align: center; padding: var(--space-4); border-right: 1px solid var(--color-divider); }
-    .stat-item:last-child { border-right: none; }
-    .stat-number { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--color-primary); line-height: 1; margin-bottom: var(--space-1); }
-    .stat-label { font-size: var(--text-xs); color: var(--color-text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
-
-    .section { padding-block: clamp(var(--space-16), 8vw, var(--space-32)); }
-    .section--alt { background: var(--color-surface); border-top: 1px solid var(--color-divider); border-bottom: 1px solid var(--color-divider); }
-    .section-eyebrow { font-family: var(--font-display); font-size: var(--text-xs); color: var(--color-primary); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-3); }
-    .section-eyebrow::before { content:''; display:block; width:24px; height:1px; background:var(--color-primary); }
-    .section-title { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; line-height: 1.1; margin-bottom: var(--space-6); color: var(--color-text); position: relative; transition: color var(--transition), text-shadow var(--transition); }
-    .section-title::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover)); transition: width var(--transition); }
-    .section-title:hover { color: var(--color-primary); }
-    .section-title:hover::after { width: 100%; }
-    .section-body { font-size: var(--text-base); color: var(--color-text-muted); max-width: 65ch; line-height: 1.8; }
-
-    .bio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-16); align-items: start; }
-    .bio-text p { font-size: var(--text-base); color: var(--color-text-muted); line-height: 1.85; margin-bottom: var(--space-6); }
-    .bio-text p strong { color: var(--color-text); font-weight: 600; }
-    .pullquote { border-left: 2px solid var(--color-primary); padding-left: var(--space-6); margin-block: var(--space-8); }
-    .pullquote p { font-family: var(--font-display); font-size: var(--text-lg); color: var(--color-primary); line-height: 1.5; font-style: italic; }
-    .pullquote cite { font-size: var(--text-xs); color: var(--color-text-muted); font-style: normal; font-family: var(--font-display); letter-spacing: 0.08em; }
-
-    .skills-list { display: flex; flex-direction: column; gap: var(--space-4); }
-    .skill-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
-    .skill-name { font-size: var(--text-sm); color: var(--color-text-muted); font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; min-width: 130px; }
-    .skill-bar { flex: 1; height: 2px; background: var(--color-surface-offset); border-radius: var(--radius-full); overflow: hidden; }
-    .skill-fill { height: 100%; background: linear-gradient(90deg, #ec4899, #f97316); border-radius: var(--radius-full); transform: scaleX(0); transform-origin: left; transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1); }
-    .skill-fill.animated { transform: scaleX(1); }
-
-    .releases-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--space-4); margin-top: var(--space-10); }
-    .release-card { background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; transition: transform var(--transition), box-shadow var(--transition); }
-    .release-card:hover { transform: translateY(-4px); box-shadow: 0 0 0 1px var(--color-primary); }
-    .release-card img { width: 100%; aspect-ratio: 1; object-fit: cover; }
-    .release-card-body { padding: var(--space-4); }
-    .release-label { font-size: var(--text-xs); color: var(--color-primary); font-family: var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: var(--space-1); }
-    .release-title { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; margin-bottom: var(--space-1); color: var(--color-text); transition: color var(--transition); }
-    .release-title a:hover { color: var(--color-primary); }
-    .release-meta { font-size: var(--text-xs); color: var(--color-text-faint); }
-    .player-mini { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--color-divider); }
-    .play-btn { width: 32px; height: 32px; border-radius: var(--radius-full); border: 1px solid var(--color-primary); color: var(--color-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; text-decoration:none; }
-    .play-btn:hover { background: var(--color-primary); color: var(--color-text-inverse); }
-    .timeline { flex: 1; height: 2px; background: var(--color-divider); border-radius: var(--radius-full); }
-    .timeline-fill { height: 100%; background: var(--color-primary); border-radius: var(--radius-full); }
-    .time-label { font-family: var(--font-display); font-size: var(--text-xs); color: var(--color-text-faint); }
-
-    .perf-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--space-4); margin-top: var(--space-10); }
-    .perf-card { padding: var(--space-8); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
-    .perf-icon { width: 40px; height: 40px; color: var(--color-primary); margin-bottom: var(--space-4); }
-    .perf-title { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; margin-bottom: var(--space-3); text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text); transition: color var(--transition); }
-    .perf-card:hover .perf-title { color: var(--color-primary); }
-    .perf-body { font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.7; }
-    .perf-body strong { color: var(--color-text); display: block; margin-bottom: var(--space-1); }
-
-    .media-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--space-4); margin-top: var(--space-10); }
-    .media-card { padding: var(--space-6); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); text-align: center; cursor: pointer; text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; gap: var(--space-3); transition: border-color var(--transition), box-shadow var(--transition); }
-    .media-card:hover { border-color: var(--color-primary); box-shadow: 0 0 0 1px var(--color-primary); }
-    .media-icon { width: 44px; height: 44px; color: var(--color-primary); }
-    .media-name { font-family: var(--font-display); font-size: var(--text-sm); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text); }
-    .media-desc { font-size: var(--text-xs); color: var(--color-text-muted); }
-    .media-size { font-family: var(--font-display); font-size: var(--text-xs); color: var(--color-text-faint); }
-
-    .contact-section { text-align: center; padding-block: clamp(var(--space-20), 10vw, var(--space-32)); position: relative; overflow: hidden; }
-    .contact-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 80% at 50% 50%, var(--color-primary-dim) 0%, transparent 70%); }
-    .contact-content { position: relative; z-index: 1; }
-    .contact-title { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 700; line-height: 1.1; margin-bottom: var(--space-4); color: var(--color-text); position: relative; transition: color var(--transition), text-shadow var(--transition); }
-    .contact-title::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 3px; background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover)); border-radius: var(--radius-full); transition: width var(--transition); }
-    .contact-title:hover { color: var(--color-primary); text-shadow: 0 0 20px var(--color-primary-dim); }
-    .contact-title:hover::after { width: 100%; }
-    .contact-sub { font-size: var(--text-lg); color: var(--color-text-muted); max-width: 40ch; margin-inline: auto; margin-bottom: var(--space-10); }
-    .contact-email { font-family: var(--font-display); font-size: var(--text-xl); color: var(--color-primary); text-decoration: none; display: inline-block; }
-    .contact-email:hover { text-shadow: 0 0 20px oklch(from #ec4899 l c h / 0.6); }
-    .social-row { display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap; margin-top: var(--space-10); }
-    .social-link { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-family: var(--font-display); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-muted); text-decoration: none; }
-    .social-link:hover { border-color: var(--color-primary); color: var(--color-primary); }
-    .social-link--ig:hover { border-color: #e1306c; color: #e1306c; }
-
-    footer { padding: var(--space-8) 0; border-top: 1px solid var(--color-divider); }
-    .footer-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4); }
-    .footer-copy { font-size: var(--text-xs); color: var(--color-text-faint); font-family: var(--font-display); letter-spacing: 0.06em; }
-    .footer-links { display: flex; gap: var(--space-6); list-style: none; }
-    .footer-links a { font-size: var(--text-xs); color: var(--color-text-faint); text-decoration: none; letter-spacing: 0.06em; text-transform: uppercase; }
+    .btn-booking:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(236, 72, 153, 0.3);
+    }
 
     @media (max-width: 768px) {
       .nav-links { display: none; }
-      .btn-booking { display: none; }
-      .hero-content { grid-template-columns: 1fr; padding-block: var(--space-12); }
-      .hero-visual { order: -1; }
-      .hero-photo-frame { max-width: 260px; }
-      .stats-grid { grid-template-columns: repeat(2,1fr); }
-      .bio-grid { grid-template-columns: 1fr; }
-      .releases-grid { grid-template-columns: repeat(2,1fr); }
-      .perf-grid { grid-template-columns: 1fr; }
-      .media-grid { grid-template-columns: repeat(2,1fr); }
+      .btn-booking { padding: var(--space-2) var(--space-4); font-size: var(--text-xs); }
     }
-    @media (max-width: 480px) { .releases-grid { grid-template-columns: 1fr; } }
+
+    /* ─── HERO SECTION ─── */
+    .hero {
+      position: relative; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding-top: 80px; overflow: hidden;
+      background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-surface) 100%);
+    }
+
+    .hero::before {
+      content: ''; position: absolute; inset: 0; z-index: 0;
+      background: radial-gradient(circle at 30% 50%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 80%, rgba(124, 58, 237, 0.08) 0%, transparent 50%);
+    }
+
+    .hero-content {
+      position: relative; z-index: 1;
+      display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-16);
+      align-items: center; padding: var(--space-24) 0;
+      width: 100%; max-width: 1400px; margin: 0 auto; padding-inline: var(--space-6);
+    }
+
+    .hero-text h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 700; line-height: 1;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-6);
+      background: linear-gradient(135deg, var(--color-text), var(--color-primary));
+      background-clip: text; -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-display);
+      font-size: var(--text-xs); font-weight: 700;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--color-primary); margin-bottom: var(--space-4);
+      display: flex; align-items: center; gap: var(--space-2);
+    }
+    .hero-eyebrow::before {
+      content: ''; width: 20px; height: 1px;
+      background: var(--color-primary);
+    }
+
+    .hero-tagline {
+      font-size: var(--text-lg);
+      color: var(--color-text-secondary);
+      line-height: 1.8; margin-bottom: var(--space-8);
+      max-width: 50ch;
+    }
+
+    .hero-tags {
+      display: flex; flex-wrap: wrap; gap: var(--space-3);
+      margin-bottom: var(--space-10);
+    }
+    .tag {
+      padding: var(--space-2) var(--space-4);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs); font-weight: 600;
+      color: var(--color-text-secondary);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      transition: all var(--dur-fast) var(--ease-smooth);
+    }
+    .tag--primary {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      background: rgba(236, 72, 153, 0.1);
+    }
+    .tag:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      background: rgba(236, 72, 153, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .hero-ctas {
+      display: flex; gap: var(--space-4); flex-wrap: wrap;
+      margin-bottom: var(--space-8);
+    }
+
+    .btn-primary, .btn-secondary {
+      padding: var(--space-3) var(--space-8);
+      border-radius: var(--radius-md);
+      font-weight: 600; letter-spacing: 0.06em;
+      border: none; cursor: pointer; font-size: var(--text-sm);
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      transition: all var(--dur-base) var(--ease-smooth);
+      text-transform: uppercase;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-alt));
+      color: white;
+      box-shadow: 0 4px 16px rgba(236, 72, 153, 0.25);
+    }
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(236, 72, 153, 0.35);
+    }
+
+    .btn-secondary {
+      border: 1.5px solid var(--color-border);
+      color: var(--color-text-secondary);
+      background: transparent;
+    }
+    .btn-secondary:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      transform: translateY(-3px);
+    }
+
+    .social-badge {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      margin-top: var(--space-8); padding: var(--space-3) var(--space-4);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs); color: var(--color-text-secondary);
+      font-family: var(--font-display); letter-spacing: 0.06em;
+      transition: all var(--dur-base) var(--ease-smooth);
+    }
+    .social-badge:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      background: rgba(236, 72, 153, 0.1);
+    }
+
+    .pulse { width: 8px; height: 8px; border-radius: 50%;
+      background: var(--color-primary);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    .hero-image {
+      position: relative; display: flex; justify-content: center;
+    }
+    .hero-photo-wrapper {
+      position: relative; width: 100%; max-width: 380px;
+      aspect-ratio: 3/4;
+    }
+    .hero-photo-wrapper::before {
+      content: ''; position: absolute; inset: -3px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-alt));
+      border-radius: var(--radius-xl);
+      opacity: 0.6; filter: blur(20px); z-index: 0;
+      animation: float 6s ease-in-out infinite;
+    }
+    .hero-photo {
+      position: relative; z-index: 1;
+      width: 100%; height: 100%;
+      border-radius: var(--radius-xl);
+      background: var(--color-surface-2);
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+    .hero-photo img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @media (max-width: 1024px) {
+      .hero-content { grid-template-columns: 1fr; gap: var(--space-12); }
+      .hero-image { order: -1; }
+      .hero-photo-wrapper { max-width: 280px; }
+    }
+
+    /* ─── STATS SECTION ─── */
+    .stats-section {
+      background: var(--color-surface);
+      padding: var(--space-12) var(--space-4);
+      border-top: 1px solid var(--color-divider);
+      border-bottom: 1px solid var(--color-divider);
+    }
+
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-8); max-width: 1280px; margin: 0 auto;
+    }
+
+    .stat {
+      text-align: center; padding: var(--space-4);
+      transition: all var(--dur-base) var(--ease-smooth);
+    }
+    .stat:hover { transform: translateY(-4px); }
+
+    .stat-number {
+      font-family: var(--font-display);
+      font-size: var(--text-3xl); font-weight: 700;
+      color: var(--color-primary);
+      line-height: 1; margin-bottom: var(--space-2);
+    }
+
+    .stat-label {
+      font-size: var(--text-xs); color: var(--color-text-secondary);
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+
+    /* ─── SECTION STYLING ─── */
+    .section {
+      padding: var(--space-24) var(--space-4);
+    }
+
+    .section-header {
+      margin-bottom: var(--space-12);
+    }
+
+    .section-eyebrow {
+      font-family: var(--font-display);
+      font-size: var(--text-xs); font-weight: 700;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--color-primary);
+      margin-bottom: var(--space-3);
+      display: flex; align-items: center; gap: var(--space-2);
+    }
+    .section-eyebrow::before {
+      content: ''; width: 16px; height: 1px;
+      background: var(--color-primary);
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 700; line-height: 1.1;
+      color: var(--color-text);
+      margin-bottom: var(--space-4);
+      position: relative;
+      display: inline-block;
+    }
+    .section-title::after {
+      content: ''; position: absolute;
+      bottom: -8px; left: 0;
+      width: 0; height: 3px;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-primary-alt));
+      border-radius: var(--radius-full);
+      transition: width var(--dur-slow) var(--ease-smooth);
+    }
+    .section-title:hover::after { width: 100%; }
+
+    .section-description {
+      font-size: var(--text-lg);
+      color: var(--color-text-secondary);
+      max-width: 65ch; line-height: 1.8;
+    }
+
+    /* ─── BIO SECTION ─── */
+    .bio-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: var(--space-12); align-items: start;
+    }
+
+    .bio-content p {
+      font-size: var(--text-base);
+      color: var(--color-text-secondary);
+      line-height: 1.9; margin-bottom: var(--space-6);
+    }
+
+    .bio-content strong {
+      color: var(--color-text);
+      font-weight: 600;
+    }
+
+    .pullquote {
+      border-left: 3px solid var(--color-primary);
+      padding-left: var(--space-6);
+      margin: var(--space-8) 0;
+    }
+
+    .pullquote p {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      color: var(--color-primary);
+      font-style: italic; line-height: 1.6;
+    }
+
+    .pullquote cite {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      font-style: normal;
+      display: block; margin-top: var(--space-2);
+    }
+
+    .skills-box {
+      background: var(--color-surface-2);
+      padding: var(--space-6);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      margin-top: var(--space-6);
+    }
+
+    .skills-list {
+      display: flex; flex-direction: column; gap: var(--space-6);
+    }
+
+    .skill-item {
+      display: flex; align-items: center; gap: var(--space-4);
+    }
+
+    .skill-name {
+      font-family: var(--font-display);
+      font-size: var(--text-sm); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--color-text-secondary);
+      min-width: 140px;
+    }
+
+    .skill-bar {
+      flex: 1; height: 3px;
+      background: var(--color-surface-3);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    .skill-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-primary-alt));
+      border-radius: var(--radius-full);
+      width: 0; transition: width 1.5s var(--ease-smooth);
+    }
+
+    .skill-fill.active { animation: fillBar 1.5s var(--ease-smooth) forwards; }
+    @keyframes fillBar { to { width: var(--fill-width); } }
+
+    /* ─── GALLERY GRID ─── */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--space-6);
+      margin-top: var(--space-12);
+    }
+
+    .card {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: all var(--dur-base) var(--ease-smooth);
+    }
+
+    .card:hover {
+      border-color: var(--color-primary);
+      transform: translateY(-6px);
+      box-shadow: 0 12px 32px rgba(236, 72, 153, 0.15);
+    }
+
+    .card-image {
+      width: 100%; aspect-ratio: 1;
+      background: var(--color-surface-3);
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      font-size: var(--text-sm);
+      color: var(--color-text-tertiary);
+    }
+
+    .card-body { padding: var(--space-6); }
+
+    .card-tag {
+      display: inline-block;
+      font-size: var(--text-xs); font-weight: 600;
+      color: var(--color-primary);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: var(--space-2);
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: var(--text-base); font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: var(--space-1);
+    }
+
+    .card-meta {
+      font-size: var(--text-xs);
+      color: var(--color-text-tertiary);
+    }
+
+    /* ─── CONTACT SECTION ─── */
+    .contact-section {
+      position: relative; padding: var(--space-24) var(--space-4);
+      background: var(--color-surface);
+      text-align: center; overflow: hidden;
+    }
+
+    .contact-section::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.1) 0%, transparent 70%);
+      z-index: 0;
+    }
+
+    .contact-content { position: relative; z-index: 1; }
+
+    .contact-title {
+      font-family: var(--font-display);
+      font-size: var(--text-4xl); font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: var(--space-4);
+      position: relative;
+      display: inline-block;
+    }
+    .contact-title::after {
+      content: ''; position: absolute;
+      bottom: -12px; left: 50%; transform: translateX(-50%);
+      width: 0; height: 3px;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-primary-alt));
+      border-radius: var(--radius-full);
+      transition: width var(--dur-slow) var(--ease-smooth);
+    }
+    .contact-title:hover::after { width: 60%; }
+
+    .contact-subtitle {
+      font-size: var(--text-lg);
+      color: var(--color-text-secondary);
+      max-width: 50ch; margin: var(--space-4) auto var(--space-10);
+    }
+
+    .contact-email {
+      font-family: var(--font-display);
+      font-size: var(--text-2xl); font-weight: 700;
+      color: var(--color-primary);
+      display: inline-block;
+      transition: all var(--dur-base) var(--ease-smooth);
+    }
+    .contact-email:hover {
+      text-shadow: 0 0 20px rgba(236, 72, 153, 0.4);
+      transform: scale(1.05);
+    }
+
+    .social-links {
+      display: flex; gap: var(--space-3);
+      justify-content: center; margin-top: var(--space-10);
+      flex-wrap: wrap;
+    }
+
+    .social-link {
+      display: inline-flex; align-items: center;
+      gap: var(--space-2); padding: var(--space-3) var(--space-6);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      font-size: var(--text-xs); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--color-text-secondary);
+      transition: all var(--dur-base) var(--ease-smooth);
+    }
+    .social-link:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      background: rgba(236, 72, 153, 0.1);
+      transform: translateY(-2px);
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      padding: var(--space-8) var(--space-4);
+      border-top: 1px solid var(--color-divider);
+      background: var(--color-surface);
+    }
+
+    .footer-content {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: var(--space-4);
+      max-width: 1280px; margin: 0 auto;
+    }
+
+    .footer-text {
+      font-size: var(--text-xs);
+      color: var(--color-text-tertiary);
+      letter-spacing: 0.05em;
+    }
+
+    .footer-links {
+      display: flex; gap: var(--space-6);
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: var(--text-xs);
+      color: var(--color-text-tertiary);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      transition: color var(--dur-fast) var(--ease-smooth);
+    }
+    .footer-links a:hover { color: var(--color-primary); }
+
+    /* ─── UTILITIES ─── */
+    .scroll-reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s var(--ease-smooth);
+    }
+
+    .scroll-reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+      .bio-grid { grid-template-columns: 1fr; }
+      .gallery-grid { grid-template-columns: 1fr; }
+      .footer-content { flex-direction: column; text-align: center; }
+    }
   </style>
 </head>
 <body>
 
-<nav>
-  <div class="container--wide">
-    <div class="nav-inner">
-      <a href="#top" class="logo" aria-label="DJ Famosa Press Kit">
-        <img src="LOGO-DJ-FAMOSA-COLORIDA-1.jpg" alt="Logo DJ Famosa" style="width:180px; height:auto; display:block;">
-        <div>
-          <div class="logo-role">@famosasouza · Press Kit</div>
-        </div>
-      </a>
-
-      <ul class="nav-links" role="list">
-        <li><a href="#bio">Bio</a></li>
-        <li><a href="#music">Música</a></li>
-        <li><a href="#sets">Sets</a></li>
-        <li><a href="#shows">Assinatura</a></li>
-        <li><a href="#media">Imprensa</a></li>
-        <li><a href="#contato">Contato</a></li>
-      </ul>
-
-      <div class="nav-actions">
-        <button class="theme-toggle" aria-label="Alternar tema" onclick="toggleTheme()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        </button>
-        <a href="#contato" class="btn-booking">Booking</a>
-      </div>
+<!-- HEADER -->
+<header id="header">
+  <nav class="container">
+    <a href="#home" class="logo">DJ <span>FAMOSA</span></a>
+    <ul class="nav-links">
+      <li><a href="#bio">Sobre</a></li>
+      <li><a href="#music">Música</a></li>
+      <li><a href="#shows">Assinatura</a></li>
+      <li><a href="#contact">Contato</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn-theme" aria-label="Toggle theme">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+      <a href="#contact" class="btn-booking">Booking</a>
     </div>
-  </div>
-</nav>
+  </nav>
+</header>
 
-<section class="hero" id="top">
-  <div class="hero-bg">
-    <div class="hero-bg-grid"></div>
-    <div class="hero-bg-noise"></div>
-  </div>
-  <div class="container--wide" style="width:100%">
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="container">
     <div class="hero-content">
-      <div>
+      <div class="hero-text scroll-reveal">
         <div class="hero-eyebrow">DJ · Producer · LGBTQIA+ Icon</div>
-        <h1 class="hero-name">DJ <span class="glow">FAMOSA</span></h1>
+        <h1>DJ FAMOSA</h1>
         <p class="hero-tagline">Tribal. Techno. Transe. Uma trajetória construída na resiliência, na autenticidade e nas pistas mais intensas do Brasil.</p>
+
         <div class="hero-tags">
           <span class="tag tag--primary">Tribal</span>
           <span class="tag tag--primary">Techno</span>
-          <span class="tag tag--purple">LGBTQIA+</span>
+          <span class="tag">LGBTQIA+</span>
           <span class="tag">Dark Electronic</span>
-          <span class="tag">Underground</span>
         </div>
+
         <div class="hero-ctas">
-          <a href="#contato" class="btn-primary">Contratar</a>
-          <a href="#sets" class="btn-ghost">Ouvir sets</a>
+          <a href="#contact" class="btn-primary">Contratar</a>
+          <a href="#music" class="btn-secondary">Ouvir Sets</a>
         </div>
-        <a href="https://www.instagram.com/famosasouza/" target="_blank" rel="noopener noreferrer" class="insta-badge">
-          <div class="insta-dot"></div>
+
+        <a href="https://instagram.com/famosasouza" target="_blank" rel="noopener" class="social-badge">
+          <div class="pulse"></div>
           @famosasouza
         </a>
       </div>
 
-      <div class="hero-visual">
-        <div class="hero-photo-frame">
-          <img class="hero-photo" src="IMG_4543.jpg" alt="DJ Famosa em performance">
+      <div class="hero-image scroll-reveal">
+        <div class="hero-photo-wrapper">
+          <div class="hero-photo">
+            <img src="IMG_4543.jpg" alt="DJ Famosa em performance">
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<div class="stats-strip">
-  <div class="container--wide">
-    <div class="stats-grid">
-      <div class="stat-item"><div class="stat-number">8+</div><div class="stat-label">Anos de carreira</div></div>
-      <div class="stat-item"><div class="stat-number">200+</div><div class="stat-label">Shows realizados</div></div>
-      <div class="stat-item"><div class="stat-number">50K</div><div class="stat-label">Seguidores</div></div>
-      <div class="stat-item"><div class="stat-number">12</div><div class="stat-label">Estados do Brasil</div></div>
+<!-- STATS -->
+<div class="stats-section scroll-reveal">
+  <div class="stats-grid">
+    <div class="stat">
+      <div class="stat-number">8+</div>
+      <div class="stat-label">Anos de Carreira</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">200+</div>
+      <div class="stat-label">Shows Realizados</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">50K</div>
+      <div class="stat-label">Seguidores</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">12</div>
+      <div class="stat-label">Estados do Brasil</div>
     </div>
   </div>
 </div>
 
+<!-- BIO SECTION -->
 <section class="section" id="bio">
-  <div class="container--wide">
+  <div class="container-sm">
+    <div class="section-header scroll-reveal">
+      <div class="section-eyebrow">Sobre</div>
+      <h2 class="section-title">De histórias reais para as pistas</h2>
+    </div>
+
     <div class="bio-grid">
-      <div class="bio-text">
-        <div class="section-eyebrow">Sobre</div>
-        <h2 class="section-title">De histórias reais para as pistas</h2>
-        <p>A DJ FAMOSA de TAILÂNDIA-PA transforma presença em experiência. Com autenticidade, carisma e muita personalidade, vem conquistando espaço na cena noturna levando sets intensos, envolventes e cheios de identidade. Sua trajetória é marcada pela coragem de ocupar espaços, representar a comunidade TRANS com orgulho e fazer da música uma conexão real com o público.<br><br>DJ Famosa (@famosasouza) é uma DJ e produtora musical brasileira com uma trajetória marcada pela autenticidade, pela superação de preconceitos e por um amor visceral pela cultura da noite. Com raízes no underground nacional, ela construiu seu nome baseada em uma coisa simples: <strong>verdade na pista</strong>.</p>
+      <div class="bio-content scroll-reveal">
+        <p>A DJ FAMOSA de TAILÂNDIA-PA transforma presença em experiência. Com autenticidade, carisma e muita personalidade, vem conquistando espaço na cena noturna levando sets intensos, envolventes e cheios de identidade.</p>
+
+        <p>Sua trajetória é marcada pela coragem de ocupar espaços, representar a comunidade TRANS com orgulho e fazer da música uma conexão real com o público. Construindo seu nome baseada em uma coisa simples: <strong>verdade na pista</strong>.</p>
+
         <p>Sua sonoridade transita entre o <strong>tribal</strong>, o <strong>techno</strong> e o eletrônico mais sombrio — sets que respeitam o dancefloor e criam atmosferas densas, físicas, imersivas.</p>
+
         <div class="pullquote">
           <p>"Os desafios de construir um nome na cena me ensinaram mais do que qualquer escola poderia."</p>
           <cite>— DJ Famosa</cite>
         </div>
       </div>
 
-      <div>
-        <div style="margin-bottom: 2rem;">
-          <img src="IMG_4533.jpg" alt="DJ Famosa na bio" style="width:100%; border-radius:0.75rem; border:1px solid var(--color-border);">
+      <div class="scroll-reveal">
+        <div style="margin-bottom: var(--space-6); border-radius: var(--radius-lg); overflow: hidden;">
+          <img src="IMG_4533.jpg" alt="DJ Famosa" style="width: 100%; display: block;">
         </div>
-        <div style="padding: 1.5rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 0.75rem;">
-          <p class="section-eyebrow" style="margin-bottom: 1.25rem;">Sonoridade</p>
+
+        <div class="skills-box">
+          <div class="section-eyebrow" style="margin-bottom: var(--space-6);">Sonoridade</div>
           <div class="skills-list">
-            <div class="skill-row"><span class="skill-name">Tribal</span><div class="skill-bar"><div class="skill-fill" data-width="0.97"></div></div></div>
-            <div class="skill-row"><span class="skill-name">Techno</span><div class="skill-bar"><div class="skill-fill" data-width="0.92"></div></div></div>
-            <div class="skill-row"><span class="skill-name">Dark Electronic</span><div class="skill-bar"><div class="skill-fill" data-width="0.85"></div></div></div>
-            <div class="skill-row"><span class="skill-name">Produção</span><div class="skill-bar"><div class="skill-fill" data-width="0.78"></div></div></div>
-            <div class="skill-row"><span class="skill-name">Live Performance</span><div class="skill-bar"><div class="skill-fill" data-width="1"></div></div></div>
+            <div class="skill-item">
+              <span class="skill-name">Tribal</span>
+              <div class="skill-bar">
+                <div class="skill-fill" style="--fill-width: 97%"></div>
+              </div>
+            </div>
+            <div class="skill-item">
+              <span class="skill-name">Techno</span>
+              <div class="skill-bar">
+                <div class="skill-fill" style="--fill-width: 92%"></div>
+              </div>
+            </div>
+            <div class="skill-item">
+              <span class="skill-name">Dark Electronic</span>
+              <div class="skill-bar">
+                <div class="skill-fill" style="--fill-width: 85%"></div>
+              </div>
+            </div>
+            <div class="skill-item">
+              <span class="skill-name">Produção</span>
+              <div class="skill-bar">
+                <div class="skill-fill" style="--fill-width: 78%"></div>
+              </div>
+            </div>
+            <div class="skill-item">
+              <span class="skill-name">Live Performance</span>
+              <div class="skill-bar">
+                <div class="skill-fill" style="--fill-width: 100%"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -358,212 +802,183 @@
   </div>
 </section>
 
-<section class="section section--alt" id="music">
-  <div class="container--wide">
-    <div class="section-eyebrow">Discografia</div>
-    <h2 class="section-title">Releases & Mixes</h2>
-    <div class="releases-grid">
-      <div class="release-card">
-        <img src="LOGO-DJ-FAMOSA-COLORIDA-1.jpg" alt="Capa 1">
-        <div class="release-card-body">
-          <div class="release-label">Set / Mix</div>
-          <div class="release-title">Highlight 01</div>
-          <div class="release-meta">Visual placeholder</div>
-          <div class="player-mini"><span class="time-label">Play no SoundCloud</span></div>
+<!-- MUSIC SECTION -->
+<section class="section" style="background: var(--color-surface);" id="music">
+  <div class="container-sm">
+    <div class="section-header scroll-reveal">
+      <div class="section-eyebrow">Discografia</div>
+      <h2 class="section-title">Releases & Mixes</h2>
+    </div>
+
+    <div class="gallery-grid">
+      <div class="card scroll-reveal">
+        <div class="card-image">Maison Debut — Concurso</div>
+        <div class="card-body">
+          <span class="card-tag">Set / Mix</span>
+          <h3 class="card-title">
+            <a href="https://soundcloud.com/dj-famosa/set-concurso-maison-debut" target="_blank">Maison Debut Set</a>
+          </h3>
+          <p class="card-meta">Mix de concurso · DJ Famosa</p>
         </div>
       </div>
-      <div class="release-card">
-        <img src="IMG_4533.jpg" alt="Capa 2">
-        <div class="release-card-body">
-          <div class="release-label">Set / Mix</div>
-          <div class="release-title">Highlight 02</div>
-          <div class="release-meta">Visual placeholder</div>
-          <div class="player-mini"><span class="time-label">Play no SoundCloud</span></div>
+
+      <div class="card scroll-reveal">
+        <div class="card-image">Faith Setmix</div>
+        <div class="card-body">
+          <span class="card-tag">Set / Mix</span>
+          <h3 class="card-title">
+            <a href="https://soundcloud.com/dj-famosa/faith-setmix-djfamosa" target="_blank">Faith — Setmix</a>
+          </h3>
+          <p class="card-meta">Mix envolvente · DJ Famosa</p>
         </div>
       </div>
-      <div class="release-card">
-        <img src="IMG_4543.jpg" alt="Capa 3">
-        <div class="release-card-body">
-          <div class="release-label">Set / Mix</div>
-          <div class="release-title">Highlight 03</div>
-          <div class="release-meta">Visual placeholder</div>
-          <div class="player-mini"><span class="time-label">Play no SoundCloud</span></div>
+
+      <div class="card scroll-reveal">
+        <div class="card-image">Famosa Setmix</div>
+        <div class="card-body">
+          <span class="card-tag">Set / Mix</span>
+          <h3 class="card-title">
+            <a href="https://soundcloud.com/dj-famosa/famosa-setmix" target="_blank">Famosa — Setmix</a>
+          </h3>
+          <p class="card-meta">Mix autoral · DJ Famosa</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="section" id="sets">
-  <div class="container--wide">
-    <div class="section-eyebrow">SoundCloud</div>
-    <h2 class="section-title">Sets em destaque</h2>
-    <p class="section-body">Três mixes que traduzem a identidade da DJ Famosa em versões diretas do SoundCloud.</p>
-    <div class="releases-grid">
-      <div class="release-card">
-        <img src="LOGO-DJ-FAMOSA-COLORIDA-1.jpg" alt="Maison Debut">
-        <div class="release-card-body">
-          <div class="release-label">SoundCloud · Set</div>
-          <div class="release-title">
-            <a href="https://soundcloud.com/dj-famosa/set-concurso-maison-debut?si=13ebb82a0ad641398d3e35640ee4942d&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:none;">Maison Debut — Concurso Set</a>
-          </div>
-          <div class="release-meta">Mix de concurso · DJ Famosa</div>
-          <div class="player-mini">
-            <a class="play-btn" href="https://soundcloud.com/dj-famosa/set-concurso-maison-debut?si=13ebb82a0ad641398d3e35640ee4942d&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing" target="_blank" rel="noopener noreferrer">↗</a>
-            <div class="timeline"><div class="timeline-fill" style="width:68%"></div></div>
-            <span class="time-label">Play</span>
-          </div>
+<!-- ASSINATURA SECTION -->
+<section class="section" id="shows">
+  <div class="container-sm">
+    <div class="section-header scroll-reveal">
+      <div class="section-eyebrow">Assinatura</div>
+      <h2 class="section-title">Assinatura Artística</h2>
+      <p class="section-description">Elementos permanentes da identidade — não dependem de agenda, datas ou temporada.</p>
+    </div>
+
+    <div class="gallery-grid">
+      <div class="card scroll-reveal">
+        <div class="card-body">
+          <div class="card-tag">01</div>
+          <h3 class="card-title">Identidade</h3>
+          <p class="card-meta">DJ Famosa, Tailândia-PA, presença forte, carisma e representatividade TRANS na cena.</p>
         </div>
       </div>
-      <div class="release-card">
-        <img src="IMG_4533.jpg" alt="Faith Setmix">
-        <div class="release-card-body">
-          <div class="release-label">SoundCloud · Set</div>
-          <div class="release-title">
-            <a href="https://soundcloud.com/dj-famosa/faith-setmix-djfamosa?si=bf2a5f1567224bafaf3230b49e86af2f&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:none;">Faith — Setmix</a>
-          </div>
-          <div class="release-meta">Mix envolvente · DJ Famosa</div>
-          <div class="player-mini">
-            <a class="play-btn" href="https://soundcloud.com/dj-famosa/faith-setmix-djfamosa?si=bf2a5f1567224bafaf3230b49e86af2f&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing" target="_blank" rel="noopener noreferrer">↗</a>
-            <div class="timeline"><div class="timeline-fill" style="width:52%"></div></div>
-            <span class="time-label">Play</span>
-          </div>
+
+      <div class="card scroll-reveal">
+        <div class="card-body">
+          <div class="card-tag">02</div>
+          <h3 class="card-title">Narrativa</h3>
+          <p class="card-meta">Transformar presença em experiência, ocupando espaços com autenticidade e conexão real.</p>
         </div>
       </div>
-      <div class="release-card">
-        <img src="IMG_4543.jpg" alt="Famosa Setmix">
-        <div class="release-card-body">
-          <div class="release-label">SoundCloud · Set</div>
-          <div class="release-title">
-            <a href="https://soundcloud.com/dj-famosa/famosa-setmix?si=2ef1ec69e5784cd2b07f1ba836319ece&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:none;">Famosa — Setmix</a>
-          </div>
-          <div class="release-meta">Mix autoral · DJ Famosa</div>
-          <div class="player-mini">
-            <a class="play-btn" href="https://soundcloud.com/dj-famosa/famosa-setmix?si=2ef1ec69e5784cd2b07f1ba836319ece&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing" target="_blank" rel="noopener noreferrer">↗</a>
-            <div class="timeline"><div class="timeline-fill" style="width:61%"></div></div>
-            <span class="time-label">Play</span>
-          </div>
+
+      <div class="card scroll-reveal">
+        <div class="card-body">
+          <div class="card-tag">03</div>
+          <h3 class="card-title">Som</h3>
+          <p class="card-meta">Sets intensos, envolventes e cheios de identidade, com foco em tribal house e energia.</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="section section--alt" id="shows">
-  <div class="container--wide">
-    <div class="section-eyebrow">Assinatura</div>
-    <h2 class="section-title">Assinatura artística</h2>
-    <p class="section-body">Elementos permanentes da identidade da DJ Famosa — não dependem de agenda, datas ou temporada.</p>
-    <div class="perf-grid">
-      <div class="perf-card">
-        <svg class="perf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3 7h7l-5.7 4.1L18 20l-6-4-6 4 1.7-6.9L2 9h7z"/></svg>
-        <div class="perf-title">Identidade</div>
-        <div class="perf-body"><strong>Base artística:</strong> DJ Famosa, Tailândia-PA, presença forte, carisma e representatividade TRANS.</div>
-      </div>
-      <div class="perf-card">
-        <svg class="perf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h18M12 3v18"/><circle cx="12" cy="12" r="7"/></svg>
-        <div class="perf-title">Narrativa</div>
-        <div class="perf-body"><strong>Mensagem fixa:</strong> transformar presença em experiência, ocupando espaços com autenticidade e conexão real com o público.</div>
-      </div>
-      <div class="perf-card">
-        <svg class="perf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12h16"/><path d="M12 4v16"/><circle cx="12" cy="12" r="3"/></svg>
-        <div class="perf-title">Som</div>
-        <div class="perf-body"><strong>Assinatura:</strong> sets intensos, envolventes e cheios de identidade, com foco em tribal house e energia de pista.</div>
-      </div>
-    </div>
-
-    <div style="margin-top: 3rem;">
-      <div class="section-eyebrow" style="margin-bottom: 1.5rem;">Lugares em destaque</div>
-      <div style="padding: 2rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 0.75rem;">
-        <ul style="list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; font-size:var(--text-sm); color:var(--color-text-muted);">
-          <li><strong style="color:var(--color-text);">Pista LGBTQIA+ SP</strong><br> Clubs e festas voltadas para a cena queer e underground.</li>
-          <li><strong style="color:var(--color-text);">Eventos em Tailândia-PA</strong><br> Presença recorrente em festas regionais e encontros da cena local.</li>
-          <li><strong style="color:var(--color-text);">Festivais independentes</strong><br> Palcos alternativos com foco em tribal house e diversidade.</li>
-          <li><strong style="color:var(--color-text);">Podcasts e lives</strong><br> Participações em formatos de entrevista e DJ set, como O Pod é Pop.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="media">
-  <div class="container--wide">
-    <div class="section-eyebrow">Imprensa</div>
-    <h2 class="section-title">Media Kit & Assets</h2>
-    <p class="section-body">Materiais oficiais para imprensa, promoters, veículos de comunicação e parceiros editoriais.</p>
-    <div class="media-grid">
-      <a href="#" class="media-card">
-        <svg class="media-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        <div class="media-name">Fotos EPK</div>
-        <div class="media-desc">Ensaios oficiais hi-res</div>
-        <div class="media-size">ZIP · ~90MB</div>
-      </a>
-      <a href="#" class="media-card">
-        <svg class="media-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        <div class="media-name">Logo Pack</div>
-        <div class="media-desc">Logo DJ Famosa em PNG/SVG</div>
-        <div class="media-size">ZIP · ~3MB</div>
-      </a>
-      <a href="#" class="media-card">
-        <svg class="media-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        <div class="media-name">Bio Oficial</div>
-        <div class="media-desc">Versão imprensa e completa</div>
-        <div class="media-size">ZIP · ~1MB</div>
-      </a>
-      <a href="#" class="media-card">
-        <svg class="media-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h6"/></svg>
-        <div class="media-name">Rider Técnico</div>
-        <div class="media-desc">Setup e necessidades técnicas</div>
-        <div class="media-size">PDF · ~500KB</div>
-      </a>
-    </div>
-  </div>
-</section>
-
-<section class="contact-section" id="contato">
-  <div class="contact-bg"></div>
-  <div class="contact-content">
+<!-- CONTACT SECTION -->
+<section class="contact-section" id="contact">
+  <div class="container-sm scroll-reveal">
     <h2 class="contact-title">Booking & Contato</h2>
-    <p class="contact-sub">Para bookings, parcerias, press e projetos especiais, entre em contato diretamente pelo e-mail ou redes sociais oficiais.</p>
+    <p class="contact-subtitle">Para bookings, parcerias, press e projetos especiais.</p>
+
     <a href="mailto:famosasouzaa@gmail.com" class="contact-email">famosasouzaa@gmail.com</a>
-    <div class="social-row">
-      <a href="https://www.instagram.com/famosasouza/" target="_blank" rel="noopener noreferrer" class="social-link social-link--ig">Instagram</a>
-      <a href="https://soundcloud.com/dj-famosa" target="_blank" rel="noopener noreferrer" class="social-link">SoundCloud</a>
+
+    <div class="social-links">
+      <a href="https://instagram.com/famosasouza" target="_blank" rel="noopener" class="social-link">
+        Instagram
+      </a>
+      <a href="https://soundcloud.com/dj-famosa" target="_blank" rel="noopener" class="social-link">
+        SoundCloud
+      </a>
     </div>
   </div>
 </section>
 
+<!-- FOOTER -->
 <footer>
-  <div class="container--wide">
-    <div class="footer-inner">
-      <div class="footer-copy">DJ Famosa · Press Kit · 2026</div>
-      <ul class="footer-links">
-        <li><a href="#top">Topo</a></li>
-        <li><a href="#contato">Contato</a></li>
-      </ul>
-    </div>
+  <div class="footer-content">
+    <p class="footer-text">DJ Famosa · Press Kit · 2026</p>
+    <ul class="footer-links">
+      <li><a href="#home">Início</a></li>
+      <li><a href="#contact">Contato</a></li>
+    </ul>
   </div>
 </footer>
 
 <script>
-  function toggleTheme() {
-    const html = document.documentElement;
-    const current = html.getAttribute('data-theme');
-    html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
-  }
+  // Header scroll effect
+  window.addEventListener('scroll', () => {
+    const header = document.getElementById('header');
+    header.classList.toggle('scrolled', window.scrollY > 50);
+  });
+
+  // Scroll reveal animation
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        entry.target.querySelectorAll('.skill-fill').forEach(el => {
-          el.style.transform = `scaleX(${el.dataset.width})`;
-          el.classList.add('animated');
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.scroll-reveal').forEach(el => {
+    observer.observe(el);
+  });
+
+  // Skill bars animation
+  const skillObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.querySelectorAll('.skill-fill').forEach(fill => {
+          fill.classList.add('active');
         });
+        skillObserver.unobserve(entry.target);
       }
     });
   }, { threshold: 0.3 });
 
-  document.querySelectorAll('.skills-list').forEach(el => observer.observe(el));
+  document.querySelectorAll('.skills-list').forEach(el => {
+    skillObserver.observe(el);
+  });
+
+  // Smooth scroll for navigation
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', (e) => {
+      const href = anchor.getAttribute('href');
+      if (href === '#' || href === '#home') return;
+      e.preventDefault();
+      document.querySelector(href)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    });
+  });
+
+  // Theme toggle
+  document.querySelector('.btn-theme').addEventListener('click', () => {
+    const html = document.documentElement;
+    html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    localStorage.setItem('theme', html.getAttribute('data-theme'));
+  });
+
+  // Load saved theme
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
 </script>
 </body>
 </html>
