@@ -650,6 +650,94 @@
       .gallery-grid { grid-template-columns: 1fr; }
       .footer-content { flex-direction: column; text-align: center; }
     }
+
+    /* ─── MÍDIA SECTION ─── */
+    .midia-section {
+      position: relative;
+      overflow: hidden;
+      background: var(--color-bg);
+    }
+    .midia-bg {
+      position: absolute; inset: 0;
+      background-size: cover;
+      background-position: center 30%;
+      filter: blur(2px) brightness(0.25);
+      transform: scale(1.05);
+      z-index: 0;
+    }
+    .midia-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg,
+        rgba(10,10,14,0.6) 0%,
+        rgba(10,10,14,0.4) 50%,
+        rgba(10,10,14,0.8) 100%);
+      z-index: 0;
+    }
+
+    /* Social icons row */
+    .social-icons-row {
+      display: flex; gap: var(--space-4); flex-wrap: wrap;
+      margin-bottom: var(--space-12);
+    }
+    .social-icon-card {
+      display: flex; flex-direction: column; align-items: center;
+      gap: var(--space-2); padding: var(--space-6) var(--space-8);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: var(--radius-lg);
+      color: #fff; text-decoration: none; flex: 1; min-width: 140px;
+      backdrop-filter: blur(8px);
+      transition: all var(--dur-base) var(--ease-smooth);
+    }
+    .social-icon-card:hover {
+      background: rgba(236,72,153,0.15);
+      border-color: var(--color-primary);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(236,72,153,0.2);
+    }
+    .social-icon-card span {
+      font-family: var(--font-display);
+      font-size: var(--text-sm); font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .social-icon-card small {
+      font-size: var(--text-xs); color: rgba(255,255,255,0.5);
+    }
+
+    /* YouTube embed */
+    .yt-block {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-lg);
+      padding: var(--space-8);
+      backdrop-filter: blur(8px);
+    }
+    .yt-embed {
+      position: relative; padding-bottom: 56.25%;
+      height: 0; overflow: hidden;
+      border-radius: var(--radius-md);
+      background: #000;
+    }
+    .yt-embed iframe {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      border: none;
+    }
+
+    /* WhatsApp contact */
+    .contact-whatsapp {
+      color: #25d366 !important;
+      font-size: var(--text-xl) !important;
+      display: inline-flex !important;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .contact-whatsapp:hover { text-shadow: 0 0 20px rgba(37,211,102,0.4) !important; }
+
+    @media (max-width: 600px) {
+      .social-icons-row { flex-direction: column; }
+      .social-icon-card { flex-direction: row; gap: var(--space-4); }
+    }
   </style>
 </head>
 <body>
@@ -660,8 +748,7 @@
     <a href="#home" class="logo">DJ <span>FAMOSA</span></a>
     <ul class="nav-links">
       <li><a href="#bio">Sobre</a></li>
-      <li><a href="#music">Música</a></li>
-      <li><a href="#shows">Assinatura</a></li>
+      <li><a href="#music">Mídia</a></li>
       <li><a href="#contact">Contato</a></li>
     </ul>
     <div class="nav-actions">
@@ -717,19 +804,15 @@
 <div class="stats-section scroll-reveal">
   <div class="stats-grid">
     <div class="stat">
-      <div class="stat-number">8+</div>
+      <div class="stat-number">3</div>
       <div class="stat-label">Anos de Carreira</div>
     </div>
     <div class="stat">
-      <div class="stat-number">200+</div>
-      <div class="stat-label">Shows Realizados</div>
-    </div>
-    <div class="stat">
-      <div class="stat-number">50K</div>
+      <div class="stat-number">26K</div>
       <div class="stat-label">Seguidores</div>
     </div>
     <div class="stat">
-      <div class="stat-number">12</div>
+      <div class="stat-number">5/27</div>
       <div class="stat-label">Estados do Brasil</div>
     </div>
   </div>
@@ -745,11 +828,9 @@
 
     <div class="bio-grid">
       <div class="bio-content scroll-reveal">
-        <p>A DJ FAMOSA de TAILÂNDIA-PA transforma presença em experiência. Com autenticidade, carisma e muita personalidade, vem conquistando espaço na cena noturna levando sets intensos, envolventes e cheios de identidade.</p>
+        <p>A DJ FAMOSA de TAILÂNDIA-PA transforma presença em experiência. Com autenticidade, carisma e muita personalidade, vem conquistando espaço na cena, levando sets intensos, envolventes e cheios de identidade.</p>
 
         <p>Sua trajetória é marcada pela coragem de ocupar espaços, representar a comunidade TRANS com orgulho e fazer da música uma conexão real com o público. Construindo seu nome baseada em uma coisa simples: <strong>verdade na pista</strong>.</p>
-
-        <p>Sua sonoridade transita entre o <strong>tribal</strong>, o <strong>techno</strong> e o eletrônico mais sombrio — sets que respeitam o dancefloor e criam atmosferas densas, físicas, imersivas.</p>
 
         <div class="pullquote">
           <p>"Os desafios de construir um nome na cena me ensinaram mais do que qualquer escola poderia."</p>
@@ -802,84 +883,49 @@
   </div>
 </section>
 
-<!-- MUSIC SECTION -->
-<section class="section" style="background: var(--color-surface);" id="music">
-  <div class="container-sm">
+<!-- MÍDIA SECTION -->
+<section class="section midia-section" id="music">
+  <div class="midia-bg" style="background-image: url('IMG_4542.jpg');"></div>
+  <div class="midia-overlay"></div>
+  <div class="container-sm" style="position:relative;z-index:1;">
     <div class="section-header scroll-reveal">
-      <div class="section-eyebrow">Discografia</div>
-      <h2 class="section-title">Releases & Mixes</h2>
+      <div class="section-eyebrow">Mídia</div>
+      <h2 class="section-title" style="color:#fff;">Presença & Conteúdo</h2>
     </div>
 
-    <div class="gallery-grid">
-      <div class="card scroll-reveal">
-        <div class="card-image">Maison Debut — Concurso</div>
-        <div class="card-body">
-          <span class="card-tag">Set / Mix</span>
-          <h3 class="card-title">
-            <a href="https://soundcloud.com/dj-famosa/set-concurso-maison-debut" target="_blank">Maison Debut Set</a>
-          </h3>
-          <p class="card-meta">Mix de concurso · DJ Famosa</p>
-        </div>
-      </div>
-
-      <div class="card scroll-reveal">
-        <div class="card-image">Faith Setmix</div>
-        <div class="card-body">
-          <span class="card-tag">Set / Mix</span>
-          <h3 class="card-title">
-            <a href="https://soundcloud.com/dj-famosa/faith-setmix-djfamosa" target="_blank">Faith — Setmix</a>
-          </h3>
-          <p class="card-meta">Mix envolvente · DJ Famosa</p>
-        </div>
-      </div>
-
-      <div class="card scroll-reveal">
-        <div class="card-image">Famosa Setmix</div>
-        <div class="card-body">
-          <span class="card-tag">Set / Mix</span>
-          <h3 class="card-title">
-            <a href="https://soundcloud.com/dj-famosa/famosa-setmix" target="_blank">Famosa — Setmix</a>
-          </h3>
-          <p class="card-meta">Mix autoral · DJ Famosa</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ASSINATURA SECTION -->
-<section class="section" id="shows">
-  <div class="container-sm">
-    <div class="section-header scroll-reveal">
-      <div class="section-eyebrow">Assinatura</div>
-      <h2 class="section-title">Assinatura Artística</h2>
-      <p class="section-description">Elementos permanentes da identidade — não dependem de agenda, datas ou temporada.</p>
+    <!-- Ícones Sociais -->
+    <div class="social-icons-row scroll-reveal">
+      <a href="https://www.instagram.com/famosasouza/" target="_blank" rel="noopener" class="social-icon-card">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        <span>Instagram</span>
+        <small>@famosasouza</small>
+      </a>
+      <a href="https://soundcloud.com/dj-famosa" target="_blank" rel="noopener" class="social-icon-card">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 14.5a2.5 2.5 0 0 0 2.5 2.5h14a3 3 0 0 0 0-6 5 5 0 0 0-9.5-2A2.5 2.5 0 0 0 2 14.5z"/></svg>
+        <span>SoundCloud</span>
+        <small>dj-famosa</small>
+      </a>
+      <a href="https://drive.google.com/drive/folders/1eek_Snf-eVo_oHabuCkQZSyHsXdrZF0T" target="_blank" rel="noopener" class="social-icon-card">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8"/><polyline points="16 2 22 2 22 8"/><line x1="11" y1="13" x2="22" y2="2"/></svg>
+        <span>Mídia Kit</span>
+        <small>Google Drive</small>
+      </a>
     </div>
 
-    <div class="gallery-grid">
-      <div class="card scroll-reveal">
-        <div class="card-body">
-          <div class="card-tag">01</div>
-          <h3 class="card-title">Identidade</h3>
-          <p class="card-meta">DJ Famosa, Tailândia-PA, presença forte, carisma e representatividade TRANS na cena.</p>
-        </div>
+    <!-- YouTube O Pod é Pop -->
+    <div class="yt-block scroll-reveal">
+      <div class="section-eyebrow" style="margin-bottom:var(--space-4);">Participação</div>
+      <h3 style="font-family:var(--font-display);font-size:var(--text-lg);color:#fff;margin-bottom:var(--space-6);">O Pod é Pop</h3>
+      <div class="yt-embed">
+        <iframe
+          src="https://www.youtube.com/embed?listType=search&list=DJ+Famosa+Pod+e+Pop"
+          title="DJ Famosa no O Pod é Pop"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
       </div>
-
-      <div class="card scroll-reveal">
-        <div class="card-body">
-          <div class="card-tag">02</div>
-          <h3 class="card-title">Narrativa</h3>
-          <p class="card-meta">Transformar presença em experiência, ocupando espaços com autenticidade e conexão real.</p>
-        </div>
-      </div>
-
-      <div class="card scroll-reveal">
-        <div class="card-body">
-          <div class="card-tag">03</div>
-          <h3 class="card-title">Som</h3>
-          <p class="card-meta">Sets intensos, envolventes e cheios de identidade, com foco em tribal house e energia.</p>
-        </div>
-      </div>
+      <p style="font-size:var(--text-xs);color:rgba(255,255,255,0.5);margin-top:var(--space-3);text-align:center;">Caso o vídeo não carregue, acesse diretamente no YouTube.</p>
     </div>
   </div>
 </section>
@@ -888,15 +934,20 @@
 <section class="contact-section" id="contact">
   <div class="container-sm scroll-reveal">
     <h2 class="contact-title">Booking & Contato</h2>
-    <p class="contact-subtitle">Para bookings, parcerias, press e projetos especiais.</p>
+    <p class="contact-subtitle">Para bookings, parcerias, imprensa e projetos especiais.</p>
 
-    <a href="mailto:famosasouzaa@gmail.com" class="contact-email">famosasouzaa@gmail.com</a>
+    <a href="https://wa.me/5511965067259" target="_blank" rel="noopener" class="contact-email contact-whatsapp">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:middle;margin-right:8px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+      (11) 96506-7259
+    </a>
 
     <div class="social-links">
-      <a href="https://instagram.com/famosasouza" target="_blank" rel="noopener" class="social-link">
-        Instagram
+      <a href="https://www.instagram.com/famosasouza/" target="_blank" rel="noopener" class="social-link social-link--ig">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        @famosasouza
       </a>
       <a href="https://soundcloud.com/dj-famosa" target="_blank" rel="noopener" class="social-link">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 14.5a2.5 2.5 0 0 0 2.5 2.5h14a3 3 0 0 0 0-6 5 5 0 0 0-9.5-2A2.5 2.5 0 0 0 2 14.5z"/></svg>
         SoundCloud
       </a>
     </div>
