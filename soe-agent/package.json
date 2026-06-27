@@ -1,0 +1,15 @@
+{
+  "name": "soe-agent",
+  "version": "1.0.0",
+  "description": "Backend do SOE Master Agent — geração de Excel, upload SharePoint e refresh Power BI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0"
+  }
+}
