@@ -127,6 +127,28 @@ async function refreshPowerBIPanel() {
   return json;
 }
 
+async function gerarAnaliseExecutiva(data) {
+  const res = await fetch(`${SOE_API_BASE}/api/soe/analise-executiva`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || `Falha na análise executiva (HTTP ${res.status})`);
+  return json.text;
+}
+
+async function enviarAlertaSOE(data) {
+  const res = await fetch(`${SOE_API_BASE}/api/soe/send-alert`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data, to: CTX.recipients, period: CTX.period, workspace: CTX.workspace }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || `Falha ao enviar alerta (HTTP ${res.status})`);
+  return json;
+}
+
 // --- STEP DEFINITIONS ---
 const STEPS = [
   { id: 1, name: "Inventário",           ms: 1400, log: "4 relatórios | 4 datasets | 15 tabelas inventariadas" },
@@ -174,65 +196,6 @@ export default function SOEAgent() {
 
   useEffect(() => { if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight; }, [logs]);
 
-  const callAPI = async (data) => {
-    const criticals = data.filter(d => d.Status === "CRITICO");
-    const tacRisk = data.filter(d => d.Tipo_Cliente === "TAC" && d.Flag_Ruptura === 1);
-    const totalNeg = data.reduce((s, d) => s + (d.Impacto_EBITDA < 0 ? d.Impacto_EBITDA : 0), 0);
-
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 1000,
-        system: `Você é o Agente S&OE V4 — Sales & Operations Execution. Análise técnica, executiva e defensável. Linguagem direta, sem prolixidade. Cada afirmação suportada pelos dados. Use markdown limpo. Nunca use bullet points decorativos — use dados.`,
-        messages: [{
-          role: "user",
-          content: `BASE CONSOLIDADA PROCESSADA — JUN/2026 — Grupo Proteína Sul:
-
-${data.map(d => `SKU: ${d.SKU} | Planta: ${d.Planta} | Cliente: ${d.Cliente} [${d.Tipo_Cliente}]
-  PVE: ${d.Estoque_PVE}t | Proj.SOE: ${d.Projecao_Estoque_SOE}t | Est.Real: ${d.Estoque_Final_Real}t
-  Prod.Plan: ${d.Producao_Planejada}t | Prod.Real: ${d.Producao_Real}t | Margem: R$${d.Margem_EBITDA_Rt}/t
-  Status: ${d.Status} | Flag_Ruptura: ${d.Flag_Ruptura} | Flag_Lote: ${d.Flag_Excecao_Lote}
-  Impacto_EBITDA: R$ ${d.Impacto_EBITDA.toLocaleString("pt-BR")}
-  Raciocínio: ${d.Observacoes}`).join("\n\n")}
-
-RESUMO EXECUTIVO:
-- Total SKUs: ${data.length} | CRÍTICOS: ${criticals.length} | ATENÇÃO: ${data.filter(d=>d.Status==="ATENCAO").length}
-- Clientes TAC com risco de ruptura: ${tacRisk.length}/${data.filter(d=>d.Tipo_Cliente==="TAC").length}
-- Impacto EBITDA negativo total: R$ ${Math.abs(totalNeg).toLocaleString("pt-BR")}
-
-Entregue EXATAMENTE nesta estrutura:
-
-## Diagnóstico Executivo
-(3-4 linhas objetivas citando os dados. Sem suavizar o que é crítico.)
-
-## Top Ofensores PVE
-(tabela markdown: SKU | PVE | Impacto EBITDA | Prioridade | Ação urgente)
-
-## Clientes TAC
-(analise cada cliente TAC separadamente. Status, risco e exposição.)
-
-## Cenários de Decisão
-
-### CONSERVADOR
-Lógica: ... | Ação imediata: ... | Risco residual: ...
-
-### EQUILIBRADO
-Lógica: ... | Ação imediata: ... | Risco residual: ...
-
-### AGRESSIVO
-Lógica: ... | Ação imediata: ... | Risco residual: ...
-
-## [DECISÃO RECOMENDADA]
-Uma frase. Cenário + ação específica + justificativa técnica.`
-        }]
-      })
-    });
-    const j = await r.json();
-    return j.content?.[0]?.text || "Erro na API.";
-  };
-
   const run = async () => {
     if (phase !== "idle") return;
     setPhase("running");
@@ -274,7 +237,7 @@ Uma frase. Cenário + ação específica + justificativa técnica.`
         setIsApiCall(true);
         setTab("analysis");
         try {
-          const txt = await callAPI(consolidatedData);
+          const txt = await gerarAnaliseExecutiva(consolidatedData);
           setAnalysis(txt);
           addLog("Etapa 8", "Análise Executiva", "OK", "claude-sonnet-4-6 | análise gerada com sucesso.");
         } catch (e) {
@@ -282,6 +245,15 @@ Uma frase. Cenário + ação específica + justificativa técnica.`
           addLog("Etapa 8", "Análise Executiva", "FALHA", e.message);
         }
         setIsApiCall(false);
+      } else if (s.id === 9) {
+        try {
+          const result = await enviarAlertaSOE(consolidatedData);
+          stepLog = `Alerta enviado → ${result.to} | assunto: "${result.subject}"`;
+        } catch (err) {
+          addLog("Etapa 9", "Alertas", "FALHA", err.message);
+          setTab("log"); setPhase("error"); setCurrentStep(null);
+          return;
+        }
       } else {
         await new Promise(r => setTimeout(r, s.ms));
       }

@@ -20,11 +20,14 @@ loadEnvFile();
 const PORT = process.env.PORT || 4000;
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || '*';
 const BODY_LIMIT = 5 * 1024 * 1024; // 5MB — payload de dados consolidados + margem de segurança
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
+const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6';
 
 const REQUIRED_ENV = [
   'AZURE_TENANT_ID', 'AZURE_CLIENT_ID', 'AZURE_CLIENT_SECRET',
   'SHAREPOINT_SITE_ID', 'POWERBI_WORKSPACE_ID', 'POWERBI_DATASET_ID',
 ];
+const OPTIONAL_ENV = ['ANTHROPIC_API_KEY', 'GRAPH_SENDER_UPN', 'ALERT_RECIPIENTS'];
 
 function assertConfigured(keys) {
   const missing = keys.filter(k => !process.env[k]);
@@ -157,6 +160,121 @@ async function waitForRefreshCompletion(datasetId, { timeoutMs = 120_000, interv
   throw new Error('Tempo limite excedido aguardando conclusão do refresh do Power BI');
 }
 
+// --- Análise Executiva via Claude API (server-side, chave nunca exposta ao browser) ---
+function buildAnalysisSystemPrompt() {
+  return `Você é o Agente S&OE V4 — Sales & Operations Execution. Análise técnica, executiva e defensável. Linguagem direta, sem prolixidade. Cada afirmação suportada pelos dados. Use markdown limpo. Nunca use bullet points decorativos — use dados.`;
+}
+
+function buildAnalysisUserMessage(data) {
+  const criticals = data.filter(d => d.Status === 'CRITICO');
+  const tacRisk = data.filter(d => d.Tipo_Cliente === 'TAC' && d.Flag_Ruptura === 1);
+  const totalNeg = data.reduce((s, d) => s + (d.Impacto_EBITDA < 0 ? d.Impacto_EBITDA : 0), 0);
+
+  return `BASE CONSOLIDADA PROCESSADA — JUN/2026 — Grupo Proteína Sul:
+
+${data.map(d => `SKU: ${d.SKU} | Planta: ${d.Planta} | Cliente: ${d.Cliente} [${d.Tipo_Cliente}]
+  PVE: ${d.Estoque_PVE}t | Proj.SOE: ${d.Projecao_Estoque_SOE}t | Est.Real: ${d.Estoque_Final_Real}t
+  Prod.Plan: ${d.Producao_Planejada}t | Prod.Real: ${d.Producao_Real}t | Margem: R$${d.Margem_EBITDA_Rt}/t
+  Status: ${d.Status} | Flag_Ruptura: ${d.Flag_Ruptura} | Flag_Lote: ${d.Flag_Excecao_Lote}
+  Impacto_EBITDA: R$ ${d.Impacto_EBITDA.toLocaleString('pt-BR')}
+  Raciocínio: ${d.Observacoes}`).join('\n\n')}
+
+RESUMO EXECUTIVO:
+- Total SKUs: ${data.length} | CRÍTICOS: ${criticals.length} | ATENÇÃO: ${data.filter(d => d.Status === 'ATENCAO').length}
+- Clientes TAC com risco de ruptura: ${tacRisk.length}/${data.filter(d => d.Tipo_Cliente === 'TAC').length}
+- Impacto EBITDA negativo total: R$ ${Math.abs(totalNeg).toLocaleString('pt-BR')}
+
+Entregue EXATAMENTE nesta estrutura:
+
+## Diagnóstico Executivo
+(3-4 linhas objetivas citando os dados. Sem suavizar o que é crítico.)
+
+## Top Ofensores PVE
+(tabela markdown: SKU | PVE | Impacto EBITDA | Prioridade | Ação urgente)
+
+## Clientes TAC
+(analise cada cliente TAC separadamente. Status, risco e exposição.)
+
+## Cenários de Decisão
+
+### CONSERVADOR
+Lógica: ... | Ação imediata: ... | Risco residual: ...
+
+### EQUILIBRADO
+Lógica: ... | Ação imediata: ... | Risco residual: ...
+
+### AGRESSIVO
+Lógica: ... | Ação imediata: ... | Risco residual: ...
+
+## [DECISÃO RECOMENDADA]
+Uma frase. Cenário + ação específica + justificativa técnica.`;
+}
+
+async function callAnthropicAnalysis(data) {
+  if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY não configurada');
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'anthropic-version': '2023-06-01',
+      'x-api-key': ANTHROPIC_API_KEY,
+    },
+    body: JSON.stringify({
+      model: ANTHROPIC_MODEL,
+      max_tokens: 1000,
+      system: buildAnalysisSystemPrompt(),
+      messages: [{ role: 'user', content: buildAnalysisUserMessage(data) }],
+    }),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(`Falha na API Anthropic (${res.status}): ${json.error?.message || JSON.stringify(json)}`);
+  }
+  return json.content?.[0]?.text || '';
+}
+
+// --- Alertas por e-mail via Microsoft Graph (sendMail) ---
+function buildAlertEmail(data, { period, workspace } = {}) {
+  const criticals = data.filter(d => d.Status === 'CRITICO');
+  const atencao = data.filter(d => d.Status === 'ATENCAO');
+  const rows = data
+    .filter(d => d.Status !== 'OK')
+    .sort((a, b) => a.Impacto_EBITDA - b.Impacto_EBITDA)
+    .map(d => `<tr><td>${d.SKU}</td><td>${d.Status}</td><td>${d.Cliente}</td><td>${d.Estoque_PVE}t</td><td>R$ ${d.Impacto_EBITDA.toLocaleString('pt-BR')}</td><td>${d.Observacoes}</td></tr>`)
+    .join('');
+  const subject = `[SOE V4] ${criticals.length} CRÍTICOS | ${atencao.length} ATENÇÃO${period ? ` — ${period}` : ''}`;
+  const html = `<h2>Alerta S&OE${workspace ? ` — ${workspace}` : ''}${period ? ` — ${period}` : ''}</h2>
+    <p>${criticals.length} SKU(s) em status CRÍTICO, ${atencao.length} em ATENÇÃO.</p>
+    <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:monospace;font-size:12px">
+      <tr><th>SKU</th><th>Status</th><th>Cliente</th><th>PVE</th><th>Impacto EBITDA</th><th>Observações</th></tr>
+      ${rows}
+    </table>`;
+  return { subject, html };
+}
+
+async function sendAlertEmail({ to, subject, html }) {
+  assertConfigured(['GRAPH_SENDER_UPN']);
+  const token = await getAccessToken('https://graph.microsoft.com/.default');
+  const senderUpn = process.env.GRAPH_SENDER_UPN;
+  const url = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(senderUpn)}/sendMail`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: {
+        subject,
+        body: { contentType: 'HTML', content: html },
+        toRecipients: to.split(',').map(addr => ({ emailAddress: { address: addr.trim() } })),
+      },
+      saveToSentItems: true,
+    }),
+  });
+  if (res.status !== 202) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error(`Falha ao enviar e-mail (${res.status}): ${json.error?.message || JSON.stringify(json)}`);
+  }
+}
+
 // --- HTTP server ---
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': FRONTEND_ORIGIN,
@@ -238,6 +356,40 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === 'POST' && req.url === '/api/soe/analise-executiva') {
+    try {
+      const { data } = await readJsonBody(req);
+      if (!Array.isArray(data) || data.length === 0) {
+        return sendJson(res, 400, { error: 'Campo "data" deve ser um array não vazio com a base consolidada' });
+      }
+      const text = await callAnthropicAnalysis(data);
+      sendJson(res, 200, { ok: true, text });
+    } catch (err) {
+      sendJson(res, err.statusCode || 500, { error: err.message });
+    }
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === '/api/soe/send-alert') {
+    try {
+      const { data, to, period, workspace } = await readJsonBody(req);
+      if (!Array.isArray(data) || data.length === 0) {
+        return sendJson(res, 400, { error: 'Campo "data" deve ser um array não vazio com a base consolidada' });
+      }
+      const recipients = to || process.env.ALERT_RECIPIENTS;
+      if (!recipients) {
+        return sendJson(res, 400, { error: 'Destinatário não informado ("to") e ALERT_RECIPIENTS não configurado' });
+      }
+      assertConfigured(['AZURE_TENANT_ID', 'AZURE_CLIENT_ID', 'AZURE_CLIENT_SECRET', 'GRAPH_SENDER_UPN']);
+      const { subject, html } = buildAlertEmail(data, { period, workspace });
+      await sendAlertEmail({ to: recipients, subject, html });
+      sendJson(res, 200, { ok: true, to: recipients, subject });
+    } catch (err) {
+      sendJson(res, err.statusCode || 500, { error: err.message });
+    }
+    return;
+  }
+
   sendJson(res, 404, { error: 'Not found' });
 });
 
@@ -246,5 +398,9 @@ server.listen(PORT, () => {
   const missing = REQUIRED_ENV.filter(k => !process.env[k]);
   if (missing.length) {
     console.warn(`Aviso: variáveis de ambiente ausentes (configure em soe-agent/.env): ${missing.join(', ')}`);
+  }
+  const missingOptional = OPTIONAL_ENV.filter(k => !process.env[k]);
+  if (missingOptional.length) {
+    console.warn(`Aviso: Etapas 8 (análise) e 9 (alerta) ficarão indisponíveis sem: ${missingOptional.join(', ')}`);
   }
 });
