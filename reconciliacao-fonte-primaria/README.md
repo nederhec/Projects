@@ -5,28 +5,36 @@ Nasceu da constatação de que ler a aba CHECK como fonte de verdade repete,
 sem verificar, qualquer erro de preenchimento que já esteja nela — inclusive
 número digitado à mão e fórmula apontando pra célula errada.
 
-## Segurança — ação necessária antes de produção
+## Segurança — histórico
 
-`vendor/xlsx.full.min.js` está na versão **0.18.5** (mesma do painel
-original). É a última versão publicada no npm (mar/2022) — a SheetJS parou
-de publicar lá e distribui correções só pelo CDN próprio desde então. Duas
-vulnerabilidades conhecidas afetam essa versão, achadas ao rodar
-`npm audit` sobre a devDependency de teste:
+O leitor de planilha era originalmente SheetJS (`xlsx`) 0.18.5, a mesma
+versão do painel original — última publicada no npm (mar/2022), com duas
+vulnerabilidades conhecidas de severidade alta sem correção disponível por
+canal alcançável deste ambiente (a SheetJS passou a distribuir correções só
+pelo CDN próprio, bloqueado pela política de rede daqui; um espelho
+comunitário no npm foi encontrado mas descartado por ser republicação de
+terceiro não verificada, não a fonte oficial).
 
-- **Prototype Pollution** — [GHSA-4r6h-8v6p-xvw6](https://github.com/advisories/GHSA-4r6h-8v6p-xvw6), CVSS 7.8, corrigida na 0.19.3+.
-- **ReDoS** — [GHSA-5pgg-2g8v-p4x9](https://github.com/advisories/GHSA-5pgg-2g8v-p4x9), CVSS 7.5, corrigida na 0.20.2+.
+**Resolvido**: o projeto trocou de biblioteca — agora usa
+[ExcelJS](https://github.com/exceljs/exceljs) (`vendor/exceljs.min.js`),
+ativamente mantida, sem as vulnerabilidades acima, publicada oficialmente no
+npm. `engine.js` não foi afetado (já era desacoplado de qualquer biblioteca
+de planilha via `WorkbookAdapter`); só `app.js` (monta o adapter sobre o
+ExcelJS em vez do SheetJS) e o `<script>` do `index.html` mudaram. Migração
+validada: os 25 testes automatizados passam, e o dashboard no navegador
+produz exatamente os mesmos números (financeiro/preenchimento/sem-fonte/
+fantasmas) antes e depois da troca, tanto no arquivo real do cliente quanto
+na fixture sintética.
 
-Tentei atualizar e não consegui a partir deste ambiente: o npm não tem nada
-além da 0.18.5, e a política de rede daqui bloqueia `cdn.sheetjs.com` (onde
-a SheetJS publica as versões corrigidas). Isso precisa de alguém com acesso
-de rede normal — baixar a versão estável mais recente em
-`cdn.sheetjs.com` e substituir `vendor/xlsx.full.min.js`.
-
-Mitigante enquanto isso não acontece: o app só processa arquivo que o
-próprio usuário sobe manualmente no navegador dele — não é um serviço
-recebendo upload de origem desconhecida. Ainda assim, é uma dependência
-desatualizada com CVE alta e não deveria seguir pra além de uso interno
-controlado sem essa atualização.
+**Achado residual, verificado como não-explorável no nosso uso**: o
+`npm audit` acusa uma vulnerabilidade moderada numa dependência transitiva
+do ExcelJS (`uuid`, [GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)
+— falta de checagem de limites do buffer nas funções `v3`/`v5`/`v6` quando
+um buffer é passado manualmente). Conferido no código-fonte do ExcelJS: ele
+só chama `uuid.v4()`, sem argumentos — as funções e o padrão de uso que a
+vulnerabilidade exige não são exercitados por este projeto. Um
+`npm audit fix --force` "resolveria" isso fazendo downgrade do ExcelJS pra
+3.4.0 (versão antiga, não mantida) — pior, não melhor. Não aplicado.
 
 ## Princípio
 
@@ -101,7 +109,7 @@ versionado aqui):
 
 ```bash
 npm test              # unidade — zero dependências, roda em qualquer lugar
-npm run test:integration   # integração — precisa de `npm install` antes (devDependency xlsx)
+npm run test:integration   # integração — precisa de `npm install` antes (devDependency exceljs)
 npm run test:all      # as duas
 ```
 
@@ -112,7 +120,8 @@ Junho), fórmula com ajuste do RAZÃO embutido (padrão 13º Salário),
 hierarquia pai/filho na cobertura de contas.
 
 **Integração** (`test/integration.test.js`) — carrega um `.xlsx` de verdade
-via SheetJS: `test/fixtures/fechamento-ficticio-teste.xlsx`, dado 100%
+via ExcelJS (mesma biblioteca que o `app.js` usa no navegador):
+`test/fixtures/fechamento-ficticio-teste.xlsx`, dado 100%
 fictício (gerado por `test/fixtures/build-synthetic-fixture.js`,
 `npm run fixtures:build` regenera). Não é uma cópia do arquivo real — usa
 uma família de conta diferente (`4.2.01.*`), cabeçalho de aba fora da linha
@@ -137,7 +146,7 @@ espaçamento irregular.
 
 ```
 index.html   — upload, dashboard, filtros, drill-down, exportação
-app.js       — glue: lê o XLSX via SheetJS, detecta abas/colunas por
+app.js       — glue: lê o XLSX via ExcelJS, detecta abas/colunas por
                cabeçalho (não por posição fixa), monta o WorkbookAdapter,
                orquestra o engine e agrega custo por centro de custo
 engine.js    — motor puro (sem dependência de biblioteca de planilha):
@@ -145,15 +154,17 @@ engine.js    — motor puro (sem dependência de biblioteca de planilha):
                recalculadores (Folha via FOPAG, Contábil via composição da
                fórmula ou fallback por código no BALANCETE), reconciliação
                3 vias, score de confiabilidade, cobertura de contas
-vendor/      — SheetJS (xlsx.full.min.js), local — sem CDN externo
+vendor/      — ExcelJS (exceljs.min.js), local — sem CDN externo
 test/        — unidade (fixtures em memória) + integração (fixture .xlsx
                fictícia real, ver seção Testes)
 ```
 
 `engine.js` recebe um **WorkbookAdapter** (`sheetNames`, `cell(sheet,col,row)`,
-`usedRowCount(sheet)`) em vez de depender do SheetJS diretamente — isso é o
-que permite testar o motor em Node com fixtures simples, e reusar a mesma
-lógica no navegador em cima do SheetJS de verdade.
+`usedRowCount(sheet)`) em vez de depender de biblioteca de planilha
+nenhuma diretamente — isso é o que permite testar o motor em Node com
+fixtures simples, reusar a mesma lógica no navegador em cima do ExcelJS de
+verdade, e foi o que tornou a troca de SheetJS pra ExcelJS um problema
+isolado em `app.js`, sem tocar `engine.js`.
 
 ## Investigado e descartado — Gerencial × Contábil, Rescisão, Provisões
 

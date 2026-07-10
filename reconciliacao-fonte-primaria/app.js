@@ -1,7 +1,7 @@
 /* ==========================================================================
    app.js — camada de UI sobre engine.js
    Lê o arquivo único de fechamento, detecta CHECK / FOPAG / BALANCETE por
-   mês, monta o WorkbookAdapter sobre o SheetJS e roda a reconciliação
+   mês, monta o WorkbookAdapter sobre o ExcelJS e roda a reconciliação
    independente para cada conta x competência encontrada na CHECK.
    ========================================================================== */
 (function () {
@@ -29,7 +29,16 @@
   const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
   const pct = (n) => (n === null || n === undefined ? '—' : `${n}%`);
 
-  // -------------------------------------------------- adapter sobre SheetJS
+  // -------------------------------------------------- adapter sobre ExcelJS
+
+  /** Empacota o Workbook do ExcelJS num objeto com `.SheetNames` (array de
+   *  string) e `.Sheets` (nome -> worksheet) — mesma forma que o resto deste
+   *  arquivo já espera, pra manter o diff pequeno na troca de biblioteca. */
+  function normalizeWorkbook(exceljsWorkbook) {
+    const sheets = {};
+    exceljsWorkbook.worksheets.forEach((ws) => { sheets[ws.name] = ws; });
+    return { SheetNames: exceljsWorkbook.worksheets.map((ws) => ws.name), Sheets: sheets };
+  }
 
   function makeAdapter(workbook) {
     return {
@@ -37,14 +46,16 @@
       cell(sheet, col, row) {
         const ws = workbook.Sheets[sheet];
         if (!ws) return undefined;
-        const c = ws[`${col}${row}`];
-        if (!c || c.v === undefined || c.v === null || c.v === '') return undefined;
-        return { value: c.v, formula: c.f };
+        const c = ws.getCell(`${col}${row}`);
+        if (!c) return undefined;
+        const formula = c.formula || undefined;
+        const value = formula ? c.result : c.value;
+        if (value === undefined || value === null || value === '') return undefined;
+        return { value, formula };
       },
       usedRowCount(sheet) {
         const ws = workbook.Sheets[sheet];
-        if (!ws || !ws['!ref']) return 0;
-        return window.XLSX.utils.decode_range(ws['!ref']).e.r + 1;
+        return ws ? ws.rowCount || 0 : 0;
       }
     };
   }
@@ -607,7 +618,9 @@
     $('nome-arquivo').textContent = file.name;
     try {
       const buf = await file.arrayBuffer();
-      const workbook = window.XLSX.read(buf, { type: 'array', cellFormula: true, cellDates: true });
+      const exceljsWorkbook = new window.ExcelJS.Workbook();
+      await exceljsWorkbook.xlsx.load(buf);
+      const workbook = normalizeWorkbook(exceljsWorkbook);
       processWorkbook(workbook, file.name);
     } catch (err) {
       showError(`Não foi possível ler o arquivo: ${err.message}`);

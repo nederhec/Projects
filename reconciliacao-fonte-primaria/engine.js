@@ -15,7 +15,7 @@
 
    Não depende de nenhuma biblioteca de planilha diretamente — recebe um
    WorkbookAdapter (ver JSDoc abaixo) para poder ser testado em Node com
-   fixtures sintéticas e reutilizado no navegador sobre o SheetJS.
+   fixtures sintéticas e reutilizado no navegador sobre o ExcelJS.
    ========================================================================== */
 
 /**

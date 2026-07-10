@@ -16,11 +16,11 @@ de conferência, não como fonte. Projeto novo, independente de qualquer
 painel de conciliação anterior — ver `reconciliacao-fonte-primaria/README.md`
 para o princípio completo.
 
-- **Build**: nenhum. Sem dependências de runtime; `vendor/xlsx.full.min.js` (SheetJS) já está no repo.
+- **Build**: nenhum. Sem dependências de runtime; `vendor/exceljs.min.js` (ExcelJS) já está no repo.
 - **Rodar**: abrir `reconciliacao-fonte-primaria/index.html` num navegador, ou servir a pasta com um servidor estático (`npx serve reconciliacao-fonte-primaria`).
-- **Teste**: `cd reconciliacao-fonte-primaria && npm test` (`node test/engine.test.js` — fixtures sintéticas, sem dependência de arquivo externo).
+- **Teste**: `cd reconciliacao-fonte-primaria && npm run test:all` (unidade sem dependência externa + integração contra fixture `.xlsx` fictícia, ver README do projeto).
 - **Lint/formatação**: nenhuma ferramenta configurada.
-- **Arquitetura**: `engine.js` é o motor puro (parser de fórmula, classificador de proveniência de célula, recalculadores, reconciliação 3 vias, score de confiabilidade, cobertura de contas) e não depende de biblioteca de planilha — recebe um `WorkbookAdapter` injetado. `app.js` é a camada de UI: lê o XLSX via SheetJS, detecta abas/blocos de mês na CHECK, monta o adapter e chama o engine. `index.html` é upload + dashboard.
+- **Arquitetura**: `engine.js` é o motor puro (parser de fórmula, classificador de proveniência de célula, recalculadores, reconciliação 3 vias, score de confiabilidade, cobertura de contas) e não depende de biblioteca de planilha — recebe um `WorkbookAdapter` injetado. `app.js` é a camada de UI: lê o XLSX via ExcelJS, detecta abas/blocos de mês na CHECK, monta o adapter e chama o engine. `index.html` é upload + dashboard.
 
 ## Ao Adicionar Novos Projetos
 
