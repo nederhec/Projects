@@ -4,6 +4,12 @@
   "private": true,
   "description": "Motor de reconciliação de folha que recalcula Folha e Contábil direto das fontes primárias, usando a aba CHECK como segundo ponto de conferência.",
   "scripts": {
-    "test": "node test/engine.test.js"
+    "test": "node test/engine.test.js",
+    "test:integration": "node test/integration.test.js",
+    "test:all": "npm test && npm run test:integration",
+    "fixtures:build": "node test/fixtures/build-synthetic-fixture.js"
+  },
+  "devDependencies": {
+    "xlsx": "^0.18.5"
   }
 }

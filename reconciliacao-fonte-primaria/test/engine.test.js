@@ -146,6 +146,22 @@ test('soma as colunas certas filtrando por mês', () => {
   assert.equal(result.status, 'verificado');
   assert.equal(result.value, 1000);
 });
+test('rótulo de rubrica no drill-down acha o cabeçalho mesmo quando não está na linha 1', () => {
+  // Achado real: a FOPAG 2026 do cliente tem cabeçalho na linha 3, não na
+  // linha 1 — sem procurar em mais de uma linha, o drill-down mostrava a
+  // letra da coluna ("G") em vez do nome da rubrica ("ENCARGOS").
+  const jan = new Date(2026, 0, 1);
+  const adapter = makeAdapter({
+    CHECK: { C: { 2: { value: jan }, 5: { value: 1000, formula: "SUMIFS('FOPAG'!$E$1:$E$10,'FOPAG'!$B$1:$B$10,C2)" } } },
+    FOPAG: {
+      A: { 1: { value: 'planilha de teste' } }, // linha 1 tem só um título solto, não cabeçalho
+      B: { 3: { value: 'MES' } },
+      E: { 3: { value: 'ENCARGOS' }, 1: { value: jan } } // header real na linha 3
+    }
+  });
+  const result = engine.recalcFopag(adapter, 'CHECK', adapter.cell('CHECK', 'C', 5));
+  assert.equal(result.termos[0].rubrica, 'ENCARGOS');
+});
 
 console.log('reconcileConta — cenário completo');
 test('Janeiro: valor digitado gera alerta de preenchimento mesmo com números plausíveis', () => {

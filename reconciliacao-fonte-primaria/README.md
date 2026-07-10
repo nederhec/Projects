@@ -5,6 +5,29 @@ Nasceu da constatação de que ler a aba CHECK como fonte de verdade repete,
 sem verificar, qualquer erro de preenchimento que já esteja nela — inclusive
 número digitado à mão e fórmula apontando pra célula errada.
 
+## Segurança — ação necessária antes de produção
+
+`vendor/xlsx.full.min.js` está na versão **0.18.5** (mesma do painel
+original). É a última versão publicada no npm (mar/2022) — a SheetJS parou
+de publicar lá e distribui correções só pelo CDN próprio desde então. Duas
+vulnerabilidades conhecidas afetam essa versão, achadas ao rodar
+`npm audit` sobre a devDependency de teste:
+
+- **Prototype Pollution** — [GHSA-4r6h-8v6p-xvw6](https://github.com/advisories/GHSA-4r6h-8v6p-xvw6), CVSS 7.8, corrigida na 0.19.3+.
+- **ReDoS** — [GHSA-5pgg-2g8v-p4x9](https://github.com/advisories/GHSA-5pgg-2g8v-p4x9), CVSS 7.5, corrigida na 0.20.2+.
+
+Tentei atualizar e não consegui a partir deste ambiente: o npm não tem nada
+além da 0.18.5, e a política de rede daqui bloqueia `cdn.sheetjs.com` (onde
+a SheetJS publica as versões corrigidas). Isso precisa de alguém com acesso
+de rede normal — baixar a versão estável mais recente em
+`cdn.sheetjs.com` e substituir `vendor/xlsx.full.min.js`.
+
+Mitigante enquanto isso não acontece: o app só processa arquivo que o
+próprio usuário sobe manualmente no navegador dele — não é um serviço
+recebendo upload de origem desconhecida. Ainda assim, é uma dependência
+desatualizada com CVE alta e não deveria seguir pra além de uso interno
+controlado sem essa atualização.
+
 ## Princípio
 
 A CHECK deixa de ser fonte e vira **resultado conferido**:
@@ -73,17 +96,42 @@ automaticamente pelo nome da aba.
 
 ## Testes
 
+Duas camadas, nenhuma delas depende do arquivo real do cliente (não
+versionado aqui):
+
 ```bash
-npm test
+npm test              # unidade — zero dependências, roda em qualquer lugar
+npm run test:integration   # integração — precisa de `npm install` antes (devDependency xlsx)
+npm run test:all      # as duas
 ```
 
-Roda `test/engine.test.js` — testes de unidade com fixtures sintéticas que
-reproduzem, minimizados, os achados reais que motivaram este projeto: valor
-digitado (padrão observado em Janeiro/Fevereiro de um fechamento real),
-fórmula apontando pra célula vazia (padrão observado em Junho) e fórmula
-com ajuste do RAZÃO embutido (padrão observado no 13º Salário). O arquivo
-real usado para validar o motor durante o desenvolvimento não é versionado
-aqui — só as fixtures sintéticas que replicam o mesmo formato de erro.
+**Unidade** (`test/engine.test.js`) — fixtures em memória, escritas à mão,
+testando cada função do `engine.js` isoladamente: valor digitado (padrão
+Jan/Fev do arquivo real), fórmula apontando pra célula vazia (padrão
+Junho), fórmula com ajuste do RAZÃO embutido (padrão 13º Salário),
+hierarquia pai/filho na cobertura de contas.
+
+**Integração** (`test/integration.test.js`) — carrega um `.xlsx` de verdade
+via SheetJS: `test/fixtures/fechamento-ficticio-teste.xlsx`, dado 100%
+fictício (gerado por `test/fixtures/build-synthetic-fixture.js`,
+`npm run fixtures:build` regenera). Não é uma cópia do arquivo real — usa
+uma família de conta diferente (`4.2.01.*`), cabeçalho de aba fora da linha
+1, nome de aba BALANCETE com separador alternativo (hífen em vez de ponto),
+e uma divergência financeira real plantada de propósito — pra provar que a
+lógica generaliza em vez de estar decorada pra um arquivo só. Essa segunda
+camada já achou um bug real: o rótulo de rubrica no drill-down assumia
+cabeçalho na linha 1 da FOPAG e mostrava letra de coluna ("G") em vez do
+nome da rubrica ("ENCARGOS") sempre que o cabeçalho estava em outra linha —
+incluindo no arquivo real do cliente, que tem cabeçalho na linha 3.
+Corrigido: `findColumnLabel` agora procura a primeira célula de texto nas
+primeiras linhas em vez de assumir posição fixa.
+
+A validação de detecção de abas/blocos/colunas do `app.js` (que é
+DOM-coupled, não roda em Node) foi feita manualmente num navegador real via
+Playwright contra essa mesma fixture — confirmado: dashboard renderiza,
+KPIs batem com o esperado, cobertura de contas exclui a conta-pai
+corretamente, custo por centro de custo agrupa certo mesmo com cabeçalho de
+espaçamento irregular.
 
 ## Arquitetura
 
@@ -98,7 +146,8 @@ engine.js    — motor puro (sem dependência de biblioteca de planilha):
                fórmula ou fallback por código no BALANCETE), reconciliação
                3 vias, score de confiabilidade, cobertura de contas
 vendor/      — SheetJS (xlsx.full.min.js), local — sem CDN externo
-test/        — testes de unidade do engine.js (fixtures sintéticas)
+test/        — unidade (fixtures em memória) + integração (fixture .xlsx
+               fictícia real, ver seção Testes)
 ```
 
 `engine.js` recebe um **WorkbookAdapter** (`sheetNames`, `cell(sheet,col,row)`,
@@ -161,11 +210,15 @@ pra eliminar.
   contra esse padrão.
 - Detecção de blocos de mês na CHECK assume o layout 3-colunas
   (FOPAG | CONTÁBIL | DIFERENÇA) com um cabeçalho de rótulos comum a todos
-  os blocos — não foi testado contra outros layouts de CHECK.
-- Cobertura de contas fantasmas compara pelo prefixo de 3 segmentos do
-  código de conta mais comum entre as contas já mapeadas na CHECK; em
-  planos de contas com nomenclatura muito diferente isso pode não
-  segmentar bem.
+  os blocos — validado contra dois arquivos com esse layout (real e
+  fixture sintética), mas não contra um layout genuinamente diferente
+  (ex.: 2 ou 4 colunas por bloco).
+- Cobertura de contas fantasmas compara pelo prefixo de 3 segmentos e pela
+  profundidade (nº de segmentos) mais comuns entre as contas já mapeadas na
+  CHECK — validado contra duas famílias de conta diferentes (`3.1.01.*` no
+  arquivo real, `4.2.01.*` na fixture), mas em planos de contas com
+  nomenclatura muito diferente (nº de segmentos variável entre contas
+  legítimas, por exemplo) isso pode não segmentar bem.
 - Custo por centro de custo depende de achar, pelo cabeçalho, uma coluna de
   mês, uma de "Centro de Custo" e uma de total na mesma aba da FOPAG — se a
   planilha nomear essas colunas de forma muito diferente, a seção

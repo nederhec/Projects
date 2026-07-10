@@ -141,11 +141,26 @@
         const val = adapter.cell(term.sheet, term.valueCol, r);
         if (!isEmptyCell(val)) subtotal += toNumber(val.value) || 0;
       }
-      const headerCell = adapter.cell(term.sheet, term.valueCol, 1);
-      termos.push({ sheet: term.sheet, coluna: term.valueCol, rubrica: headerCell ? String(headerCell.value) : term.valueCol, value: subtotal });
+      termos.push({ sheet: term.sheet, coluna: term.valueCol, rubrica: findColumnLabel(adapter, term.sheet, term.valueCol) || term.valueCol, value: subtotal });
       total += subtotal;
     }
     return { value: total, resolvable, termos };
+  }
+
+  /** Acha o rótulo de uma coluna pro drill-down sem assumir que o cabeçalho
+   *  está na linha 1 — planilhas reais têm o cabeçalho em linhas diferentes
+   *  (achado real: a FOPAG 2026 do arquivo do cliente tem cabeçalho na
+   *  linha 3; sem isso, o drill-down mostrava letra de coluna em vez do
+   *  nome da rubrica mesmo nas contas corretas). Cabeçalho é texto; linhas
+   *  de dado acima dele (título, célula solta) tendem a ser vazias ou
+   *  numéricas — por isso pega a primeira célula de texto encontrada.
+   */
+  function findColumnLabel(adapter, sheet, col, maxRow) {
+    for (let r = 1; r <= (maxRow || 8); r++) {
+      const cell = adapter.cell(sheet, col, r);
+      if (cell && typeof cell.value === 'string' && cell.value.trim()) return cell.value.trim();
+    }
+    return null;
   }
 
   /** Confere se as referências diretas de uma fórmula apontam para células
