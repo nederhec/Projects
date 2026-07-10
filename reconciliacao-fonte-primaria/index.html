@@ -9,78 +9,93 @@
      Sem CDN externo: o leitor XLSX é servido localmente em ./vendor/exceljs.min.js -->
 <style>
   :root {
-    --bg: #F5F6F4;
+    --bg: #F7F2EA;
     --surface: #FFFFFF;
-    --surface-2: #EEF0EC;
-    --border: #DBDFD5;
-    --border-strong: #C3C9BA;
-    --text: #1C231B;
-    --text-2: #4A5245;
-    --muted: #737C6C;
-    --accent: #3C6E4F;
-    --accent-strong: #2C5439;
-    --accent-soft: #E4EEE6;
-    --ok: #2F6F4E;
-    --ok-bg: #E1F0E6;
-    --warn: #A2701F;
-    --warn-bg: #FBEED3;
+    --surface-2: #F1E9D8;
+    --border: #E4D8BE;
+    --border-strong: #CBB98D;
+    --text: #0F1C33;
+    --text-2: #45526E;
+    --muted: #8A806B;
+    --accent: #E5C16E;
+    --accent-strong: #9C7418;
+    --accent-soft: #F6ECD2;
+    --on-accent: #14213B;
+    --ok: #4E7D52;
+    --ok-bg: #E4EFE2;
+    --warn: #B15C1D;
+    --warn-bg: #F8E6D3;
     --critical: #A23B2E;
     --critical-bg: #FBE2DD;
-    --flag: #35635A;
-    --flag-bg: #E1EDE9;
-    --neutral: #5B6355;
-    --neutral-bg: #E9EBE5;
-    --shadow: 0 1px 2px rgba(28,35,27,.06), 0 1px 1px rgba(28,35,27,.04);
+    --flag: #2E6660;
+    --flag-bg: #DFEEEA;
+    --neutral: #6B6455;
+    --neutral-bg: #EEE8DA;
+    --shadow: 0 1px 2px rgba(15,28,51,.08), 0 1px 1px rgba(15,28,51,.05);
     --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", serif;
     --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+    --ribbon: linear-gradient(90deg, var(--flag), var(--accent), var(--accent-strong));
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #12160F; --surface: #191F15; --surface-2: #1F271A;
-      --border: #2C3524; --border-strong: #3A4630;
-      --text: #E7ECDE; --text-2: #B4BDA8; --muted: #838C77;
-      --accent: #6FAE84; --accent-strong: #8CC49E; --accent-soft: #1D3327;
-      --ok: #7BC094; --ok-bg: #1D3327;
-      --warn: #DDAD62; --warn-bg: #3A2F14;
+      --bg: #0B1424; --surface: #131F37; --surface-2: #1A2A47;
+      --border: #29395C; --border-strong: #3A4E77;
+      --text: #F3EEE1; --text-2: #C7C0AC; --muted: #97907C;
+      --accent: #E9C87A; --accent-strong: #F6DFA3; --accent-soft: #2E2717;
+      --on-accent: #14213B;
+      --ok: #7FB080; --ok-bg: #1B3320;
+      --warn: #E0965A; --warn-bg: #3A2712;
       --critical: #E28E7E; --critical-bg: #3B211C;
-      --flag: #86C6B5; --flag-bg: #16312A;
-      --neutral: #A9B39A; --neutral-bg: #232B1D;
-      --shadow: 0 1px 3px rgba(0,0,0,.4);
+      --flag: #7FC4B9; --flag-bg: #16312A;
+      --neutral: #B7AF9A; --neutral-bg: #26231A;
+      --shadow: 0 1px 3px rgba(0,0,0,.45);
     }
   }
   :root[data-theme="dark"] {
-    --bg: #12160F; --surface: #191F15; --surface-2: #1F271A;
-    --border: #2C3524; --border-strong: #3A4630;
-    --text: #E7ECDE; --text-2: #B4BDA8; --muted: #838C77;
-    --accent: #6FAE84; --accent-strong: #8CC49E; --accent-soft: #1D3327;
-    --ok: #7BC094; --ok-bg: #1D3327;
-    --warn: #DDAD62; --warn-bg: #3A2F14;
+    --bg: #0B1424; --surface: #131F37; --surface-2: #1A2A47;
+    --border: #29395C; --border-strong: #3A4E77;
+    --text: #F3EEE1; --text-2: #C7C0AC; --muted: #97907C;
+    --accent: #E9C87A; --accent-strong: #F6DFA3; --accent-soft: #2E2717;
+    --on-accent: #14213B;
+    --ok: #7FB080; --ok-bg: #1B3320;
+    --warn: #E0965A; --warn-bg: #3A2712;
     --critical: #E28E7E; --critical-bg: #3B211C;
-    --flag: #86C6B5; --flag-bg: #16312A;
-    --neutral: #A9B39A; --neutral-bg: #232B1D;
-    --shadow: 0 1px 3px rgba(0,0,0,.4);
+    --flag: #7FC4B9; --flag-bg: #16312A;
+    --neutral: #B7AF9A; --neutral-bg: #26231A;
+    --shadow: 0 1px 3px rgba(0,0,0,.45);
   }
   :root[data-theme="light"] {
-    --bg: #F5F6F4; --surface: #FFFFFF; --surface-2: #EEF0EC;
-    --border: #DBDFD5; --border-strong: #C3C9BA;
-    --text: #1C231B; --text-2: #4A5245; --muted: #737C6C;
-    --accent: #3C6E4F; --accent-strong: #2C5439; --accent-soft: #E4EEE6;
-    --ok: #2F6F4E; --ok-bg: #E1F0E6;
-    --warn: #A2701F; --warn-bg: #FBEED3;
+    --bg: #F7F2EA; --surface: #FFFFFF; --surface-2: #F1E9D8;
+    --border: #E4D8BE; --border-strong: #CBB98D;
+    --text: #0F1C33; --text-2: #45526E; --muted: #8A806B;
+    --accent: #E5C16E; --accent-strong: #9C7418; --accent-soft: #F6ECD2;
+    --on-accent: #14213B;
+    --ok: #4E7D52; --ok-bg: #E4EFE2;
+    --warn: #B15C1D; --warn-bg: #F8E6D3;
     --critical: #A23B2E; --critical-bg: #FBE2DD;
-    --flag: #35635A; --flag-bg: #E1EDE9;
-    --neutral: #5B6355; --neutral-bg: #E9EBE5;
-    --shadow: 0 1px 2px rgba(28,35,27,.06), 0 1px 1px rgba(28,35,27,.04);
+    --flag: #2E6660; --flag-bg: #DFEEEA;
+    --neutral: #6B6455; --neutral-bg: #EEE8DA;
+    --shadow: 0 1px 2px rgba(15,28,51,.08), 0 1px 1px rgba(15,28,51,.05);
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.5; }
   .mono { font-family: var(--mono); }
   .page { max-width: 1180px; margin: 0 auto; padding: 28px 24px 80px; }
 
+  .brand-ribbon { height: 4px; background: var(--ribbon); }
+
   header.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
-  .brand-title { font-size: 1.3rem; font-weight: 800; margin: 0; letter-spacing: -.01em; }
-  .brand-sub { color: var(--muted); font-size: .87rem; margin: 3px 0 0; max-width: 60ch; }
+  .brand-title { font-family: var(--font-display); font-size: 1.55rem; font-weight: 700; margin: 0; letter-spacing: -.01em; }
+  .brand-sub { color: var(--muted); font-size: .87rem; margin: 5px 0 0; max-width: 60ch; }
+  .header-actions { display: flex; align-items: center; gap: 10px; }
   .badge-project { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--accent-strong); background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 999px; padding: 4px 10px; }
+  .theme-toggle { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--accent-strong); cursor: pointer; }
+  .theme-toggle:hover { background: var(--surface-2); }
+  .theme-toggle svg { width: 17px; height: 17px; display: block; }
+  .theme-toggle .icon-moon { display: none; }
+  :root[data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+  :root[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
 
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); padding: 20px; margin-bottom: 20px; }
   .card h2 { font-size: 1rem; margin: 0 0 4px; }
@@ -89,7 +104,7 @@
   #dropzone { border: 1.5px dashed var(--border-strong); border-radius: 10px; padding: 26px; text-align: center; transition: border-color .15s, background .15s; }
   #dropzone.is-dragover { border-color: var(--accent); background: var(--accent-soft); }
   #dropzone p { margin: 0 0 12px; color: var(--text-2); font-size: .92rem; }
-  .btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 7px; padding: 9px 16px; font-size: .87rem; font-weight: 700; cursor: pointer; border: 1px solid var(--accent-strong); background: var(--accent); color: #fff; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 7px; padding: 9px 16px; font-size: .87rem; font-weight: 700; cursor: pointer; border: 1px solid var(--accent-strong); background: var(--accent); color: var(--on-accent); }
   .btn:hover { background: var(--accent-strong); }
   input[type="file"] { display: none; }
   #nome-arquivo { display: block; margin-top: 10px; font-size: .82rem; color: var(--muted); }
@@ -110,7 +125,7 @@
   .kpi.is-critical .value { color: var(--critical); }
   .kpi.is-flag .value { color: var(--flag); }
   .kpi.is-neutral .value { color: var(--neutral); }
-  .kpi.is-accent .value { color: var(--accent); }
+  .kpi.is-accent .value { color: var(--accent-strong); }
 
   .filter-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
   select { border: 1px solid var(--border-strong); border-radius: 7px; padding: 8px 10px; font-size: .84rem; background: var(--surface); color: var(--text); font-family: inherit; }
@@ -150,8 +165,19 @@
 
   footer.note { color: var(--muted); font-size: .78rem; margin-top: 26px; border-top: 1px solid var(--border); padding-top: 14px; }
 </style>
+<script>
+  // Aplica o tema salvo (ou o do sistema) antes da 1ª pintura, pra não piscar.
+  (function () {
+    var KEY = 'reconciliacao-fonte-primaria:tema';
+    var salvo = null;
+    try { salvo = localStorage.getItem(KEY); } catch (e) {}
+    var sistemaEscuro = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.dataset.theme = salvo || (sistemaEscuro ? 'dark' : 'light');
+  })();
+</script>
 </head>
 <body>
+<div class="brand-ribbon" aria-hidden="true"></div>
 <div class="page">
 
   <header class="top">
@@ -159,7 +185,13 @@
       <h1 class="brand-title">Reconciliação Independente da Base</h1>
       <p class="brand-sub">Recalcula Folha e Contábil direto das fontes primárias (FOPAG, BALANCETE) e usa a CHECK só como segundo ponto de conferência — nunca como fonte.</p>
     </div>
-    <span class="badge-project">Projeto novo · v0.1</span>
+    <div class="header-actions">
+      <span class="badge-project">Projeto novo · v0.1</span>
+      <button type="button" id="btn-tema" class="theme-toggle" aria-label="Alternar tema claro/escuro" aria-pressed="false">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.6 15.3A8.5 8.5 0 1 1 8.7 3.4a7 7 0 0 0 11.9 11.9Z"/></svg>
+      </button>
+    </div>
   </header>
 
   <section class="card">

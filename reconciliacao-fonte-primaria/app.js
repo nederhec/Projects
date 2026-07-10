@@ -613,6 +613,41 @@
 
   // ------------------------------------------------------------- eventos
 
+  // Alterna e lembra o tema (claro/escuro) de uma sessão pra outra. O tema
+  // inicial já foi aplicado por um script inline no <head> (evita flash);
+  // aqui só cuidamos do clique e, enquanto o usuário não escolher nada
+  // explicitamente, seguimos mudanças do tema do sistema operacional.
+  function initTema() {
+    const KEY = 'reconciliacao-fonte-primaria:tema';
+    const btn = $('btn-tema');
+    if (!btn) return;
+
+    function aplicar(tema) {
+      document.documentElement.dataset.theme = tema;
+      btn.setAttribute('aria-pressed', tema === 'dark' ? 'true' : 'false');
+    }
+    aplicar(document.documentElement.dataset.theme || 'light');
+
+    btn.addEventListener('click', () => {
+      const proximo = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      aplicar(proximo);
+      try { localStorage.setItem(KEY, proximo); } catch (e) { /* sem storage disponível, tudo bem */ }
+    });
+
+    let temEscolhaSalva = false;
+    try { temEscolhaSalva = localStorage.getItem(KEY) !== null; } catch (e) {}
+    if (!temEscolhaSalva && window.matchMedia) {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      const onMudancaSistema = (e) => {
+        let aindaSemEscolha = true;
+        try { aindaSemEscolha = localStorage.getItem(KEY) === null; } catch (err) {}
+        if (aindaSemEscolha) aplicar(e.matches ? 'dark' : 'light');
+      };
+      if (mq.addEventListener) mq.addEventListener('change', onMudancaSistema);
+      else if (mq.addListener) mq.addListener(onMudancaSistema);
+    }
+  }
+
   async function handleFile(file) {
     if (!file) return;
     $('nome-arquivo').textContent = file.name;
@@ -628,6 +663,7 @@
   }
 
   function init() {
+    initTema();
     $('input-arquivo').addEventListener('change', (e) => handleFile(e.target.files[0]));
     const dropzone = $('dropzone');
     ['dragenter', 'dragover'].forEach((evt) => dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.add('is-dragover'); }));
