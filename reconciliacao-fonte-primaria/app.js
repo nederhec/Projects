@@ -52,14 +52,19 @@
   /** Acha a coluna cujo cabeçalho (linha 1) contém um dos apelidos, dentro
    *  das primeiras colunas de uma aba — usado pra não depender de posição
    *  fixa de coluna em planilhas de clientes diferentes. */
+  /** Varre por ordem de prioridade dos apelidos (não por posição de coluna)
+   *  — "custo total contabil" precisa ganhar de "custo fechamento" mesmo a
+   *  coluna dele vindo depois na planilha; testar todas as colunas pro
+   *  primeiro apelido antes de cair pro segundo evita pegar a coluna errada
+   *  só porque ela aparece antes fisicamente. */
   function findColumnByHeader(adapter, sheet, aliases, headerRow, maxCol) {
-    const norm = aliases.map(normalize);
-    for (let c = 1; c <= (maxCol || 150); c++) {
-      const col = colIdxToLetter(c);
-      const cell = adapter.cell(sheet, col, headerRow);
-      if (!cell) continue;
-      const h = normalize(cell.value);
-      if (norm.some((a) => h.includes(a))) return col;
+    for (const alias of aliases) {
+      const a = normalize(alias);
+      for (let c = 1; c <= (maxCol || 150); c++) {
+        const col = colIdxToLetter(c);
+        const cell = adapter.cell(sheet, col, headerRow);
+        if (cell && normalize(cell.value).includes(a)) return col;
+      }
     }
     return null;
   }
@@ -185,6 +190,21 @@
     return { porCentro, total };
   }
 
+  /** Profundidade (nº de segmentos) mais comum entre os códigos já mapeados
+   *  na CHECK — usada pra não deixar conta-pai/subtotal do BALANCETE (menos
+   *  segmentos que uma conta-folha, ex.: "3.1.01.003" vs "3.1.01.003.003")
+   *  aparecer como se fosse uma conta faltando na cobertura. */
+  function detectAccountDepth(codigosNaCheck) {
+    const contagem = new Map();
+    codigosNaCheck.forEach((codigo) => {
+      const n = codigo.split('.').length;
+      contagem.set(n, (contagem.get(n) || 0) + 1);
+    });
+    let melhor = null, max = 0;
+    contagem.forEach((n, profundidade) => { if (n > max) { max = n; melhor = profundidade; } });
+    return melhor;
+  }
+
   function detectCustoConfig(adapter, workbook) {
     const fopagSheet = findSheet(workbook, ['fopag']);
     if (!fopagSheet) return null;
@@ -213,6 +233,7 @@
     }
     const blocks = detectBlocks(adapter, checkSheet, headerRow);
     const balanceteMap = findBalanceteMap(workbook);
+    const custoConfig = detectCustoConfig(adapter, workbook);
 
     const resultados = [];
     const codigosNaCheck = new Set();
@@ -231,6 +252,7 @@
         const key = `${block.data.getFullYear()}-${String(block.data.getMonth() + 1).padStart(2, '0')}`;
         balanceteSheet = balanceteMap[key] || null;
       }
+      block.balanceteSheet = balanceteSheet;
       for (const conta of contas) {
         codigosNaCheck.add(conta.codigo);
         const fopagCell = adapter.cell(checkSheet, block.fopagCol, conta.row);
@@ -246,11 +268,15 @@
     // A cobertura só faz sentido dentro da "família" de contas que a CHECK já
     // cobre (ex.: 3.1.01 = pessoal) — comparar contra todo o grupo de
     // resultado (3.*) traria centenas de contas não-folha como falso positivo.
+    // `profundidade` evita listar conta-pai/subtotal (menos segmentos) como
+    // se fosse uma conta faltando quando ela só agrega contas-folha que a
+    // CHECK já cobre individualmente (achado real neste arquivo).
     const prefixo = detectAccountFamilyPrefix(codigosNaCheck);
+    const profundidade = detectAccountDepth(codigosNaCheck);
     const cobertura = { contasFantasmas: [] };
     const vistos = new Set();
     Object.values(balanceteMap).forEach((sheet) => {
-      const r = engine.computeCobertura(adapter, sheet, codigosNaCheck, { prefixo });
+      const r = engine.computeCobertura(adapter, sheet, codigosNaCheck, { prefixo, profundidade });
       r.contasFantasmas.forEach((f) => { if (!vistos.has(f.codigo)) { vistos.add(f.codigo); cobertura.contasFantasmas.push(f); } });
     });
 
@@ -263,7 +289,7 @@
     state.cobertura = cobertura;
     state.competencias = [...new Set(competenciasAtivas)];
     state.competenciaDatas = new Map(blocksAtivos.map((b) => [b.competencia, b.data]));
-    state.custoConfig = detectCustoConfig(adapter, workbook);
+    state.custoConfig = custoConfig;
 
     renderMeta(fileName, checkSheet, blocksAtivos, balanceteMap);
     renderDashboard();

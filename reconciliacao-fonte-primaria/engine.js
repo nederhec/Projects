@@ -378,8 +378,16 @@
    * na CHECK. Retorna as contas que existem na fonte primária e não têm
    * linha correspondente na CHECK.
    */
+  /**
+   * `profundidade` (opcional) restringe a contas com o mesmo número de
+   * segmentos das já mapeadas na CHECK (ex.: 5, como em "3.1.01.001.001").
+   * Sem isso, um código-pai/subtotal (ex.: "3.1.01.001", que soma as
+   * próprias contas-filha que a CHECK já cobre individualmente) aparece
+   * como se fosse uma conta "faltando" — não é: é só o agregado de contas
+   * já conhecidas, listado de novo em outra granularidade.
+   */
   function computeCobertura(adapter, balanceteSheet, codigosNaCheck, opts) {
-    const cfg = Object.assign({ codigoCol: 'B', prefixo: '3.' }, opts);
+    const cfg = Object.assign({ codigoCol: 'B', prefixo: '3.', profundidade: null }, opts);
     const fantasmas = [];
     if (!balanceteSheet || !adapter.sheetNames.includes(balanceteSheet)) return { contasFantasmas: fantasmas };
     const rows = adapter.usedRowCount(balanceteSheet);
@@ -389,6 +397,7 @@
       if (isEmptyCell(codeCell)) continue;
       const codigo = String(codeCell.value).trim();
       if (!codigo.startsWith(cfg.prefixo) || vistos.has(codigo)) continue;
+      if (cfg.profundidade && codigo.split('.').length !== cfg.profundidade) continue;
       vistos.add(codigo);
       if (!codigosNaCheck.has(codigo)) fantasmas.push({ codigo, sheet: balanceteSheet, row: r });
     }

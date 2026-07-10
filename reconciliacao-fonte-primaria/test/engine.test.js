@@ -228,6 +228,25 @@ test('conta presente no BALANCETE e ausente da CHECK vira conta fantasma', () =>
   assert.equal(result.contasFantasmas.length, 1);
   assert.equal(result.contasFantasmas[0].codigo, '3.1.01.099.001');
 });
+test('conta-pai/subtotal não vira fantasma quando profundidade filtra só contas-folha (padrão real observado no BALANCETE)', () => {
+  // Replica o achado real: "3.1.01.003" é o subtotal de "3.1.01.003.003" +
+  // "3.1.01.003.007" — sem o filtro de profundidade, o pai aparecia como
+  // "conta faltando" mesmo já estando coberto pelas contas-filha.
+  const adapter = makeAdapter({
+    BALANCETE: {
+      B: {
+        10: { value: '3.1.01.003' },       // pai/subtotal (4 segmentos)
+        11: { value: '3.1.01.003.003' },   // filha (5 segmentos) — na CHECK
+        12: { value: '3.1.01.003.007' }    // filha (5 segmentos) — não está na CHECK
+      }
+    }
+  });
+  const semFiltro = engine.computeCobertura(adapter, 'BALANCETE', new Set(['3.1.01.003.003']));
+  assert.equal(semFiltro.contasFantasmas.length, 2, 'sem profundidade, o pai também aparece (comportamento antigo)');
+  const comFiltro = engine.computeCobertura(adapter, 'BALANCETE', new Set(['3.1.01.003.003']), { profundidade: 5 });
+  assert.equal(comFiltro.contasFantasmas.length, 1);
+  assert.equal(comFiltro.contasFantasmas[0].codigo, '3.1.01.003.007');
+});
 
 console.log(`\n${passed} passaram, ${failed} falharam`);
 process.exit(failed ? 1 : 0);

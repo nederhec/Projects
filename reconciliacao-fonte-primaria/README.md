@@ -30,7 +30,12 @@ A CHECK deixa de ser fonte e vira **resultado conferido**:
    financeiro: responde "o resumo que eu li está certo?", não "o fechamento
    está certo?".
 5. Lista **contas fantasmas** — contas presentes no BALANCETE, na mesma
-   família contábil que a CHECK já cobre, sem linha correspondente nela.
+   família e profundidade contábil (nº de segmentos do código) que a CHECK
+   já cobre, sem linha correspondente nela. A profundidade importa: um
+   código-pai/subtotal do plano de contas (ex.: `3.1.01.003`, que soma as
+   próprias contas-filha `3.1.01.003.003` + `3.1.01.003.007` + ...) não é
+   uma conta faltando, é o mesmo dinheiro em outra granularidade — sem
+   filtrar por profundidade, ele aparecia na lista como se fosse.
 
 Ver a especificação completa (achados, arquitetura, casos de teste) no
 memorando técnico produzido antes deste projeto.
@@ -100,6 +105,52 @@ test/        — testes de unidade do engine.js (fixtures sintéticas)
 `usedRowCount(sheet)`) em vez de depender do SheetJS diretamente — isso é o
 que permite testar o motor em Node com fixtures simples, e reusar a mesma
 lógica no navegador em cima do SheetJS de verdade.
+
+## Investigado e descartado — Gerencial × Contábil, Rescisão, Provisões
+
+Três eixos adicionais foram avaliados e **não entraram**, com evidência do
+motivo — documentado aqui pra não serem retentados sem essa base:
+
+- **Gerencial × Contábil** (`Base fechamento` vs. total Contábil): o total
+  mensal da `Base fechamento` roda ~2× o total da família contábil de
+  pessoal (ex.: Abril: R$3,17M na Base fechamento contra ~R$1,57–2,3M na
+  família `3.1.01.*` do BALANCETE, dependendo de como essa família é
+  somada — ver próximo item). O gap não tem explicação recuperável só do
+  arquivo; pode ser metodologia de custo pleno/rateio que a Base fechamento
+  aplica e a contabilidade não. Comparar os dois como se devessem bater
+  seria fabricar uma divergência (ou uma "conciliação") sem base.
+- **Custo total (FOPAG) × Contábil (família completa do BALANCETE)**: esta
+  era a alternativa mais defensável — comparar a coluna de custo total da
+  FOPAG 2026 contra a soma de *todas* as contas `3.1.01.*` do BALANCETE, não
+  só as que a CHECK lista. Uma primeira tentativa pareceu bater quase
+  perfeitamente (diferença de R$939 em ~R$1,57M) — mas era coincidência de
+  dois erros se cancelando: código de teste ignorando células do BALANCETE
+  armazenadas como texto, e a soma por prefixo contando conta-pai e
+  conta-filha ao mesmo tempo (dobrando parte do valor). Corrigidos os dois
+  problemas, a soma correta da família completa (só contas-folha, texto
+  parseado) fica em ~R$2,31M contra ~R$1,57M da FOPAG — uma diferença de
+  ~47% sem explicação disponível no arquivo. Não foi implementado.
+- **Cross-check de Rescisão** (`Rescisoes` vs. colunas de rescisão da FOPAG):
+  o arquivo tem só 1 evento de rescisão em Abril, insuficiente pra validar
+  um de-para de rubricas. E o de-para não é direto: `Custo Total` da aba
+  `Rescisoes` inclui encargos do empregador que as colunas de rescisão da
+  FOPAG (pagas ao empregado) não cobrem — só uma das quatro colunas testadas
+  bateu exatamente (Salário Bruto = Saldo Salário Rescisão).
+- **Cross-check de Provisões** (`CONSULTA DE PROVISÕES DE FÉRIAS` /
+  `CONSULTA PROVISÃO DE 13º SALÁRIO` vs. FOPAG): essas duas abas são
+  **saldo acumulado** por referência mensal (quanto já foi provisionado até
+  aquele mês), enquanto as colunas de provisão da FOPAG 2026 são o
+  **movimento daquele mês** (ex.: 1/12 do período). São conceitos
+  diferentes — comparar diretamente dá uma diferença de ~5× que não
+  significa nada (confirmado com números reais: Abril, 13º salário,
+  R$515 mil de saldo acumulado contra R$96 mil de movimento do mês).
+
+Pra qualquer um desses virar uma verificação de verdade, precisa da
+definição de negócio de quem monta a `Base fechamento`/`Rescisoes` — o que
+exatamente cada total representa e como ele deveria reconciliar (ou não)
+com a contabilidade. Sem isso, apresentar um número "batendo" ou "não
+batendo" seria exatamente o tipo de falsa confiança que este projeto existe
+pra eliminar.
 
 ## Limitações conhecidas (v0.2)
 
