@@ -10,7 +10,11 @@
   const $ = (id) => document.getElementById(id);
   const engine = window.ReconEngine;
 
-  const state = { adapter: null, workbook: null, resultados: [], confiabilidade: null, cobertura: { contasFantasmas: [] }, competencias: [] };
+  const state = {
+    adapter: null, workbook: null, resultados: [], confiabilidade: null,
+    cobertura: { contasFantasmas: [] }, competencias: [], competenciaDatas: new Map(),
+    custoConfig: null
+  };
 
   // ------------------------------------------------------------ utilidades
 
@@ -45,6 +49,21 @@
     };
   }
 
+  /** Acha a coluna cujo cabeçalho (linha 1) contém um dos apelidos, dentro
+   *  das primeiras colunas de uma aba — usado pra não depender de posição
+   *  fixa de coluna em planilhas de clientes diferentes. */
+  function findColumnByHeader(adapter, sheet, aliases, headerRow, maxCol) {
+    const norm = aliases.map(normalize);
+    for (let c = 1; c <= (maxCol || 150); c++) {
+      const col = colIdxToLetter(c);
+      const cell = adapter.cell(sheet, col, headerRow);
+      if (!cell) continue;
+      const h = normalize(cell.value);
+      if (norm.some((a) => h.includes(a))) return col;
+    }
+    return null;
+  }
+
   // --------------------------------------------------- detecção de abas
 
   function findSheet(workbook, aliases) {
@@ -66,13 +85,16 @@
 
   // ------------------------------------------ detecção de blocos na CHECK
 
-  /** Acha a linha de cabeçalho (FOPAG | CONTABIL | DIFERENÇA) dentro das
-   *  primeiras linhas da CHECK, sem assumir posição fixa. */
-  function findHeaderRow(adapter, sheet) {
-    for (let row = 1; row <= 8; row++) {
-      for (let c = 1; c <= 80; c++) {
+  /** Acha a linha de cabeçalho a partir de um rótulo-âncora, sem assumir
+   *  posição fixa — planilhas reais têm o cabeçalho em linhas diferentes
+   *  (a CHECK deste arquivo tem "FOPAG" na linha 3, a FOPAG 2026 tem "Centro
+   *  de Custo" na linha 3 também, mas nada garante que sempre serão iguais). */
+  function findHeaderRow(adapter, sheet, anchors, maxRow, maxCol) {
+    const norm = anchors.map(normalize);
+    for (let row = 1; row <= (maxRow || 8); row++) {
+      for (let c = 1; c <= (maxCol || 80); c++) {
         const cell = adapter.cell(sheet, colIdxToLetter(c), row);
-        if (cell && normalize(cell.value) === 'fopag') return row;
+        if (cell && norm.includes(normalize(cell.value))) return row;
       }
     }
     return null;
@@ -136,6 +158,45 @@
     return melhor;
   }
 
+  function datesSameMonth(a, b) {
+    return a instanceof Date && b instanceof Date && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
+  }
+
+  /** Soma a coluna de custo total da FOPAG 2026, agrupada por Centro de
+   *  Custo — direto da fonte, não passa pela CHECK. `filtroData` null soma
+   *  todas as competências carregadas na FOPAG. */
+  function aggregateCustoPorCentro(adapter, cfg, filtroData) {
+    const porCentro = new Map();
+    let total = 0;
+    if (!cfg || !cfg.fopagSheet || !cfg.mesCol || !cfg.ccCol || !cfg.totalCol) return { porCentro, total };
+    const rows = adapter.usedRowCount(cfg.fopagSheet);
+    for (let r = cfg.dataStartRow; r <= rows; r++) {
+      const mesCell = adapter.cell(cfg.fopagSheet, cfg.mesCol, r);
+      if (filtroData && !(mesCell && datesSameMonth(mesCell.value, filtroData))) continue;
+      const totalCell = adapter.cell(cfg.fopagSheet, cfg.totalCol, r);
+      if (!totalCell) continue;
+      const valor = typeof totalCell.value === 'number' ? totalCell.value : Number(totalCell.value) || 0;
+      if (!valor) continue;
+      const ccCell = adapter.cell(cfg.fopagSheet, cfg.ccCol, r);
+      const centro = ccCell ? String(ccCell.value).trim() : '(sem centro de custo)';
+      porCentro.set(centro, (porCentro.get(centro) || 0) + valor);
+      total += valor;
+    }
+    return { porCentro, total };
+  }
+
+  function detectCustoConfig(adapter, workbook) {
+    const fopagSheet = findSheet(workbook, ['fopag']);
+    if (!fopagSheet) return null;
+    const headerRow = findHeaderRow(adapter, fopagSheet, ['centro de custo'], 8, 150);
+    if (!headerRow) return null;
+    const mesCol = findColumnByHeader(adapter, fopagSheet, ['mes'], headerRow);
+    const ccCol = findColumnByHeader(adapter, fopagSheet, ['centro de custo'], headerRow);
+    const totalCol = findColumnByHeader(adapter, fopagSheet, ['custo total contabil', 'custo fechamento', 'total proventos'], headerRow);
+    if (!mesCol || !ccCol || !totalCol) return null;
+    return { fopagSheet, mesCol, ccCol, totalCol, dataStartRow: headerRow + 1 };
+  }
+
   // -------------------------------------------------------- orquestração
 
   function processWorkbook(workbook, fileName) {
@@ -145,7 +206,7 @@
       showError('Não foi possível localizar a aba CHECK no arquivo. Sem ela, não há como ancorar as contas — confira o nome da aba.');
       return;
     }
-    const headerRow = findHeaderRow(adapter, checkSheet);
+    const headerRow = findHeaderRow(adapter, checkSheet, ['fopag']);
     if (headerRow === null) {
       showError(`Aba "${checkSheet}" encontrada, mas o cabeçalho FOPAG/CONTABIL/DIFERENÇA não foi localizado nas primeiras linhas.`);
       return;
@@ -193,14 +254,18 @@
       r.contasFantasmas.forEach((f) => { if (!vistos.has(f.codigo)) { vistos.add(f.codigo); cobertura.contasFantasmas.push(f); } });
     });
 
+    const blocksAtivos = blocks.filter((b) => competenciasAtivas.includes(b.competencia));
+
     state.adapter = adapter;
     state.workbook = workbook;
     state.resultados = resultados;
     state.confiabilidade = engine.computeConfiabilidade(resultados);
     state.cobertura = cobertura;
     state.competencias = [...new Set(competenciasAtivas)];
+    state.competenciaDatas = new Map(blocksAtivos.map((b) => [b.competencia, b.data]));
+    state.custoConfig = detectCustoConfig(adapter, workbook);
 
-    renderMeta(fileName, checkSheet, blocks.filter((b) => competenciasAtivas.includes(b.competencia)), balanceteMap);
+    renderMeta(fileName, checkSheet, blocksAtivos, balanceteMap);
     renderDashboard();
   }
 
@@ -269,6 +334,37 @@
     populateFiltroCompetencia();
     renderTabela();
     renderFantasmas();
+    renderCustoPorCentro();
+  }
+
+  function renderCustoPorCentro() {
+    const card = $('card-custo-centro');
+    if (!card) return;
+    if (!state.custoConfig) {
+      card.hidden = true;
+      return;
+    }
+    card.hidden = false;
+    const sel = $('filtro-cc-competencia');
+    if (!sel.dataset.populated) {
+      sel.innerHTML = '<option value="">Todas as competências (soma do ano)</option>' +
+        state.competencias.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+      sel.dataset.populated = '1';
+    }
+    const filtroData = sel.value ? state.competenciaDatas.get(sel.value) : null;
+    const { porCentro, total } = aggregateCustoPorCentro(state.adapter, state.custoConfig, filtroData);
+    const host = $('tabela-custo-centro');
+    if (!porCentro.size) { host.innerHTML = '<p class="vazio">Sem dados de centro de custo para essa seleção.</p>'; return; }
+    const linhas = [...porCentro.entries()].sort((a, b) => b[1] - a[1]);
+    host.innerHTML = `
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Centro de custo</th><th class="num">Total (FOPAG)</th><th class="num">% do total</th></tr></thead>
+          <tbody>${linhas.map(([centro, valor]) => `
+            <tr><td>${escapeHtml(centro)}</td><td class="num">${money.format(valor)}</td><td class="num">${total ? ((valor / total) * 100).toFixed(1) : '0.0'}%</td></tr>
+          `).join('')}</tbody>
+        </table>
+      </div>`;
   }
 
   function populateFiltroCompetencia() {
@@ -280,23 +376,42 @@
   function currentFilters() {
     return {
       competencia: $('filtro-competencia').value,
-      alerta: $('filtro-alerta').value
+      alerta: $('filtro-alerta').value,
+      severidade: $('filtro-severidade') ? $('filtro-severidade').value : ''
     };
   }
 
-  function renderTabela() {
-    const { competencia, alerta } = currentFilters();
+  function filteredResultados() {
+    const { competencia, alerta, severidade } = currentFilters();
     let linhas = state.resultados;
     if (competencia) linhas = linhas.filter((r) => r.competencia === competencia);
     if (alerta === 'financeiro') linhas = linhas.filter((r) => r.alertas.includes('financeiro') || r.alertas.includes('financeiro-nao-verificado'));
     if (alerta === 'preenchimento') linhas = linhas.filter((r) => r.alertas.includes('preenchimento'));
     if (alerta === 'limpas') linhas = linhas.filter((r) => r.alertas.length === 0);
+    if (severidade) linhas = linhas.filter((r) => (dictEntry(r.codigo) || {}).severidade === severidade);
+    return linhas;
+  }
 
+  function dictEntry(codigo) {
+    return state.dicionario ? state.dicionario.get(codigo) : null;
+  }
+
+  function renderTabela() {
+    const linhas = filteredResultados();
     const host = $('tabela-contas');
     if (!linhas.length) { host.innerHTML = '<p class="vazio">Nenhuma conta nesse filtro.</p>'; return; }
 
-    const rowsHtml = linhas.map((r) => `
-      <tr class="${r.alertas.includes('financeiro') ? 'row-financeiro' : ''} ${r.alertas.includes('preenchimento') ? 'row-preenchimento' : ''}">
+    const comDicionario = Boolean(state.dicionario && state.dicionario.size);
+    const colspan = comDicionario ? 11 : 9;
+    const rowsHtml = linhas.map((r) => {
+      const key = `${r.competencia}__${r.codigo}`;
+      const dict = dictEntry(r.codigo);
+      const extraCols = comDicionario
+        ? `<td>${dict && dict.severidade ? `<span class="badge badge-${sevClass(dict.severidade)}">${escapeHtml(dict.severidade)}</span>` : '—'}</td><td>${escapeHtml((dict && dict.responsavel) || '—')}</td>`
+        : '';
+      return `
+      <tr class="row-conta ${r.alertas.includes('financeiro') ? 'row-financeiro' : ''} ${r.alertas.includes('preenchimento') ? 'row-preenchimento' : ''}" data-key="${escapeHtml(key)}" tabindex="0" role="button" aria-expanded="false">
+        <td><span class="expand-caret">▸</span></td>
         <td>${escapeHtml(r.competencia)}</td>
         <td class="mono">${escapeHtml(r.codigo)}</td>
         <td>${escapeHtml(r.descricao)}</td>
@@ -304,20 +419,150 @@
         <td class="num">${r.recalculado.diferenca === null ? '—' : money.format(r.recalculado.diferenca)}</td>
         <td>${badge(r.proveniencia.fopag)}</td>
         <td>${badge(r.proveniencia.contabil)}</td>
-        <td>${r.alertas.length ? r.alertas.map(alertBadge).join(' ') : '<span class="badge badge-ok">ok</span>'}</td>
-      </tr>`).join('');
+        <td>${r.alertas.length ? r.alertas.map(alertBadge).join(' ') : '<span class="badge badge-ok">ok</span>'}${r.recalculado.ajusteRazao ? ' <span class="badge badge-flag">ajuste RAZÃO</span>' : ''}</td>
+        ${extraCols}
+      </tr>
+      <tr class="row-detalhe" data-detail-for="${escapeHtml(key)}" hidden><td colspan="${colspan}">${renderDetalheConta(r)}</td></tr>`;
+    }).join('');
 
     host.innerHTML = `
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Competência</th><th>Conta</th><th>Descrição</th>
+            <th></th><th>Competência</th><th>Conta</th><th>Descrição</th>
             <th class="num">Diferença (CHECK)</th><th class="num">Diferença (recalculada)</th>
             <th>Proveniência FOPAG</th><th>Proveniência Contábil</th><th>Alertas</th>
+            ${comDicionario ? '<th>Severidade</th><th>Responsável</th>' : ''}
           </tr></thead>
           <tbody>${rowsHtml}</tbody>
         </table>
       </div>`;
+
+    host.querySelectorAll('.row-conta').forEach((row) => {
+      const toggle = () => {
+        const key = row.dataset.key;
+        const detail = host.querySelector(`.row-detalhe[data-detail-for="${CSS.escape(key)}"]`);
+        const expanded = row.getAttribute('aria-expanded') === 'true';
+        row.setAttribute('aria-expanded', String(!expanded));
+        row.querySelector('.expand-caret').textContent = expanded ? '▸' : '▾';
+        if (detail) detail.hidden = expanded;
+      };
+      row.addEventListener('click', toggle);
+      row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+    });
+  }
+
+  /** Painel de composição por rubrica (Folha) e por lançamento (ajuste do
+   *  Contábil) — o "drill-down" que aponta qual verba específica está
+   *  puxando a diferença, em vez de só o total da conta. */
+  function renderDetalheConta(r) {
+    const fopagTermos = r.recalculado.fopagTermos || [];
+    const fopagHtml = fopagTermos.length
+      ? `<table class="detail-table">
+          <thead><tr><th>Rubrica (FOPAG 2026)</th><th class="num">Valor</th></tr></thead>
+          <tbody>${fopagTermos.map((t) => `<tr><td>${escapeHtml(t.rubrica)}</td><td class="num">${money.format(t.value)}</td></tr>`).join('')}</tbody>
+         </table>`
+      : '<p class="vazio">Sem composição verificável (FOPAG sem fórmula reconhecida nessa célula).</p>';
+
+    let contabilHtml;
+    if (r.recalculado.ajusteRazao) {
+      const a = r.recalculado.ajusteRazao;
+      contabilHtml = `
+        <p class="detail-note">Contábil = BALANCETE + ${a.termos.length} lançamento(s) do RAZÃO que a própria CHECK já reclassifica, totalizando ${money.format(a.valor)}:</p>
+        <table class="detail-table">
+          <thead><tr><th>Origem</th><th class="num">Valor</th></tr></thead>
+          <tbody>${a.termos.map((t) => `<tr><td class="mono">${escapeHtml(t.sheet)}!${escapeHtml(t.coluna || t.col)}${t.row}</td><td class="num">${money.format(t.value)}</td></tr>`).join('')}</tbody>
+        </table>`;
+    } else if (r.recalculado.origemContabil === 'balancete-por-codigo') {
+      contabilHtml = `<p class="detail-note">Contábil recalculado direto no BALANCETE pelo código de conta (a fórmula da CHECK não pôde ser seguida com confiança).</p>`;
+    } else if (r.recalculado.statusContabil === 'sem-fonte') {
+      contabilHtml = `<p class="detail-note">Sem BALANCETE disponível para esta competência — não há como verificar o Contábil.</p>`;
+    } else {
+      contabilHtml = `<p class="detail-note">Contábil confirmado direto pela composição da própria fórmula da CHECK.</p>`;
+    }
+
+    return `<div class="detail-grid">
+      <div><h4>Composição da Folha</h4>${fopagHtml}</div>
+      <div><h4>Composição do Contábil</h4>${contabilHtml}</div>
+    </div>`;
+  }
+
+  function sevClass(severidade) {
+    const n = normalize(severidade);
+    if (n.includes('alt')) return 'critical';
+    if (n.includes('med')) return 'warn';
+    if (n.includes('baix')) return 'ok';
+    return 'neutral';
+  }
+
+  // ------------------------------------------------- dicionário de contas
+
+  function parseDicionarioCsv(text) {
+    const map = new Map();
+    const lines = text.split(/\r?\n/).filter((l) => l.trim());
+    if (!lines.length) return map;
+    const delim = lines[0].includes(';') ? ';' : ',';
+    let start = 0;
+    if (normalize(lines[0].split(delim)[0]).includes('codigo')) start = 1;
+    for (let i = start; i < lines.length; i++) {
+      const cols = lines[i].split(delim);
+      const codigo = (cols[0] || '').trim();
+      if (!codigo) continue;
+      map.set(codigo, { severidade: (cols[1] || '').trim(), responsavel: (cols[2] || '').trim() });
+    }
+    return map;
+  }
+
+  async function handleDicionario(file) {
+    if (!file) return;
+    const text = await file.text();
+    state.dicionario = parseDicionarioCsv(text);
+    $('nome-dicionario').textContent = `${file.name} (${state.dicionario.size} conta(s) mapeada(s))`;
+    populateFiltroSeveridade();
+    if (!$('dashboard').hidden) renderTabela();
+  }
+
+  function populateFiltroSeveridade() {
+    const sel = $('filtro-severidade');
+    if (!sel || !state.dicionario) return;
+    const severidades = new Set();
+    state.dicionario.forEach((v) => { if (v.severidade) severidades.add(v.severidade); });
+    sel.innerHTML = '<option value="">Todas as severidades</option>' +
+      [...severidades].sort().map((s) => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+  }
+
+  // ------------------------------------------------------------ exportação
+
+  function toCsvValue(v) {
+    const s = String(v ?? '');
+    return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }
+
+  function exportarCsv() {
+    const linhas = filteredResultados();
+    if (!linhas.length) return;
+    const header = ['Competência', 'Conta', 'Descrição', 'Diferença (CHECK)', 'Diferença (recalculada)',
+      'Proveniência FOPAG', 'Proveniência Contábil', 'Alertas', 'Severidade', 'Responsável'];
+    const rows = linhas.map((r) => {
+      const dict = dictEntry(r.codigo) || {};
+      return [
+        r.competencia, r.codigo, r.descricao,
+        r.declarado.diferenca.toFixed(2).replace('.', ','),
+        r.recalculado.diferenca === null ? '' : r.recalculado.diferenca.toFixed(2).replace('.', ','),
+        r.proveniencia.fopag, r.proveniencia.contabil, r.alertas.join('|'),
+        dict.severidade || '', dict.responsavel || ''
+      ];
+    });
+    const csv = [header, ...rows].map((row) => row.map(toCsvValue).join(';')).join('\r\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reconciliacao-independente-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   function renderFantasmas() {
@@ -351,6 +596,10 @@
     dropzone.addEventListener('drop', (e) => handleFile(e.dataTransfer.files[0]));
     $('filtro-competencia').addEventListener('change', renderTabela);
     $('filtro-alerta').addEventListener('change', renderTabela);
+    $('filtro-cc-competencia').addEventListener('change', renderCustoPorCentro);
+    $('btn-exportar-csv').addEventListener('click', exportarCsv);
+    $('filtro-severidade').addEventListener('change', renderTabela);
+    $('input-dicionario').addEventListener('change', (e) => handleDicionario(e.target.files[0]));
   }
 
   document.addEventListener('DOMContentLoaded', init);

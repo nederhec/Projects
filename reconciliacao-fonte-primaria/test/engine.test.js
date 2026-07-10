@@ -75,7 +75,7 @@ test('referência para célula nunca preenchida é formula-quebrada', () => {
   const prov = engine.classifyProvenance(adapter, adapter.cell('CHECK', 'X', 5));
   assert.equal(prov.status, 'formula-quebrada');
 });
-test('recalcContabil ignora a referência quebrada e busca a conta direto no BALANCETE', () => {
+test('lookupContaNoBalancete acha a conta direto pelo código', () => {
   const adapter = makeAdapter({
     BALANCETE: {
       B: { 136: { value: '3.1.01.001.001' } },
@@ -83,15 +83,43 @@ test('recalcContabil ignora a referência quebrada e busca a conta direto no BAL
       I: { 136: { value: 0 } }
     }
   });
-  const result = engine.recalcContabil(adapter, 'BALANCETE', '3.1.01.001.001');
+  const result = engine.lookupContaNoBalancete(adapter, 'BALANCETE', '3.1.01.001.001');
   assert.equal(result.status, 'verificado');
   assert.equal(result.value, 803770);
 });
-test('recalcContabil sinaliza sem-fonte quando o mês não tem BALANCETE', () => {
-  const adapter = makeAdapter({});
-  const result = engine.recalcContabil(adapter, null, '3.1.01.001.001');
+test('recalcContabil ignora a referência quebrada da CHECK e busca a conta direto no BALANCETE', () => {
+  const adapter = makeAdapter({
+    CHECK: { D: { 5: { value: 0, formula: "'BALANCETE'!N136" } } },
+    BALANCETE: {
+      B: { 136: { value: '3.1.01.001.001' } },
+      H: { 136: { value: 803770 } },
+      I: { 136: { value: 0 } }
+    }
+  });
+  const result = engine.recalcContabil(adapter, adapter.cell('CHECK', 'D', 5), 'BALANCETE', '3.1.01.001.001');
+  assert.equal(result.status, 'verificado');
+  assert.equal(result.value, 803770);
+  assert.equal(result.origem, 'balancete-por-codigo');
+});
+test('recalcContabil sinaliza sem-fonte quando o mês não tem BALANCETE nem fórmula pra seguir', () => {
+  const adapter = makeAdapter({ CHECK: { D: { 5: { value: 700 } } } });
+  const result = engine.recalcContabil(adapter, adapter.cell('CHECK', 'D', 5), null, '3.1.01.001.001');
   assert.equal(result.status, 'sem-fonte');
   assert.equal(result.value, null);
+});
+test('recalcContabil segue a composição da fórmula quando ela resolve, incluindo ajuste do RAZÃO', () => {
+  const adapter = makeAdapter({
+    CHECK: { P: { 8: { value: 93738.08, formula: "'BALANCETE'!J160+'RAZAO'!G700+'RAZAO'!G702" } } },
+    BALANCETE: { J: { 160: { value: 75815.70 } } },
+    RAZAO: { G: { 700: { value: 12000 }, 702: { value: 5922.38 } } }
+  });
+  const result = engine.recalcContabil(adapter, adapter.cell('CHECK', 'P', 8), 'BALANCETE', '3.1.01.001.003');
+  assert.equal(result.status, 'verificado');
+  assert.equal(result.origem, 'formula-composicao');
+  assert.ok(Math.abs(result.value - 93738.08) < 0.01, `esperava somar os 3 termos (93738.08), veio ${result.value}`);
+  assert.ok(result.ajuste, 'deveria reportar o ajuste do razão');
+  assert.equal(result.ajuste.termos.length, 2);
+  assert.ok(Math.abs(result.ajuste.valor - 17922.38) < 0.01);
 });
 
 console.log('classifyProvenance — fórmula viva concordante (padrão Abril/Maio do arquivo real)');

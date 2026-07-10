@@ -122,24 +122,30 @@
 
   // ------------------------------------------------------------ recálculo
 
-  /** Soma uma fonte via SUMIFS reimplementado sobre o adapter. */
+  /** Soma uma fonte via SUMIFS reimplementado sobre o adapter. Devolve também
+   *  o valor por termo (por rubrica/coluna), pra alimentar o drill-down. */
   function evaluateSumifsTerms(adapter, terms, criteriaSheet) {
     let total = 0;
     let resolvable = true;
+    const termos = [];
     for (const term of terms) {
       if (!adapter.sheetNames.includes(term.sheet)) { resolvable = false; continue; }
       const criteriaRefParsed = parseRef(term.criteriaRef);
       const criteriaCell = criteriaRefParsed && adapter.cell(criteriaSheet, criteriaRefParsed.col, criteriaRefParsed.row);
       if (isEmptyCell(criteriaCell)) { resolvable = false; continue; }
       const rows = adapter.usedRowCount(term.sheet);
+      let subtotal = 0;
       for (let r = 1; r <= rows; r++) {
         const crit = adapter.cell(term.sheet, term.criteriaCol, r);
         if (isEmptyCell(crit) || !sameCriteria(crit.value, criteriaCell.value)) continue;
         const val = adapter.cell(term.sheet, term.valueCol, r);
-        if (!isEmptyCell(val)) total += toNumber(val.value) || 0;
+        if (!isEmptyCell(val)) subtotal += toNumber(val.value) || 0;
       }
+      const headerCell = adapter.cell(term.sheet, term.valueCol, 1);
+      termos.push({ sheet: term.sheet, coluna: term.valueCol, rubrica: headerCell ? String(headerCell.value) : term.valueCol, value: subtotal });
+      total += subtotal;
     }
-    return { value: total, resolvable };
+    return { value: total, resolvable, termos };
   }
 
   /** Confere se as referências diretas de uma fórmula apontam para células
@@ -155,6 +161,25 @@
       if (isEmptyCell(target)) broken.push({ ...term, motivo: 'célula vazia / nunca preenchida' });
     }
     return { broken, ok: broken.length === 0 };
+  }
+
+  /**
+   * Soma os termos de uma fórmula de referência direta lendo o valor de
+   * verdade de cada célula (não o cache da célula que contém a fórmula).
+   * Isso é o que permite reconhecer ajustes manuais do RAZÃO que a própria
+   * fórmula da CHECK já embute (ex.: BALANCETE!J160 + RAZÃO!G700 + RAZÃO!G702)
+   * em vez de descartá-los — a mesma lógica que já aplicamos ao FOPAG via
+   * SUMIFS, agora aplicada às referências diretas do lado Contábil.
+   */
+  function evaluateDirectRefTerms(adapter, terms) {
+    const diag = diagnoseDirectRefs(adapter, terms);
+    if (!diag.ok) return { value: null, resolvable: false, termos: [], broken: diag.broken };
+    const termos = terms.map((t) => {
+      const cell = adapter.cell(t.sheet, t.col, t.row);
+      return { ...t, value: toNumber(cell.value) || 0 };
+    });
+    const total = termos.reduce((sum, t) => sum + t.value, 0);
+    return { value: total, resolvable: true, termos, broken: [] };
   }
 
   /**
@@ -185,20 +210,22 @@
   function recalcFopag(adapter, checkSheet, cellRaw) {
     const provenance = classifyProvenance(adapter, cellRaw);
     if (provenance.parsed.kind !== 'sumifs') {
-      return { value: null, status: 'sem-verificacao', provenance: provenance.status };
+      return { value: null, status: 'sem-verificacao', provenance: provenance.status, termos: [] };
     }
-    const { value, resolvable } = evaluateSumifsTerms(adapter, provenance.parsed.terms, checkSheet);
+    const { value, resolvable, termos } = evaluateSumifsTerms(adapter, provenance.parsed.terms, checkSheet);
     return {
       value,
       status: resolvable ? 'verificado' : 'sem-verificacao',
-      provenance: resolvable ? provenance.status : 'formula-quebrada'
+      provenance: resolvable ? provenance.status : 'formula-quebrada',
+      termos
     };
   }
 
-  /** Recalcula o valor Contábil de uma conta buscando-a diretamente no
-   *  BALANCETE do mês (por código de conta), independente de para onde a
-   *  fórmula da CHECK aponta. */
-  function recalcContabil(adapter, balanceteSheet, contaCodigo, opts) {
+  /** Busca uma conta diretamente no BALANCETE do mês (por código de conta) e
+   *  devolve Débito − Crédito. Independente de para onde a fórmula da CHECK
+   *  aponta — é a fonte de fallback quando não dá pra confiar na composição
+   *  da própria fórmula (valor digitado, ou referência quebrada). */
+  function lookupContaNoBalancete(adapter, balanceteSheet, contaCodigo, opts) {
     const cfg = Object.assign({ codigoCol: 'B', debitoCol: 'H', creditoCol: 'I' }, opts);
     if (!balanceteSheet || !adapter.sheetNames.includes(balanceteSheet)) {
       return { value: null, status: 'sem-fonte', row: null };
@@ -215,6 +242,36 @@
       return { value, status: 'verificado', row: r };
     }
     return { value: null, status: 'conta-nao-encontrada', row: null };
+  }
+
+  /**
+   * Recalcula o valor Contábil de uma conta. Duas fontes, nesta ordem:
+   *   1. Se a célula CONTABIL da CHECK for uma referência direta e todos os
+   *      termos resolverem (aba e célula existem), soma os termos de
+   *      verdade — isso reaproveita ajustes de reclassificação do RAZÃO que
+   *      a própria fórmula já descreve (ex.: BALANCETE + 2 lançamentos do
+   *      RAZÃO), sem depender do cache da célula.
+   *   2. Senão (valor digitado, ou referência quebrada), cai no lookup
+   *      direto da conta no BALANCETE por código — mesmo comportamento de
+   *      antes, e o que continua pegando o caso Junho (referência quebrada).
+   * Quando a fonte 1 tem mais de um termo, o excedente sobre o primeiro é
+   * reportado como `ajuste` — não é escondido nem tratado como erro, é
+   * exposto pra quem for revisar confirmar que a reclassificação é válida.
+   */
+  function recalcContabil(adapter, contabilCell, balanceteSheet, contaCodigo, opts) {
+    const parsed = parseFormula(contabilCell && contabilCell.formula);
+    if (parsed.kind === 'directRef') {
+      const resolved = evaluateDirectRefTerms(adapter, parsed.terms);
+      if (resolved.resolvable) {
+        const ajuste = resolved.termos.length > 1
+          ? { valor: resolved.value - resolved.termos[0].value, termos: resolved.termos.slice(1) }
+          : null;
+        return { value: resolved.value, status: 'verificado', origem: 'formula-composicao', ajuste, row: null };
+      }
+      // referência quebrada: cai no fallback por código de conta abaixo.
+    }
+    const base = lookupContaNoBalancete(adapter, balanceteSheet, contaCodigo, opts);
+    return { ...base, origem: 'balancete-por-codigo', ajuste: null };
   }
 
   // --------------------------------------------------- reconciliação 3 vias
@@ -238,7 +295,7 @@
     const diferencaProv = classifyProvenance(adapter, diferencaCell);
 
     const fopagRecalc = recalcFopag(adapter, checkSheet, fopagCell);
-    const contabilRecalc = recalcContabil(adapter, balanceteSheet, contaCodigo);
+    const contabilRecalc = recalcContabil(adapter, contabilCell, balanceteSheet, contaCodigo);
 
     const temFonteCompleta = fopagRecalc.status === 'verificado' && contabilRecalc.status === 'verificado';
     const diferencaReal = temFonteCompleta ? (fopagRecalc.value - contabilRecalc.value) : null;
@@ -271,7 +328,10 @@
         diferenca: diferencaReal,
         fonteContabil: balanceteSheet || null,
         statusFopag: fopagRecalc.status,
-        statusContabil: contabilRecalc.status
+        statusContabil: contabilRecalc.status,
+        origemContabil: contabilRecalc.origem || null,
+        ajusteRazao: contabilRecalc.ajuste || null,
+        fopagTermos: fopagRecalc.termos || []
       },
       proveniencia,
       alertas
@@ -343,7 +403,9 @@
     classifyProvenance,
     evaluateSumifsTerms,
     diagnoseDirectRefs,
+    evaluateDirectRefTerms,
     recalcFopag,
+    lookupContaNoBalancete,
     recalcContabil,
     reconcileConta,
     computeConfiabilidade,
