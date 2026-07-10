@@ -1,0 +1,9 @@
+{
+  "name": "reconciliacao-fonte-primaria",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Motor de reconciliação de folha que recalcula Folha e Contábil direto das fontes primárias, usando a aba CHECK como segundo ponto de conferência.",
+  "scripts": {
+    "test": "node test/engine.test.js"
+  }
+}
