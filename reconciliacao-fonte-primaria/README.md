@@ -77,10 +77,6 @@ memorando técnico produzido antes deste projeto.
   composição — quais colunas da FOPAG 2026 formam o valor de Folha, e (se
   houver ajuste do RAZÃO) quais lançamentos específicos compõem o Contábil,
   com valor individual de cada um.
-- **Custo por centro de custo**: soma o custo total da FOPAG 2026 agrupado
-  por Centro de Custo, direto da fonte (não passa pela CHECK), com filtro
-  por competência. Coluna de total e coluna de mês são detectadas pelo
-  cabeçalho da planilha, não por posição fixa.
 - **Exportação CSV**: exporta a tabela de contas respeitando os filtros
   ativos (competência, tipo de alerta, severidade).
 - **Dicionário de contas**: upload opcional de um CSV
@@ -139,16 +135,15 @@ A validação de detecção de abas/blocos/colunas do `app.js` (que é
 DOM-coupled, não roda em Node) foi feita manualmente num navegador real via
 Playwright contra essa mesma fixture — confirmado: dashboard renderiza,
 KPIs batem com o esperado, cobertura de contas exclui a conta-pai
-corretamente, custo por centro de custo agrupa certo mesmo com cabeçalho de
-espaçamento irregular.
+corretamente.
 
 ## Arquitetura
 
 ```
 index.html   — upload, dashboard, filtros, drill-down, exportação
 app.js       — glue: lê o XLSX via ExcelJS, detecta abas/colunas por
-               cabeçalho (não por posição fixa), monta o WorkbookAdapter,
-               orquestra o engine e agrega custo por centro de custo
+               cabeçalho (não por posição fixa), monta o WorkbookAdapter
+               e orquestra o engine
 engine.js    — motor puro (sem dependência de biblioteca de planilha):
                parser de fórmula, classificador de proveniência de célula,
                recalculadores (Folha via FOPAG, Contábil via composição da
@@ -230,10 +225,6 @@ pra eliminar.
   arquivo real, `4.2.01.*` na fixture), mas em planos de contas com
   nomenclatura muito diferente (nº de segmentos variável entre contas
   legítimas, por exemplo) isso pode não segmentar bem.
-- Custo por centro de custo depende de achar, pelo cabeçalho, uma coluna de
-  mês, uma de "Centro de Custo" e uma de total na mesma aba da FOPAG — se a
-  planilha nomear essas colunas de forma muito diferente, a seção
-  simplesmente não aparece (falha silenciosa, não trava o resto do painel).
 - Dicionário de contas é um CSV simples (sem suporte a aspas/escapes
   complexos) — funciona bem pra um `código;severidade;responsável` direto,
   não é um parser CSV completo.

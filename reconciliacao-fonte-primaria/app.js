@@ -12,8 +12,7 @@
 
   const state = {
     adapter: null, workbook: null, resultados: [], confiabilidade: null,
-    cobertura: { contasFantasmas: [] }, competencias: [], competenciaDatas: new Map(),
-    custoConfig: null
+    cobertura: { contasFantasmas: [] }, competencias: [], competenciaDatas: new Map()
   };
 
   // ------------------------------------------------------------ utilidades
@@ -174,33 +173,6 @@
     return melhor;
   }
 
-  function datesSameMonth(a, b) {
-    return a instanceof Date && b instanceof Date && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
-  }
-
-  /** Soma a coluna de custo total da FOPAG 2026, agrupada por Centro de
-   *  Custo — direto da fonte, não passa pela CHECK. `filtroData` null soma
-   *  todas as competências carregadas na FOPAG. */
-  function aggregateCustoPorCentro(adapter, cfg, filtroData) {
-    const porCentro = new Map();
-    let total = 0;
-    if (!cfg || !cfg.fopagSheet || !cfg.mesCol || !cfg.ccCol || !cfg.totalCol) return { porCentro, total };
-    const rows = adapter.usedRowCount(cfg.fopagSheet);
-    for (let r = cfg.dataStartRow; r <= rows; r++) {
-      const mesCell = adapter.cell(cfg.fopagSheet, cfg.mesCol, r);
-      if (filtroData && !(mesCell && datesSameMonth(mesCell.value, filtroData))) continue;
-      const totalCell = adapter.cell(cfg.fopagSheet, cfg.totalCol, r);
-      if (!totalCell) continue;
-      const valor = typeof totalCell.value === 'number' ? totalCell.value : Number(totalCell.value) || 0;
-      if (!valor) continue;
-      const ccCell = adapter.cell(cfg.fopagSheet, cfg.ccCol, r);
-      const centro = ccCell ? String(ccCell.value).trim() : '(sem centro de custo)';
-      porCentro.set(centro, (porCentro.get(centro) || 0) + valor);
-      total += valor;
-    }
-    return { porCentro, total };
-  }
-
   /** Profundidade (nº de segmentos) mais comum entre os códigos já mapeados
    *  na CHECK — usada pra não deixar conta-pai/subtotal do BALANCETE (menos
    *  segmentos que uma conta-folha, ex.: "3.1.01.003" vs "3.1.01.003.003")
@@ -214,18 +186,6 @@
     let melhor = null, max = 0;
     contagem.forEach((n, profundidade) => { if (n > max) { max = n; melhor = profundidade; } });
     return melhor;
-  }
-
-  function detectCustoConfig(adapter, workbook) {
-    const fopagSheet = findSheet(workbook, ['fopag']);
-    if (!fopagSheet) return null;
-    const headerRow = findHeaderRow(adapter, fopagSheet, ['centro de custo'], 8, 150);
-    if (!headerRow) return null;
-    const mesCol = findColumnByHeader(adapter, fopagSheet, ['mes'], headerRow);
-    const ccCol = findColumnByHeader(adapter, fopagSheet, ['centro de custo'], headerRow);
-    const totalCol = findColumnByHeader(adapter, fopagSheet, ['custo total contabil', 'custo fechamento', 'total proventos'], headerRow);
-    if (!mesCol || !ccCol || !totalCol) return null;
-    return { fopagSheet, mesCol, ccCol, totalCol, dataStartRow: headerRow + 1 };
   }
 
   // -------------------------------------------------------- orquestração
@@ -244,7 +204,6 @@
     }
     const blocks = detectBlocks(adapter, checkSheet, headerRow);
     const balanceteMap = findBalanceteMap(workbook);
-    const custoConfig = detectCustoConfig(adapter, workbook);
 
     const resultados = [];
     const codigosNaCheck = new Set();
@@ -300,7 +259,6 @@
     state.cobertura = cobertura;
     state.competencias = [...new Set(competenciasAtivas)];
     state.competenciaDatas = new Map(blocksAtivos.map((b) => [b.competencia, b.data]));
-    state.custoConfig = custoConfig;
 
     renderMeta(fileName, checkSheet, blocksAtivos, balanceteMap);
     renderDashboard();
@@ -371,37 +329,6 @@
     populateFiltroCompetencia();
     renderTabela();
     renderFantasmas();
-    renderCustoPorCentro();
-  }
-
-  function renderCustoPorCentro() {
-    const card = $('card-custo-centro');
-    if (!card) return;
-    if (!state.custoConfig) {
-      card.hidden = true;
-      return;
-    }
-    card.hidden = false;
-    const sel = $('filtro-cc-competencia');
-    if (!sel.dataset.populated) {
-      sel.innerHTML = '<option value="">Todas as competências (soma do ano)</option>' +
-        state.competencias.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-      sel.dataset.populated = '1';
-    }
-    const filtroData = sel.value ? state.competenciaDatas.get(sel.value) : null;
-    const { porCentro, total } = aggregateCustoPorCentro(state.adapter, state.custoConfig, filtroData);
-    const host = $('tabela-custo-centro');
-    if (!porCentro.size) { host.innerHTML = '<p class="vazio">Sem dados de centro de custo para essa seleção.</p>'; return; }
-    const linhas = [...porCentro.entries()].sort((a, b) => b[1] - a[1]);
-    host.innerHTML = `
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Centro de custo</th><th class="num">Total (FOPAG)</th><th class="num">% do total</th></tr></thead>
-          <tbody>${linhas.map(([centro, valor]) => `
-            <tr><td>${escapeHtml(centro)}</td><td class="num">${money.format(valor)}</td><td class="num">${total ? ((valor / total) * 100).toFixed(1) : '0.0'}%</td></tr>
-          `).join('')}</tbody>
-        </table>
-      </div>`;
   }
 
   function populateFiltroCompetencia() {
@@ -671,7 +598,6 @@
     dropzone.addEventListener('drop', (e) => handleFile(e.dataTransfer.files[0]));
     $('filtro-competencia').addEventListener('change', renderTabela);
     $('filtro-alerta').addEventListener('change', renderTabela);
-    $('filtro-cc-competencia').addEventListener('change', renderCustoPorCentro);
     $('btn-exportar-csv').addEventListener('click', exportarCsv);
     $('filtro-severidade').addEventListener('change', renderTabela);
     $('input-dicionario').addEventListener('change', (e) => handleDicionario(e.target.files[0]));
