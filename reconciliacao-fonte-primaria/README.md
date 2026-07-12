@@ -109,6 +109,11 @@ npm run test:integration   # integração — precisa de `npm install` antes (de
 npm run test:all      # as duas
 ```
 
+CI: `.github/workflows/reconciliacao-fonte-primaria-tests.yml` roda
+`npm run test:all` automaticamente em todo PR e push no `main` que toque
+este diretório — nenhuma mudança chega no `main` sem passar pelas 25
+verificações.
+
 **Unidade** (`test/engine.test.js`) — fixtures em memória, escritas à mão,
 testando cada função do `engine.js` isoladamente: valor digitado (padrão
 Jan/Fev do arquivo real), fórmula apontando pra célula vazia (padrão
