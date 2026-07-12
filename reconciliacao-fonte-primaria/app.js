@@ -92,7 +92,13 @@
   function findBalanceteMap(workbook) {
     const map = {};
     for (const name of workbook.SheetNames) {
-      const m = name.match(/balancete\s*(\d{2})[.\-/](\d{4})/i);
+      // Separador entre mês e ano é opcional — achado real: o arquivo mais
+      // completo do cliente usa "Balancete 012026" (mês+ano colados, sem
+      // separador nenhum), enquanto o arquivo original usa "BALANCETE
+      // 04.2026" (ponto) e a fixture sintética testa hífen. \d{2}/\d{4} são
+      // largura fixa, então tornar o separador opcional não introduz
+      // ambiguidade em nenhum dos três formatos.
+      const m = name.match(/balancete\s*(\d{2})[.\-/]?(\d{4})/i);
       if (m) map[`${m[2]}-${m[1]}`] = name;
     }
     return map;

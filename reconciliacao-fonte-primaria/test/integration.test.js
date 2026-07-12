@@ -112,7 +112,14 @@ function makeAdapter(workbook) {
   test('recálculo por código de conta encontra o BALANCETE de nomenclatura alternativa e não acha divergência real', () => {
     const conta = reconcile('MARÇO', '4.2.01.001.001');
     assert.equal(conta.recalculado.origemContabil, 'balancete-por-codigo');
+    assert.equal(conta.recalculado.statusContabil, 'verificado', 'precisa ter achado a conta de verdade, não só "diferença ausente" (null passaria em Math.abs(null)<0.01 por acidente)');
     assert.ok(Math.abs(conta.recalculado.diferenca) < 0.01, 'a fonte real não tem divergência, só a fórmula da CHECK está quebrada');
+  });
+  test('fallback por código acha a conta mesmo com colunas deslocadas (achado real: Jan/Fev do arquivo do cliente têm código na A, sem coluna "Código" sequencial, e Débito/Crédito em E/F, não a posição fixa B/H/I)', () => {
+    const conta = reconcile('MARÇO', '4.2.01.001.001');
+    assert.equal(conta.recalculado.statusContabil, 'verificado');
+    assert.notEqual(conta.recalculado.contabil, null, 'não pode ter ficado null (conta-nao-encontrada por ler a coluna errada)');
+    assert.ok(Math.abs(conta.recalculado.contabil - conta.recalculado.fopag) < 0.01, 'o valor lido do BALANCETE (colunas deslocadas) deveria bater com a FOPAG recalculada — são a mesma fonte por construção da fixture');
   });
 
   console.log('\nAbril — ajuste do RAZÃO embutido na fórmula + rótulo de rubrica com cabeçalho fora da linha 1');
