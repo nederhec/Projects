@@ -98,6 +98,44 @@ Carregue um arquivo único de fechamento (XLSX/XLSM/XLS) contendo, no
 mínimo, a aba `CHECK`. `FOPAG 2026` e `BALANCETE MM.AAAA` são detectados
 automaticamente pelo nome da aba.
 
+## Hospedagem — Cloudflare Pages + Basic Auth
+
+Pra rodar além da máquina local (segundo parecer de outra pessoa da equipe,
+por exemplo), o projeto suporta deploy no Cloudflare Pages com Basic Auth
+obrigatório na frente — nada é servido sem autenticação, nem os arquivos
+estáticos (`app.js`, `engine.js`, `vendor/`).
+
+**Como funciona**: `functions/_middleware.js` roda como Cloudflare Pages
+Function antes de qualquer requisição. Sem `Authorization: Basic` válido,
+responde `401` (`WWW-Authenticate`) e não chega a servir nada. Se as
+variáveis de ambiente não estiverem configuradas, responde `500` em vez de
+liberar o acesso — falha fechada, não aberta.
+
+**Configurar (uma vez)**:
+1. No Cloudflare Pages, criar um projeto apontando pra este repositório.
+   Como o repo tem vários projetos independentes, definir **Root directory**
+   = `reconciliacao-fonte-primaria`.
+2. **Build command**: vazio (nenhum build). **Build output directory**: `/`.
+3. Em *Settings → Environment variables*, adicionar `BASIC_AUTH_USER` e
+   `BASIC_AUTH_PASS` como **Secret** (não como texto plano, e nunca no
+   repositório). Repetir pros ambientes de Production e Preview.
+4. Todo push no branch conectado dispara deploy automático.
+
+**Testar localmente** (opcional, requer `npx wrangler`):
+
+```bash
+cd reconciliacao-fonte-primaria
+npx wrangler pages dev . --port 8788 -b BASIC_AUTH_USER=teste -b BASIC_AUTH_PASS=segredo123
+```
+
+Importante rodar com `.` como diretório *e* de dentro da pasta do projeto —
+`wrangler pages dev reconciliacao-fonte-primaria` (a partir da raiz do
+repo) não detecta `functions/` e serve tudo sem autenticação nenhuma
+(confirmado testando as duas formas).
+
+Trocar o usuário/senha depois é só editar as variáveis no painel — não
+precisa de novo deploy nem alterar código.
+
 ## Testes
 
 Duas camadas, nenhuma delas depende do arquivo real do cliente (não
