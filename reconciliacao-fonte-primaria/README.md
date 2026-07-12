@@ -129,10 +129,12 @@ configuradas, responde `500` em vez de liberar o acesso — falha fechada.
 1. No painel da Cloudflare, **Compute (Workers)** → **Create application**
    → **Connect to Git** (não a opção antiga "Pages", que pode nem aparecer
    mais dependendo da conta) → selecionar o repositório.
-2. Nas configurações de build, se houver campo **Root directory**, definir
+2. Nas configurações de build, se houver campo **Root directory** (ou
+   **Path**, dependendo da versão do wizard), definir
    `reconciliacao-fonte-primaria` (o repo tem vários projetos
    independentes). O nome do Worker no painel **precisa bater** com o
-   campo `"name"` de `wrangler.jsonc` (`apura-folha`), senão o build falha.
+   campo `"name"` de `wrangler.jsonc` (`apura-folha-app`), senão o build
+   falha.
 3. Em *Settings → Variables and Secrets* (runtime — **não** "Build
    variables", que só existem durante o build), adicionar `BASIC_AUTH_USER`
    e `BASIC_AUTH_PASS` como **Secret**, nunca no repositório.
