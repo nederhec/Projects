@@ -286,7 +286,9 @@
     $('avisos').hidden = true;
     $('meta-arquivo').textContent = fileName;
     $('meta-check').textContent = checkSheet;
-    $('meta-competencias').textContent = blocks.map((b) => b.competencia).join(', ') || '—';
+    $('meta-competencias').textContent = blocks
+      .map((b) => b.competencia + (b.balanceteSheet && /prev/i.test(b.balanceteSheet) ? ' (previsão)' : ''))
+      .join(', ') || '—';
     $('meta-balancetes').textContent = Object.values(balanceteMap).join(', ') || 'nenhum encontrado';
   }
 
@@ -337,10 +339,20 @@
     renderFantasmas();
   }
 
+  /** A competência é "previsão" (ainda não fechada) quando o BALANCETE que
+   *  a alimenta tem "PREV" no nome — achado real: o arquivo mais completo
+   *  do cliente tem meses futuros como "PREV. Balancete 052026", e sem
+   *  marcar isso na tela um alerta financeiro em cima de previsão parece
+   *  divergência de livro fechado, quando não é. */
+  function competenciaEhPrevisao(competencia) {
+    const r = state.resultados.find((x) => x.competencia === competencia);
+    return Boolean(r && r.recalculado.fonteContabil && /prev/i.test(r.recalculado.fonteContabil));
+  }
+
   function populateFiltroCompetencia() {
     const sel = $('filtro-competencia');
     sel.innerHTML = '<option value="">Todas as competências</option>' +
-      state.competencias.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+      state.competencias.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}${competenciaEhPrevisao(c) ? ' (previsão)' : ''}</option>`).join('');
   }
 
   function currentFilters() {
@@ -376,13 +388,14 @@
     const rowsHtml = linhas.map((r) => {
       const key = `${r.competencia}__${r.codigo}`;
       const dict = dictEntry(r.codigo);
+      const previsao = r.recalculado.fonteContabil && /prev/i.test(r.recalculado.fonteContabil);
       const extraCols = comDicionario
         ? `<td>${dict && dict.severidade ? `<span class="badge badge-${sevClass(dict.severidade)}">${escapeHtml(dict.severidade)}</span>` : '—'}</td><td>${escapeHtml((dict && dict.responsavel) || '—')}</td>`
         : '';
       return `
       <tr class="row-conta ${r.alertas.includes('financeiro') ? 'row-financeiro' : ''} ${r.alertas.includes('preenchimento') ? 'row-preenchimento' : ''}" data-key="${escapeHtml(key)}" tabindex="0" role="button" aria-expanded="false">
         <td><span class="expand-caret">▸</span></td>
-        <td>${escapeHtml(r.competencia)}</td>
+        <td>${escapeHtml(r.competencia)}${previsao ? ' <span class="badge badge-neutral" title="Mês ainda não fechado — BALANCETE de previsão, não contábil final">previsão</span>' : ''}</td>
         <td class="mono">${escapeHtml(r.codigo)}</td>
         <td>${escapeHtml(r.descricao)}</td>
         <td class="num">${money.format(r.declarado.diferenca)}</td>

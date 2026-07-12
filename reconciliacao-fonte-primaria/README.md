@@ -82,6 +82,11 @@ memorando técnico produzido antes deste projeto.
 - **Dicionário de contas**: upload opcional de um CSV
   (`código;severidade;responsável`) que enriquece a tabela com severidade e
   responsável sugerido, e habilita filtro por severidade.
+- **Marca de previsão**: competências cujo BALANCETE tem "PREV" no nome
+  (mês ainda não fechado, ex. "PREV. Balancete 052026") ganham um selo
+  "previsão" no resumo, no filtro e em cada linha da tabela — sem isso, um
+  alerta financeiro em cima de dado projetado parece divergência de livro
+  fechado, quando não é.
 
 ## Como rodar
 
