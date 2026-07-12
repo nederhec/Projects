@@ -461,18 +461,52 @@
 
   // ------------------------------------------------- dicionário de contas
 
+  /** Tokeniza um CSV respeitando campos entre aspas (aspas escapadas como
+   *  "", delimitador ou quebra de linha dentro do campo) — sem isso, um
+   *  responsável como "Silva, João" (delimitador vírgula) ou com ; no nome
+   *  (delimitador ponto-e-vírgula) corromperia as colunas seguintes. */
+  function parseCsvRows(text, delim) {
+    const rows = [];
+    let row = [], field = '', inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; }
+          else { inQuotes = false; }
+        } else {
+          field += c;
+        }
+      } else if (c === '"') {
+        inQuotes = true;
+      } else if (c === delim) {
+        row.push(field); field = '';
+      } else if (c === '\n') {
+        row.push(field); field = ''; rows.push(row); row = [];
+      } else if (c === '\r') {
+        // ignora — o \n seguinte fecha a linha
+      } else {
+        field += c;
+      }
+    }
+    if (field !== '' || row.length) { row.push(field); rows.push(row); }
+    return rows;
+  }
+
   function parseDicionarioCsv(text) {
     const map = new Map();
-    const lines = text.split(/\r?\n/).filter((l) => l.trim());
-    if (!lines.length) return map;
-    const delim = lines[0].includes(';') ? ';' : ',';
+    const semBom = text.replace(/^\uFEFF/, '');
+    if (!semBom.trim()) return map;
+    const primeiraLinha = semBom.slice(0, semBom.search(/\r?\n/) === -1 ? semBom.length : semBom.search(/\r?\n/));
+    const delim = primeiraLinha.includes(';') ? ';' : ',';
+    const rows = parseCsvRows(semBom, delim).filter((r) => r.some((c) => c.trim()));
+    if (!rows.length) return map;
     let start = 0;
-    if (normalize(lines[0].split(delim)[0]).includes('codigo')) start = 1;
-    for (let i = start; i < lines.length; i++) {
-      const cols = lines[i].split(delim);
-      const codigo = (cols[0] || '').trim();
+    if (normalize(rows[0][0]).includes('codigo')) start = 1;
+    for (let i = start; i < rows.length; i++) {
+      const codigo = (rows[i][0] || '').trim();
       if (!codigo) continue;
-      map.set(codigo, { severidade: (cols[1] || '').trim(), responsavel: (cols[2] || '').trim() });
+      map.set(codigo, { severidade: (rows[i][1] || '').trim(), responsavel: (rows[i][2] || '').trim() });
     }
     return map;
   }
@@ -575,9 +609,22 @@
     }
   }
 
+  function setCarregando(ativo) {
+    const el = $('carregando');
+    if (el) el.hidden = !ativo;
+    const input = $('input-arquivo');
+    if (input) input.disabled = ativo;
+  }
+
   async function handleFile(file) {
     if (!file) return;
     $('nome-arquivo').textContent = file.name;
+    setCarregando(true);
+    // Cede o controle pro navegador pintar o indicador de carregamento antes
+    // do trabalho síncrono pesado (parse do XLSX inteiro, recálculo de todas
+    // as contas) — sem isso, um arquivo grande trava a thread e o spinner
+    // nunca chega a aparecer.
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     try {
       const buf = await file.arrayBuffer();
       const exceljsWorkbook = new window.ExcelJS.Workbook();
@@ -586,6 +633,8 @@
       processWorkbook(workbook, file.name);
     } catch (err) {
       showError(`Não foi possível ler o arquivo: ${err.message}`);
+    } finally {
+      setCarregando(false);
     }
   }
 

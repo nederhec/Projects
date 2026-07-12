@@ -110,6 +110,10 @@
   .btn:hover { background: var(--accent-hover); }
   input[type="file"] { display: none; }
   #nome-arquivo { display: block; margin-top: 10px; font-size: .82rem; color: var(--muted); }
+  .loading-msg { margin: 10px 0 0; font-size: .84rem; color: var(--text-2); }
+  .spinner { display: inline-block; width: 13px; height: 13px; margin-right: 7px; vertical-align: -2px; border: 2px solid var(--border-strong); border-top-color: var(--accent-text); border-radius: 50%; animation: girar .7s linear infinite; }
+  @keyframes girar { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
   .dict-status { display: inline-block; margin-left: 10px; font-size: .82rem; color: var(--muted); }
   code { font-family: var(--mono); background: var(--surface-2); border-radius: 4px; padding: 1px 5px; font-size: .85em; }
 
@@ -166,6 +170,15 @@
   .fantasma-list li { background: var(--surface-2); border: 1px solid var(--border); border-radius: 7px; padding: 9px 12px; }
 
   footer.note { color: var(--muted); font-size: .78rem; margin-top: 26px; border-top: 1px solid var(--border); padding-top: 14px; }
+
+  @media (max-width: 640px) {
+    .page { padding: 18px 14px 50px; }
+    .brand-title { font-size: 1.3rem; }
+    .card { padding: 16px; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .filter-row { flex-direction: column; align-items: stretch; }
+    .filter-row select, .filter-row .btn { width: 100%; }
+  }
 </style>
 <script>
   // Aplica o tema salvo (ou o do sistema) antes da 1ª pintura, pra não piscar.
@@ -204,6 +217,7 @@
       <label class="btn" for="input-arquivo">Selecionar arquivo</label>
       <input type="file" id="input-arquivo" accept=".xlsx,.xlsm,.xls" />
       <span id="nome-arquivo">Nenhum arquivo selecionado</span>
+      <p id="carregando" class="loading-msg" hidden><span class="spinner" aria-hidden="true"></span>Processando arquivo…</p>
     </div>
     <div id="avisos" hidden></div>
   </section>
