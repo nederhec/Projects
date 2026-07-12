@@ -106,38 +106,52 @@ automaticamente pelo nome da aba.
 ## Hospedagem — Cloudflare Workers + Basic Auth
 
 Pra rodar além da máquina local (segundo parecer de outra pessoa da equipe,
-por exemplo), o projeto suporta deploy como Cloudflare Worker com Basic
-Auth obrigatório na frente — nada é servido sem autenticação, nem os
-arquivos estáticos (`app.js`, `engine.js`, `vendor/`).
+por exemplo), o projeto suporta deploy como Cloudflare Worker, com suporte
+opcional a Basic Auth na frente.
+
+**Estado atual do deploy em produção**: o Basic Auth está **desativado**
+(`assets.run_worker_first: false` em `wrangler.jsonc`, por decisão
+explícita do usuário) — a URL pública serve os arquivos estáticos direto,
+sem exigir login. Como o processamento do XLSX é 100% client-side (nada é
+enviado nem armazenado no servidor), o risco é alguém com a URL acessar a
+ferramenta, não vazamento de dados de terceiros. A URL de produção tem um
+prefixo aleatório (não é indexada nem previsível), mas não deixa de ser
+pública. Para reativar a autenticação, ver "Reativar Basic Auth" abaixo.
 
 Nota: o painel da Cloudflare vem migrando de "Pages" pra "Workers" como
 modelo padrão pra sites estáticos com Git integration — por isso o projeto
 usa `worker.js` + `wrangler.jsonc` (modelo Workers), não mais
 `functions/_middleware.js` (modelo Pages, descontinuado aqui).
 
-**Como funciona**: `worker.js` roda antes de qualquer asset estático ser
-servido — mas só porque `wrangler.jsonc` tem `assets.run_worker_first:
-true`. **Isso é obrigatório**: o padrão do Workers é servir os arquivos
-estáticos direto, sem rodar o script (o oposto do antigo Pages Functions).
-Sem essa opção, o Basic Auth simplesmente não roda pra nenhuma requisição
-que bata num arquivo estático — vira decoração, nada fica protegido de
-verdade. Sem `Authorization: Basic` válido, responde `401`
-(`WWW-Authenticate`). Se as variáveis de ambiente não estiverem
-configuradas, responde `500` em vez de liberar o acesso — falha fechada.
+**Como funciona (quando ativado)**: `worker.js` roda antes de qualquer
+asset estático ser servido — mas só se `wrangler.jsonc` tiver
+`assets.run_worker_first: true`. **Isso é obrigatório pra ativar**: o
+padrão do Workers é servir os arquivos estáticos direto, sem rodar o
+script (o oposto do antigo Pages Functions). Sem essa opção, o Basic Auth
+simplesmente não roda pra nenhuma requisição que bata num arquivo
+estático — vira decoração, nada fica protegido de verdade. Sem
+`Authorization: Basic` válido, responde `401` (`WWW-Authenticate`). Se as
+variáveis de ambiente não estiverem configuradas, responde `500` em vez de
+liberar o acesso — falha fechada.
 
-**Configurar (uma vez)**:
+**Reativar Basic Auth**:
 1. No painel da Cloudflare, **Compute (Workers)** → **Create application**
    → **Connect to Git** (não a opção antiga "Pages", que pode nem aparecer
    mais dependendo da conta) → selecionar o repositório.
-2. Nas configurações de build, se houver campo **Root directory**, definir
+2. Nas configurações de build, se houver campo **Root directory** (ou
+   **Path**, dependendo da versão do wizard), definir
    `reconciliacao-fonte-primaria` (o repo tem vários projetos
    independentes). O nome do Worker no painel **precisa bater** com o
-   campo `"name"` de `wrangler.jsonc` (`apura-folha`), senão o build falha.
-3. Em *Settings → Variables and Secrets* (runtime — **não** "Build
-   variables", que só existem durante o build), adicionar `BASIC_AUTH_USER`
-   e `BASIC_AUTH_PASS` como **Secret**, nunca no repositório.
-4. Todo push no branch de produção dispara deploy automático
-   (`npx wrangler deploy`, já configurado pelo próprio painel).
+   campo `"name"` de `wrangler.jsonc` (`apura-folha-app`), senão o build
+   falha.
+3. Configurar `BASIC_AUTH_USER` e `BASIC_AUTH_PASS` como **Secret** do
+   Worker (runtime, nunca no repositório) — no painel usado neste projeto
+   isso não ficou em "Bindings" nem em "Build → Variables and secrets"
+   (esse último é só pra build); procure a seção de variáveis de runtime em
+   Settings.
+4. Editar `wrangler.jsonc` e voltar `assets.run_worker_first` para `true`,
+   commitar e dar push (dispara redeploy automático via
+   `npx wrangler deploy`, já configurado pelo próprio painel).
 
 **Testar localmente** (opcional, requer `npx wrangler`):
 

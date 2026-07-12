@@ -2,14 +2,17 @@
   "$schema": "https://unpkg.com/wrangler/config-schema.json",
   // O nome aqui precisa bater com o nome do Worker criado no painel da
   // Cloudflare (Workers Builds exige isso pra conectar o repositório).
-  "name": "apura-folha",
+  "name": "apura-folha-app",
   "compatibility_date": "2026-07-12",
   "main": "worker.js",
   "assets": {
     "directory": "./",
     "binding": "ASSETS",
-    // Obrigatório: sem isso, os assets estáticos são servidos direto e
-    // o worker.js (o Basic Auth) nunca roda. Ver comentário em worker.js.
-    "run_worker_first": true
+    // false = comportamento padrão dos Workers: assets estáticos são
+    // servidos direto, sem passar pelo worker.js (Basic Auth desativado
+    // por decisão do usuário). Pra reativar o Basic Auth, configure as
+    // secrets BASIC_AUTH_USER/BASIC_AUTH_PASS no painel e volte isto
+    // para `true` (ver worker.js e README, seção Hospedagem).
+    "run_worker_first": false
   }
 }
