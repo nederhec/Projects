@@ -103,40 +103,55 @@ Carregue um arquivo único de fechamento (XLSX/XLSM/XLS) contendo, no
 mínimo, a aba `CHECK`. `FOPAG 2026` e `BALANCETE MM.AAAA` são detectados
 automaticamente pelo nome da aba.
 
-## Hospedagem — Cloudflare Pages + Basic Auth
+## Hospedagem — Cloudflare Workers + Basic Auth
 
 Pra rodar além da máquina local (segundo parecer de outra pessoa da equipe,
-por exemplo), o projeto suporta deploy no Cloudflare Pages com Basic Auth
-obrigatório na frente — nada é servido sem autenticação, nem os arquivos
-estáticos (`app.js`, `engine.js`, `vendor/`).
+por exemplo), o projeto suporta deploy como Cloudflare Worker com Basic
+Auth obrigatório na frente — nada é servido sem autenticação, nem os
+arquivos estáticos (`app.js`, `engine.js`, `vendor/`).
 
-**Como funciona**: `functions/_middleware.js` roda como Cloudflare Pages
-Function antes de qualquer requisição. Sem `Authorization: Basic` válido,
-responde `401` (`WWW-Authenticate`) e não chega a servir nada. Se as
-variáveis de ambiente não estiverem configuradas, responde `500` em vez de
-liberar o acesso — falha fechada, não aberta.
+Nota: o painel da Cloudflare vem migrando de "Pages" pra "Workers" como
+modelo padrão pra sites estáticos com Git integration — por isso o projeto
+usa `worker.js` + `wrangler.jsonc` (modelo Workers), não mais
+`functions/_middleware.js` (modelo Pages, descontinuado aqui).
+
+**Como funciona**: `worker.js` roda antes de qualquer asset estático ser
+servido — mas só porque `wrangler.jsonc` tem `assets.run_worker_first:
+true`. **Isso é obrigatório**: o padrão do Workers é servir os arquivos
+estáticos direto, sem rodar o script (o oposto do antigo Pages Functions).
+Sem essa opção, o Basic Auth simplesmente não roda pra nenhuma requisição
+que bata num arquivo estático — vira decoração, nada fica protegido de
+verdade. Sem `Authorization: Basic` válido, responde `401`
+(`WWW-Authenticate`). Se as variáveis de ambiente não estiverem
+configuradas, responde `500` em vez de liberar o acesso — falha fechada.
 
 **Configurar (uma vez)**:
-1. No Cloudflare Pages, criar um projeto apontando pra este repositório.
-   Como o repo tem vários projetos independentes, definir **Root directory**
-   = `reconciliacao-fonte-primaria`.
-2. **Build command**: vazio (nenhum build). **Build output directory**: `/`.
-3. Em *Settings → Environment variables*, adicionar `BASIC_AUTH_USER` e
-   `BASIC_AUTH_PASS` como **Secret** (não como texto plano, e nunca no
-   repositório). Repetir pros ambientes de Production e Preview.
-4. Todo push no branch conectado dispara deploy automático.
+1. No painel da Cloudflare, **Compute (Workers)** → **Create application**
+   → **Connect to Git** (não a opção antiga "Pages", que pode nem aparecer
+   mais dependendo da conta) → selecionar o repositório.
+2. Nas configurações de build, se houver campo **Root directory**, definir
+   `reconciliacao-fonte-primaria` (o repo tem vários projetos
+   independentes). O nome do Worker no painel **precisa bater** com o
+   campo `"name"` de `wrangler.jsonc` (`apura-folha`), senão o build falha.
+3. Em *Settings → Variables and Secrets* (runtime — **não** "Build
+   variables", que só existem durante o build), adicionar `BASIC_AUTH_USER`
+   e `BASIC_AUTH_PASS` como **Secret**, nunca no repositório.
+4. Todo push no branch de produção dispara deploy automático
+   (`npx wrangler deploy`, já configurado pelo próprio painel).
 
 **Testar localmente** (opcional, requer `npx wrangler`):
 
 ```bash
 cd reconciliacao-fonte-primaria
-npx wrangler pages dev . --port 8788 -b BASIC_AUTH_USER=teste -b BASIC_AUTH_PASS=segredo123
+npx wrangler dev --var BASIC_AUTH_USER:teste --var BASIC_AUTH_PASS:segredo123
 ```
 
-Importante rodar com `.` como diretório *e* de dentro da pasta do projeto —
-`wrangler pages dev reconciliacao-fonte-primaria` (a partir da raiz do
-repo) não detecta `functions/` e serve tudo sem autenticação nenhuma
-(confirmado testando as duas formas).
+Achado ao testar: com `assets.directory` apontando pra raiz do projeto
+(onde o próprio `wrangler dev` também guarda seu estado local em
+`.wrangler/`), o servidor entra num loop de reload — a escrita do próprio
+estado é detectada como mudança de asset. Não afeta o deploy de verdade
+(que usa `wrangler deploy`, não `dev`), só o teste local; contornado com
+`--persist-to <pasta fora do projeto>` ao testar.
 
 Trocar o usuário/senha depois é só editar as variáveis no painel — não
 precisa de novo deploy nem alterar código.
