@@ -1,0 +1,36 @@
+name: Reconciliação Fonte Primária — testes
+
+on:
+  pull_request:
+    paths:
+      - 'reconciliacao-fonte-primaria/**'
+      - '.github/workflows/reconciliacao-fonte-primaria-tests.yml'
+  push:
+    branches: [ main ]
+    paths:
+      - 'reconciliacao-fonte-primaria/**'
+      - '.github/workflows/reconciliacao-fonte-primaria-tests.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: reconciliacao-fonte-primaria
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: reconciliacao-fonte-primaria/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit + integration tests
+        run: npm run test:all
