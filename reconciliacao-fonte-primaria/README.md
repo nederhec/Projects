@@ -250,7 +250,61 @@ com a contabilidade. Sem isso, apresentar um número "batendo" ou "não
 batendo" seria exatamente o tipo de falsa confiança que este projeto existe
 pra eliminar.
 
-## Limitações conhecidas (v0.2)
+- **Financeiro/tesouraria** (o que efetivamente saiu do banco): investigado
+  numa cópia mais completa do arquivo do mesmo cliente. A única coluna que
+  parecia ser isso, `PAGAMENTO LIQUIDO` na aba `RESUMO FECHAMENTO FOPAG`, é
+  uma referência a um workbook externo desvinculado (`#VALUE!` em toda
+  célula) — e mesmo se resolvesse, somaria a coluna errada (`FOPAG
+  2026!$AE`, que é "INSS Acerto", não líquido de pagamento). Varrida a aba
+  FOPAG 2026 inteira (101 colunas) e não existe nenhuma coluna de valor
+  líquido/pago. Não há fonte de Financeiro neste arquivo — o motor
+  continua reconciliando só RH/DP × Contábil, não as 3 pernas.
+
+## Achados reais de um arquivo mais completo do mesmo cliente
+
+Uma segunda cópia do arquivo do cliente (mesma empresa, mas com todos os 12
+meses no CHECK, 101 colunas na FOPAG 2026 e 6 pares BALANCETE/RAZÃO em vez
+dos 4 originais) revelou 3 problemas reais no motor — nenhum causava dado
+errado no arquivo original só por coincidência de estrutura, mas todos
+causariam silenciosamente:
+
+- **Coluna do BALANCETE fixa (`lookupContaNoBalancete`)**: o fallback por
+  código de conta assumia código sempre na coluna B, Débito sempre H,
+  Crédito sempre I. No arquivo maior, Janeiro/Fevereiro têm o código na
+  coluna A (sem coluna "Código" sequencial) e Débito/Crédito em E/F; Março
+  em diante ganham a coluna "Código" e empurram tudo uma coluna à direita.
+  Corrigido: `findBalanceteColunas` acha as três pelo texto do cabeçalho
+  ("Classificação"/"Débito"/"Crédito"), com o valor fixo antigo como
+  fallback só se a varredura não achar nada.
+- **Nomenclatura de aba BALANCETE sem separador**: `findBalanceteMap`
+  exigia um separador (`.`/`-`/`/`) entre mês e ano — "BALANCETE 04.2026",
+  "Balancete 03-2026". O arquivo maior usa "Balancete 012026" (mês e ano
+  colados, sem separador nenhum), que não batia com o regex — resultado:
+  **zero balancetes detectados**, e toda verificação de Contábil caía
+  silenciosamente em "sem fonte". Corrigido: separador agora é opcional
+  (`\d{2}` e `\d{4}` são largura fixa, então isso não introduz ambiguidade
+  entre os três formatos).
+- **SUMIFS com referência de coluna inteira**: o parser de fórmula exigia
+  número de linha na faixa (`$E$3:$E$100`). O arquivo maior usa referência
+  de coluna inteira (`'Fopag 2026'!$E:$E`), que não batia com o regex —
+  resultado: toda fórmula de FOPAG desse arquivo caía no ramo genérico
+  "intra" do parser (por não ser reconhecida como SUMIFS) e ficava
+  "sem-verificação", apesar de ter SUMIFS de verdade. Esse foi o mais
+  amplo dos três: sozinho já derrubava a verificação de Folha do arquivo
+  inteiro (96 de 96 contas×competência foram para "sem fonte").
+  Corrigido: número de linha na faixa agora é opcional.
+
+Antes dos três: "Sem fonte para verificar" = 96 (praticamente tudo). Depois:
+0 — e 52 divergências financeiras reais passaram a aparecer (antes
+escondidas atrás do "sem fonte"). Confirmado manualmente que os valores
+recalculados batem com o que a própria CHECK declara nos casos onde a
+CHECK está correta (ex.: SALARIOS E ORDENADOS de Janeiro, R$2.294,03 nos
+dois lados). Os três têm teste de regressão automatizado (`engine.test.js`
+e `integration.test.js`, com uma fixture com layout de BALANCETE
+deliberadamente deslocado) — verificado que os testes falham sem a
+correção e passam com ela, não só que passam.
+
+## Limitações conhecidas (v0.3)
 
 - O recálculo de Contábil só segue a composição da fórmula da CHECK quando
   ela é uma referência direta (`='ABA'!CEL+...`) e resolve por completo. Se
@@ -268,6 +322,3 @@ pra eliminar.
   arquivo real, `4.2.01.*` na fixture), mas em planos de contas com
   nomenclatura muito diferente (nº de segmentos variável entre contas
   legítimas, por exemplo) isso pode não segmentar bem.
-- Dicionário de contas é um CSV simples (sem suporte a aspas/escapes
-  complexos) — funciona bem pra um `código;severidade;responsável` direto,
-  não é um parser CSV completo.

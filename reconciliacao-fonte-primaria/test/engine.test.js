@@ -87,6 +87,30 @@ test('lookupContaNoBalancete acha a conta direto pelo código', () => {
   assert.equal(result.status, 'verificado');
   assert.equal(result.value, 803770);
 });
+
+console.log('findBalanceteColunas — achado real: no arquivo do cliente, Jan/Fev têm "Classificação" na coluna A e Débito/Crédito em E/F, não a posição fixa B/H/I que o motor assumia antes');
+test('detecta colunas pelo cabeçalho quando o layout não é o padrão', () => {
+  const adapter = makeAdapter({
+    BALANCETE: {
+      A: { 3: { value: 'Classificação' }, 140: { value: '3.1.01.001.001' } },
+      C: { 3: { value: 'Nome' } },
+      E: { 3: { value: 'Débito' }, 140: { value: 100 } },
+      F: { 3: { value: 'Crédito' }, 140: { value: 40 } }
+    }
+  });
+  const colunas = engine.findBalanceteColunas(adapter, 'BALANCETE');
+  assert.deepEqual(colunas, { codigoCol: 'A', debitoCol: 'E', creditoCol: 'F' });
+  const result = engine.lookupContaNoBalancete(adapter, 'BALANCETE', '3.1.01.001.001');
+  assert.equal(result.status, 'verificado');
+  assert.equal(result.value, 60);
+});
+test('sem cabeçalho "Classificação" detectável, cai no padrão B/H/I (comportamento anterior preservado)', () => {
+  const adapter = makeAdapter({
+    BALANCETE: { B: { 136: { value: '3.1.01.001.001' } }, H: { 136: { value: 803770 } }, I: { 136: { value: 0 } } }
+  });
+  const colunas = engine.findBalanceteColunas(adapter, 'BALANCETE');
+  assert.deepEqual(colunas, { codigoCol: 'B', debitoCol: 'H', creditoCol: 'I' });
+});
 test('recalcContabil ignora a referência quebrada da CHECK e busca a conta direto no BALANCETE', () => {
   const adapter = makeAdapter({
     CHECK: { D: { 5: { value: 0, formula: "'BALANCETE'!N136" } } },

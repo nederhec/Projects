@@ -91,7 +91,14 @@
 
   // -------------------------------------------------------- parsing de fórmula
 
-  const SUMIFS_RE = /SUMIFS\(\s*'([^']+)'!\$?([A-Z]+)\$?\d+:\$?[A-Z]+\$?\d+\s*,\s*'\1'!\$?([A-Z]+)\$?\d+:\$?[A-Z]+\$?\d+\s*,\s*(\$?[A-Z]+\$?\d+)\s*\)/g;
+  // Número de linha na faixa é opcional (\d* em vez de \d+) — achado real:
+  // o arquivo mais completo do cliente usa referência de coluna inteira
+  // ('Fopag 2026'!$E:$E), não faixa limitada ($E$3:$E$100) como o arquivo
+  // original e a fixture sintética. Sem isso, toda fórmula de FOPAG desse
+  // arquivo falhava silenciosamente em "sem-verificação" (caía no ramo
+  // 'intra' do parser por não bater com o SUMIFS_RE, apesar da fórmula ter
+  // SUMIFS de verdade).
+  const SUMIFS_RE = /SUMIFS\(\s*'([^']+)'!\$?([A-Z]+)\$?\d*:\$?[A-Z]+\$?\d*\s*,\s*'\1'!\$?([A-Z]+)\$?\d*:\$?[A-Z]+\$?\d*\s*,\s*(\$?[A-Z]+\$?\d+)\s*\)/g;
   const DIRECT_REF_RE = /'([^']+)'!\$?([A-Z]+)\$?(\d+)/g;
 
   /**
@@ -236,12 +243,61 @@
     };
   }
 
+  function colIdxToLetter(n) {
+    let s = '';
+    while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); }
+    return s;
+  }
+
+  /** Acha as colunas de Classificação (código de conta), Débito e Crédito de
+   *  uma aba de BALANCETE pelo texto do cabeçalho, sem assumir posição fixa.
+   *  Achado real: no mesmo arquivo do cliente, Janeiro/Fevereiro têm o
+   *  código na coluna A e Débito/Crédito em E/F, enquanto Março em diante
+   *  ganham uma coluna "Código" (sequencial — NÃO é o código de conta, por
+   *  isso o alvo é "classificação", nunca "código") que empurra tudo uma
+   *  coluna pra direita. Cai nos valores fixos B/H/I (comportamento
+   *  anterior a este achado) só se a varredura não encontrar cabeçalho —
+   *  nunca lança erro, só preserva o que já acontecia antes desta função
+   *  existir. */
+  function findBalanceteColunas(adapter, balanceteSheet, opts) {
+    const fallback = { codigoCol: 'B', debitoCol: 'H', creditoCol: 'I' };
+    if (!balanceteSheet || !adapter.sheetNames.includes(balanceteSheet)) return fallback;
+    const maxRow = (opts && opts.maxRow) || 8;
+    const maxCol = (opts && opts.maxCol) || 20;
+    let headerRow = null;
+    for (let r = 1; r <= maxRow && !headerRow; r++) {
+      for (let c = 1; c <= maxCol; c++) {
+        const cell = adapter.cell(balanceteSheet, colIdxToLetter(c), r);
+        if (cell && typeof cell.value === 'string' && normalize(cell.value).includes('classificacao')) {
+          headerRow = r;
+          break;
+        }
+      }
+    }
+    if (!headerRow) return fallback;
+    const achados = {};
+    const alvos = { codigoCol: 'classificacao', debitoCol: 'debito', creditoCol: 'credito' };
+    for (let c = 1; c <= maxCol; c++) {
+      const cell = adapter.cell(balanceteSheet, colIdxToLetter(c), headerRow);
+      if (!cell || typeof cell.value !== 'string') continue;
+      const texto = normalize(cell.value);
+      for (const chave of Object.keys(alvos)) {
+        if (!achados[chave] && texto.includes(alvos[chave])) achados[chave] = colIdxToLetter(c);
+      }
+    }
+    return {
+      codigoCol: achados.codigoCol || fallback.codigoCol,
+      debitoCol: achados.debitoCol || fallback.debitoCol,
+      creditoCol: achados.creditoCol || fallback.creditoCol
+    };
+  }
+
   /** Busca uma conta diretamente no BALANCETE do mês (por código de conta) e
    *  devolve Débito − Crédito. Independente de para onde a fórmula da CHECK
    *  aponta — é a fonte de fallback quando não dá pra confiar na composição
    *  da própria fórmula (valor digitado, ou referência quebrada). */
   function lookupContaNoBalancete(adapter, balanceteSheet, contaCodigo, opts) {
-    const cfg = Object.assign({ codigoCol: 'B', debitoCol: 'H', creditoCol: 'I' }, opts);
+    const cfg = Object.assign(findBalanceteColunas(adapter, balanceteSheet), opts);
     if (!balanceteSheet || !adapter.sheetNames.includes(balanceteSheet)) {
       return { value: null, status: 'sem-fonte', row: null };
     }
@@ -402,7 +458,7 @@
    * já conhecidas, listado de novo em outra granularidade.
    */
   function computeCobertura(adapter, balanceteSheet, codigosNaCheck, opts) {
-    const cfg = Object.assign({ codigoCol: 'B', prefixo: '3.', profundidade: null }, opts);
+    const cfg = Object.assign({ prefixo: '3.', profundidade: null }, findBalanceteColunas(adapter, balanceteSheet), opts);
     const fantasmas = [];
     if (!balanceteSheet || !adapter.sheetNames.includes(balanceteSheet)) return { contasFantasmas: fantasmas };
     const rows = adapter.usedRowCount(balanceteSheet);
@@ -429,6 +485,7 @@
     diagnoseDirectRefs,
     evaluateDirectRefTerms,
     recalcFopag,
+    findBalanceteColunas,
     lookupContaNoBalancete,
     recalcContabil,
     reconcileConta,

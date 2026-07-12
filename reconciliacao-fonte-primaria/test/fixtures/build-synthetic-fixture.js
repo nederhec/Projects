@@ -9,7 +9,9 @@
  *   - nome de aba FOPAG sem o ano no nome ("FOPAG TESTE")
  *   - cabeçalho da FOPAG na linha 2 (arquivo real tinha na linha 3)
  *   - um BALANCETE com separador de mês por hífen ("Balancete 03-2026")
- *     em vez de ponto (arquivo real só tinha "BALANCETE MM.AAAA")
+ *     em vez de ponto (arquivo real só tinha "BALANCETE MM.AAAA"), e com
+ *     colunas deslocadas (código na A, sem coluna "Código" sequencial,
+ *     Débito/Crédito em E/F em vez de B/H/I)
  *   - "Centro de Custo" com espaçamento irregular no cabeçalho
  *   - hierarquia pai/filho no BALANCETE (testa o filtro de profundidade)
  *   - os 3 padrões de proveniência (digitado, quebrada, ajuste RAZÃO) +
@@ -80,16 +82,25 @@ function sumFopagCol(monthKey, colIdx) {
 }
 
 // ------------------------------------------------------------ BALANCETEs
-function balancete(name, entries) {
+/** `layout` deixa testar um BALANCETE com colunas deslocadas — achado real
+ *  do arquivo do cliente: Janeiro/Fevereiro têm "Classificação" na coluna A
+ *  (sem coluna "Código" sequencial antes dela) e Débito/Crédito em E/F, não
+ *  a posição fixa B/H/I que o motor assumia antes desse achado. */
+function balancete(name, entries, layout) {
   const ws = sheet(name);
-  set(ws, 'A1', 'Código'); set(ws, 'B1', 'Classificação'); set(ws, 'E1', 'Nome'); set(ws, 'H1', 'Débito'); set(ws, 'I1', 'Crédito');
+  const L = layout || { codigo: 'B', nome: 'E', debito: 'H', credito: 'I', temColunaCodigo: true };
+  if (L.temColunaCodigo !== false) set(ws, 'A1', 'Código');
+  set(ws, `${L.codigo}1`, 'Classificação');
+  set(ws, `${L.nome}1`, 'Nome');
+  set(ws, `${L.debito}1`, 'Débito');
+  set(ws, `${L.credito}1`, 'Crédito');
   let r = 2;
   entries.forEach(([codigo, nome, debito, credito]) => {
-    set(ws, `A${r}`, r);
-    set(ws, `B${r}`, codigo);
-    set(ws, `E${r}`, nome);
-    set(ws, `H${r}`, debito);
-    set(ws, `I${r}`, credito || 0);
+    if (L.temColunaCodigo !== false) set(ws, `A${r}`, r);
+    set(ws, `${L.codigo}${r}`, codigo);
+    set(ws, `${L.nome}${r}`, nome);
+    set(ws, `${L.debito}${r}`, debito);
+    set(ws, `${L.credito}${r}`, credito || 0);
     r++;
   });
   return ws;
@@ -110,13 +121,17 @@ balancete('BALANCETE 02.2026', [
 
 // Março: BALANCETE existe (nomenclatura alternativa "Balancete MM-AAAA"),
 // mas a fórmula da CHECK aponta pra fora da faixa preenchida — referência
-// quebrada, igual ao achado real de Junho no arquivo do cliente.
+// quebrada, igual ao achado real de Junho no arquivo do cliente. Layout de
+// colunas também deslocado (código na A, sem coluna "Código" sequencial,
+// Débito/Crédito em E/F) — achado real de Janeiro/Fevereiro do mesmo
+// arquivo — prova que o fallback por código (lookupContaNoBalancete) não
+// depende de posição fixa de coluna, e sim do texto do cabeçalho.
 balancete('Balancete 03-2026', [
   ['4.2.01.001.001', 'SALARIO BASE TESTE', sumFopagCol('2026-03', 0), 0],
   ['4.2.01.001.002', 'HORAS EXTRAS TESTE', sumFopagCol('2026-03', 1), 0],
   ['4.2.01.001.003', 'BENEFICIOS TESTE', sumFopagCol('2026-03', 2), 0],
   ['4.2.01.004.001', 'ENCARGOS TESTE', sumFopagCol('2026-03', 3), 0]
-]);
+], { codigo: 'A', nome: 'C', debito: 'E', credito: 'F', temColunaCodigo: false });
 
 // Abril: BALANCETE com hierarquia pai/filho (testa o filtro de profundidade
 // da cobertura) + uma conta-fantasma de verdade (folha, ausente da CHECK) +
