@@ -735,10 +735,45 @@
     return map;
   }
 
+  /** Mesma ideia de findBalanceteColunas: acha "código" (ou "classificação",
+   *  termo já usado nas planilhas de BALANCETE deste cliente pro código
+   *  hierárquico da conta, ex. "3.1.01.001.001") pelo cabeçalho da linha 1,
+   *  não por posição fixa de coluna — um plano de contas exportado do
+   *  contábil não segue a mesma ordem de colunas do CSV manual. */
+  async function parseDicionarioXlsx(file) {
+    const map = new Map();
+    const buf = await file.arrayBuffer();
+    const exceljsWorkbook = new window.ExcelJS.Workbook();
+    await exceljsWorkbook.xlsx.load(buf);
+    const workbook = normalizeWorkbook(exceljsWorkbook);
+    const sheet = workbook.SheetNames[0];
+    if (!sheet) return map;
+    const adapter = makeAdapter(workbook);
+    const headerRow = 1;
+    const codigoCol = findColumnByHeader(adapter, sheet, ['classificacao', 'codigo'], headerRow, 40);
+    if (!codigoCol) return map;
+    const severidadeCol = findColumnByHeader(adapter, sheet, ['severidade'], headerRow, 40);
+    const responsavelCol = findColumnByHeader(adapter, sheet, ['responsavel'], headerRow, 40);
+    const total = adapter.usedRowCount(sheet) || 0;
+    for (let r = headerRow + 1; r <= total; r++) {
+      const codCell = adapter.cell(sheet, codigoCol, r);
+      if (!codCell) continue;
+      const codigo = String(codCell.value).trim();
+      if (!codigo) continue;
+      const sevCell = severidadeCol ? adapter.cell(sheet, severidadeCol, r) : undefined;
+      const respCell = responsavelCol ? adapter.cell(sheet, responsavelCol, r) : undefined;
+      map.set(codigo, {
+        severidade: sevCell ? String(sevCell.value).trim() : '',
+        responsavel: respCell ? String(respCell.value).trim() : ''
+      });
+    }
+    return map;
+  }
+
   async function handleDicionario(file) {
     if (!file) return;
-    const text = await file.text();
-    state.dicionario = parseDicionarioCsv(text);
+    const ehPlanilha = /\.(xlsx|xlsm|xls)$/i.test(file.name);
+    state.dicionario = ehPlanilha ? await parseDicionarioXlsx(file) : parseDicionarioCsv(await file.text());
     $('nome-dicionario').textContent = `${file.name} (${state.dicionario.size} conta(s) mapeada(s))`;
     populateFiltroSeveridade();
     if (!$('dashboard').hidden) renderTabela();

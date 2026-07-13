@@ -96,8 +96,13 @@ memorando técnico produzido antes deste projeto.
   previsão — pra a planilha ficar utilizável sozinha, sem precisar abrir a
   ferramenta de novo.
 - **Dicionário de contas**: upload opcional de um CSV
-  (`código;severidade;responsável`) que enriquece a tabela com severidade e
-  responsável sugerido, e habilita filtro por severidade.
+  (`código;severidade;responsável`) ou XLSX que enriquece a tabela com
+  severidade e responsável sugerido, e habilita filtro por severidade. No
+  XLSX as colunas são achadas pelo cabeçalho da linha 1 (código ou
+  Classificação, severidade, responsável), não por posição fixa — aceita
+  tanto uma planilha simples quanto um plano de contas real exportado do
+  contábil (que não tem as colunas de severidade/responsável preenchidas,
+  mas mapeia os códigos normalmente).
 - **Marca de previsão**: competências cujo BALANCETE tem "PREV" no nome
   (mês ainda não fechado, ex. "PREV. Balancete 052026") ganham um selo
   "previsão" no resumo, no filtro e em cada linha da tabela — sem isso, um
