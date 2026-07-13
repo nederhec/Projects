@@ -117,7 +117,6 @@
   .spinner { display: inline-block; width: 13px; height: 13px; margin-right: 7px; vertical-align: -2px; border: 2px solid var(--border-strong); border-top-color: var(--accent-text); border-radius: 50%; animation: girar .7s linear infinite; }
   @keyframes girar { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
-  .dict-status { display: inline-block; margin-left: 10px; font-size: .82rem; color: var(--muted); }
   code { font-family: var(--mono); background: var(--surface-2); border-radius: 4px; padding: 1px 5px; font-size: .85em; }
 
   .aviso { background: var(--critical-bg); border: 1px solid var(--critical); color: var(--critical); border-radius: 8px; padding: 12px 14px; font-size: .88rem; }
@@ -286,14 +285,6 @@
       </div>
     </section>
 
-    <section class="card">
-      <h2>Dicionário de contas (opcional)</h2>
-      <p class="card-note">CSV (<code>código;severidade;responsável</code>) ou XLSX com colunas de código (ou Classificação), severidade e responsável — enriquece a tabela abaixo e habilita o filtro por severidade. Pode enviar mais de um arquivo (ex.: plano de contas exportado em partes) — cada envio soma ao dicionário já carregado. Sem upload, a tabela funciona normalmente.</p>
-      <label class="btn" for="input-dicionario">Selecionar CSV ou XLSX</label>
-      <input type="file" id="input-dicionario" accept=".csv,.xlsx,.xlsm,.xls" />
-      <span id="nome-dicionario" class="dict-status">Nenhum dicionário carregado</span>
-    </section>
-
     <section class="card" id="secao-contas">
       <h2>Contas por competência</h2>
       <p class="card-note">Valor Folha e Valor Contábil vêm recalculados direto da fonte primária (FOPAG/BALANCETE), ignorando o que a CHECK diz. Clique numa linha pra ver a composição por rubrica.</p>
@@ -307,7 +298,6 @@
           <option value="divergencia-folha">Só divergências Folha</option>
           <option value="divergencia-contabil">Só divergências Contábil</option>
         </select>
-        <select id="filtro-severidade"><option value="">Todas as severidades</option></select>
         <button class="btn" type="button" id="btn-exportar-csv">Exportar CSV</button>
       </div>
       <div id="tabela-contas"></div>
