@@ -78,8 +78,9 @@ memorando técnico produzido antes deste projeto.
   houver ajuste do RAZÃO) quais lançamentos específicos compõem o Contábil,
   com valor individual de cada um.
 - **Colunas da tabela**: Competência, Conta, Descrição, Valor Folha, Valor
-  Contábil, Diferença Recalculada, Alertas, Tipo (e Severidade/Responsável
-  quando há dicionário carregado). Os valores de Folha e Contábil são os
+  Contábil, Diferença Recalculada, Alertas, Tipo, Severidade, Responsável —
+  as duas últimas sempre aparecem (mostram "—" sem dicionário carregado, ou
+  se a conta não tiver entrada nele). Os valores de Folha e Contábil são os
   recalculados direto da fonte primária (FOPAG/BALANCETE), não o que a CHECK
   declara. "Tipo" classifica a causa: `Diferença de valor`, `Falta
   lançamento contábil` (Folha tem valor, Contábil não), `Falta lançamento na
