@@ -353,25 +353,36 @@
     $('kpi-sem-fonte').textContent = semFonte.length;
     $('kpi-fantasmas').textContent = state.cobertura.contasFantasmas.length;
 
-    const totalFolha = state.resultados
+    populateFiltroCompetencia();
+    populateFiltroCompetenciaResumo();
+    renderResumoFinanceiro();
+    renderTabela();
+    renderFantasmas();
+  }
+
+  /** Recalcula os 5 KPIs do "Resumo financeiro", restrito à competência
+   *  selecionada no seletor local (ou todas, se nenhuma escolhida). */
+  function renderResumoFinanceiro() {
+    const competencia = $('filtro-competencia-resumo').value;
+    const base = competencia ? state.resultados.filter((r) => r.competencia === competencia) : state.resultados;
+
+    const totalFolha = base
       .filter((r) => r.recalculado.statusFopag === 'verificado')
       .reduce((s, r) => s + r.recalculado.fopag, 0);
-    const totalContabil = state.resultados
+    const totalContabil = base
       .filter((r) => r.recalculado.statusContabil === 'verificado')
       .reduce((s, r) => s + r.recalculado.contabil, 0);
-    const divergenciasFolha = state.resultados.filter((r) => tipoDivergencia(r) === 'Falta lançamento na Folha');
-    const divergenciasContabil = state.resultados.filter((r) => tipoDivergencia(r) === 'Falta lançamento contábil');
-    const impactoTotal = alertasFinanceiro.reduce((s, r) => s + Math.abs(r.recalculado.diferenca), 0);
+    const divergenciasFolha = base.filter((r) => tipoDivergencia(r) === 'Falta lançamento na Folha');
+    const divergenciasContabil = base.filter((r) => tipoDivergencia(r) === 'Falta lançamento contábil');
+    const impactoTotal = base
+      .filter((r) => r.alertas.includes('financeiro'))
+      .reduce((s, r) => s + Math.abs(r.recalculado.diferenca), 0);
 
     $('kpi-total-folha').textContent = money.format(totalFolha);
     $('kpi-total-contabil').textContent = money.format(totalContabil);
     $('kpi-divergencias-folha').textContent = divergenciasFolha.length;
     $('kpi-divergencias-contabil').textContent = divergenciasContabil.length;
     $('kpi-impacto-total').textContent = money.format(impactoTotal);
-
-    populateFiltroCompetencia();
-    renderTabela();
-    renderFantasmas();
   }
 
   /** A competência é "previsão" (ainda não fechada) quando o BALANCETE que
@@ -390,6 +401,12 @@
 
   function populateFiltroCompetencia() {
     const sel = $('filtro-competencia');
+    sel.innerHTML = '<option value="">Todas as competências</option>' +
+      state.competencias.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}${competenciaEhPrevisao(c) ? ' (previsão)' : ''}</option>`).join('');
+  }
+
+  function populateFiltroCompetenciaResumo() {
+    const sel = $('filtro-competencia-resumo');
     sel.innerHTML = '<option value="">Todas as competências</option>' +
       state.competencias.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}${competenciaEhPrevisao(c) ? ' (previsão)' : ''}</option>`).join('');
   }
@@ -869,6 +886,7 @@
     ['dragleave', 'drop'].forEach((evt) => dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.remove('is-dragover'); }));
     dropzone.addEventListener('drop', (e) => handleFile(e.dataTransfer.files[0]));
     $('filtro-competencia').addEventListener('change', renderTabela);
+    $('filtro-competencia-resumo').addEventListener('change', renderResumoFinanceiro);
     $('filtro-alerta').addEventListener('change', renderTabela);
     $('btn-exportar-csv').addEventListener('click', exportarCsv);
     $('filtro-severidade').addEventListener('change', renderTabela);
@@ -889,6 +907,7 @@
       if (!card) return;
       const ativar = () => {
         $('filtro-alerta').value = valorFiltro;
+        $('filtro-competencia').value = $('filtro-competencia-resumo').value;
         renderTabela();
         $('secao-contas').scrollIntoView({ behavior: 'smooth', block: 'start' });
       };
