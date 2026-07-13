@@ -105,8 +105,8 @@ memorando técnico produzido antes deste projeto.
   fechado, quando não é.
 - **Rascunho de e-mail**: botão "Gerar e-mail" na composição de cada conta
   monta um rascunho direcionado a quem vai ajustar a divergência — formato
-  "CONTA/RUBRICA → VALORES → DIAGNÓSTICO → DECISÃO/PROPOSTA DE AJUSTE",
-  adaptado do painel de conciliação antigo (`painel-conciliacao-folha`) para
+  "CONTA/RUBRICA → VALORES → DIAGNÓSTICO", adaptado do painel de
+  conciliação antigo (`painel-conciliacao-folha`) para
   o modelo de dados deste projeto. O DIAGNÓSTICO tem o Tipo (mesma
   classificação da tabela) e um parágrafo em linguagem direta apontando qual
   lado está errado/faltando e por quanto (ex.: "Valor de R$ X lançado em
