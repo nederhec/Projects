@@ -13,7 +13,7 @@
   const state = {
     adapter: null, workbook: null, resultados: [], confiabilidade: null,
     cobertura: { contasFantasmas: [] }, competencias: [], competenciaDatas: new Map(),
-    razaoMap: {}, dicionarioArquivos: []
+    razaoMap: {}
   };
 
   // ------------------------------------------------------------ utilidades
@@ -58,26 +58,6 @@
         return ws ? ws.rowCount || 0 : 0;
       }
     };
-  }
-
-  /** Acha a coluna cujo cabeçalho (linha 1) contém um dos apelidos, dentro
-   *  das primeiras colunas de uma aba — usado pra não depender de posição
-   *  fixa de coluna em planilhas de clientes diferentes. */
-  /** Varre por ordem de prioridade dos apelidos (não por posição de coluna)
-   *  — "custo total contabil" precisa ganhar de "custo fechamento" mesmo a
-   *  coluna dele vindo depois na planilha; testar todas as colunas pro
-   *  primeiro apelido antes de cair pro segundo evita pegar a coluna errada
-   *  só porque ela aparece antes fisicamente. */
-  function findColumnByHeader(adapter, sheet, aliases, headerRow, maxCol) {
-    for (const alias of aliases) {
-      const a = normalize(alias);
-      for (let c = 1; c <= (maxCol || 150); c++) {
-        const col = colIdxToLetter(c);
-        const cell = adapter.cell(sheet, col, headerRow);
-        if (cell && normalize(cell.value).includes(a)) return col;
-      }
-    }
-    return null;
   }
 
   // --------------------------------------------------- detecção de abas
@@ -171,7 +151,8 @@
       if (!texto || /^total/i.test(texto)) continue;
       const codigo = engine.parseAccountCode(texto);
       if (!codigo) continue;
-      rows.push({ row: r, descricao: texto, codigo });
+      const descricao = texto.replace(/\s*\([\d]+(?:\.[\d]+)+\)\s*$/, '').trim();
+      rows.push({ row: r, descricao, codigo });
     }
     return rows;
   }
@@ -414,13 +395,12 @@
   function currentFilters() {
     return {
       competencia: $('filtro-competencia').value,
-      alerta: $('filtro-alerta').value,
-      severidade: $('filtro-severidade') ? $('filtro-severidade').value : ''
+      alerta: $('filtro-alerta').value
     };
   }
 
   function filteredResultados() {
-    const { competencia, alerta, severidade } = currentFilters();
+    const { competencia, alerta } = currentFilters();
     let linhas = state.resultados;
     if (competencia) linhas = linhas.filter((r) => r.competencia === competencia);
     if (alerta === 'financeiro') linhas = linhas.filter((r) => r.alertas.includes('financeiro') || r.alertas.includes('financeiro-nao-verificado'));
@@ -428,12 +408,7 @@
     if (alerta === 'limpas') linhas = linhas.filter((r) => r.alertas.length === 0);
     if (alerta === 'divergencia-folha') linhas = linhas.filter((r) => tipoDivergencia(r) === 'Falta lançamento na Folha');
     if (alerta === 'divergencia-contabil') linhas = linhas.filter((r) => tipoDivergencia(r) === 'Falta lançamento contábil');
-    if (severidade) linhas = linhas.filter((r) => (dictEntry(r.codigo) || {}).severidade === severidade);
     return linhas;
-  }
-
-  function dictEntry(codigo) {
-    return state.dicionario ? state.dicionario.get(codigo) : null;
   }
 
   function renderTabela() {
@@ -441,16 +416,10 @@
     const host = $('tabela-contas');
     if (!linhas.length) { host.innerHTML = '<p class="vazio">Nenhuma conta nesse filtro.</p>'; return; }
 
-    const comDicionario = Boolean(state.dicionario && state.dicionario.size);
-    const colspan = comDicionario ? 11 : 9;
     const rowsHtml = linhas.map((r) => {
       const key = `${r.competencia}__${r.codigo}`;
-      const dict = dictEntry(r.codigo);
       const previsao = linhaEhPrevisao(r);
       const tipo = tipoDivergencia(r);
-      const extraCols = comDicionario
-        ? `<td>${dict && dict.severidade ? `<span class="badge badge-${sevClass(dict.severidade)}">${escapeHtml(dict.severidade)}</span>` : '—'}</td><td>${escapeHtml((dict && dict.responsavel) || '—')}</td>`
-        : '';
       return `
       <tr class="row-conta ${r.alertas.includes('financeiro') ? 'row-financeiro' : ''} ${r.alertas.includes('preenchimento') ? 'row-preenchimento' : ''}" data-key="${escapeHtml(key)}" tabindex="0" role="button" aria-expanded="false">
         <td><span class="expand-caret">▸</span></td>
@@ -462,9 +431,8 @@
         <td class="num">${r.recalculado.diferenca === null ? '—' : money.format(r.recalculado.diferenca)}</td>
         <td><div class="alertas-cell">${r.alertas.length ? r.alertas.map(alertBadge).join('') : '<span class="badge badge-ok">ok</span>'}${r.recalculado.ajusteRazao ? '<span class="badge badge-flag">ajuste RAZÃO</span>' : ''}</div></td>
         <td><span class="badge badge-${tipoClass(tipo)}">${escapeHtml(tipo)}</span></td>
-        ${extraCols}
       </tr>
-      <tr class="row-detalhe" data-detail-for="${escapeHtml(key)}" hidden><td colspan="${colspan}">${renderDetalheConta(r)}</td></tr>`;
+      <tr class="row-detalhe" data-detail-for="${escapeHtml(key)}" hidden><td colspan="9">${renderDetalheConta(r)}</td></tr>`;
     }).join('');
 
     host.innerHTML = `
@@ -474,7 +442,6 @@
             <th></th><th>Competência</th><th>Conta</th><th>Descrição</th>
             <th class="num">Valor Folha</th><th class="num">Valor Contábil</th><th class="num">Diferença Recalculada</th>
             <th>Alertas</th><th>Tipo</th>
-            ${comDicionario ? '<th>Severidade</th><th>Responsável</th>' : ''}
           </tr></thead>
           <tbody>${rowsHtml}</tbody>
         </table>
@@ -632,10 +599,8 @@
    *  ajustar a divergência, pra agilizar a validação. Nada é enviado — só
    *  preenche o painel para revisão manual. */
   function gerarEmailTexto(r) {
-    const dict = dictEntry(r.codigo);
     const tipo = tipoDivergencia(r);
     const comp = competenciaLabel(r);
-    const severidade = (dict && dict.severidade) || 'A definir';
     const subject = `Divergência de conciliação — ${comp} — ${r.codigo} — ${r.descricao}`;
     const evidencia = evidenciaRazao(r);
     const body = [
@@ -651,7 +616,7 @@
       '2) VALORES',
       `   • Valor origem (Folha/RH): ${r.recalculado.statusFopag === 'verificado' ? money.format(r.recalculado.fopag) : `— (${statusLabel(r.recalculado.statusFopag)})`}`,
       `   • Valor contábil: ${r.recalculado.statusContabil === 'verificado' ? money.format(r.recalculado.contabil) : `— (${statusLabel(r.recalculado.statusContabil)})`}`,
-      `   • Diferença: ${r.recalculado.diferenca === null ? '—' : money.format(r.recalculado.diferenca)}  (severidade: ${severidade})`,
+      `   • Diferença: ${r.recalculado.diferenca === null ? '—' : money.format(r.recalculado.diferenca)}`,
       '',
       '3) DIAGNÓSTICO',
       `   • Tipo: ${tipo}`,
@@ -675,126 +640,6 @@
     $('email-panel').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  function sevClass(severidade) {
-    const n = normalize(severidade);
-    if (n.includes('alt')) return 'critical';
-    if (n.includes('med')) return 'warn';
-    if (n.includes('baix')) return 'ok';
-    return 'neutral';
-  }
-
-  // ------------------------------------------------- dicionário de contas
-
-  /** Tokeniza um CSV respeitando campos entre aspas (aspas escapadas como
-   *  "", delimitador ou quebra de linha dentro do campo) — sem isso, um
-   *  responsável como "Silva, João" (delimitador vírgula) ou com ; no nome
-   *  (delimitador ponto-e-vírgula) corromperia as colunas seguintes. */
-  function parseCsvRows(text, delim) {
-    const rows = [];
-    let row = [], field = '', inQuotes = false;
-    for (let i = 0; i < text.length; i++) {
-      const c = text[i];
-      if (inQuotes) {
-        if (c === '"') {
-          if (text[i + 1] === '"') { field += '"'; i++; }
-          else { inQuotes = false; }
-        } else {
-          field += c;
-        }
-      } else if (c === '"') {
-        inQuotes = true;
-      } else if (c === delim) {
-        row.push(field); field = '';
-      } else if (c === '\n') {
-        row.push(field); field = ''; rows.push(row); row = [];
-      } else if (c === '\r') {
-        // ignora — o \n seguinte fecha a linha
-      } else {
-        field += c;
-      }
-    }
-    if (field !== '' || row.length) { row.push(field); rows.push(row); }
-    return rows;
-  }
-
-  function parseDicionarioCsv(text) {
-    const map = new Map();
-    const semBom = text.replace(/^\uFEFF/, '');
-    if (!semBom.trim()) return map;
-    const primeiraLinha = semBom.slice(0, semBom.search(/\r?\n/) === -1 ? semBom.length : semBom.search(/\r?\n/));
-    const delim = primeiraLinha.includes(';') ? ';' : ',';
-    const rows = parseCsvRows(semBom, delim).filter((r) => r.some((c) => c.trim()));
-    if (!rows.length) return map;
-    let start = 0;
-    if (normalize(rows[0][0]).includes('codigo')) start = 1;
-    for (let i = start; i < rows.length; i++) {
-      const codigo = (rows[i][0] || '').trim();
-      if (!codigo) continue;
-      map.set(codigo, { severidade: (rows[i][1] || '').trim(), responsavel: (rows[i][2] || '').trim() });
-    }
-    return map;
-  }
-
-  /** Mesma ideia de findBalanceteColunas: acha "código" (ou "classificação",
-   *  termo já usado nas planilhas de BALANCETE deste cliente pro código
-   *  hierárquico da conta, ex. "3.1.01.001.001") pelo cabeçalho da linha 1,
-   *  não por posição fixa de coluna — um plano de contas exportado do
-   *  contábil não segue a mesma ordem de colunas do CSV manual. */
-  async function parseDicionarioXlsx(file) {
-    const map = new Map();
-    const buf = await file.arrayBuffer();
-    const exceljsWorkbook = new window.ExcelJS.Workbook();
-    await exceljsWorkbook.xlsx.load(buf);
-    const workbook = normalizeWorkbook(exceljsWorkbook);
-    const sheet = workbook.SheetNames[0];
-    if (!sheet) return map;
-    const adapter = makeAdapter(workbook);
-    const headerRow = 1;
-    const codigoCol = findColumnByHeader(adapter, sheet, ['classificacao', 'codigo'], headerRow, 40);
-    if (!codigoCol) return map;
-    const severidadeCol = findColumnByHeader(adapter, sheet, ['severidade'], headerRow, 40);
-    const responsavelCol = findColumnByHeader(adapter, sheet, ['responsavel'], headerRow, 40);
-    const total = adapter.usedRowCount(sheet) || 0;
-    for (let r = headerRow + 1; r <= total; r++) {
-      const codCell = adapter.cell(sheet, codigoCol, r);
-      if (!codCell) continue;
-      const codigo = String(codCell.value).trim();
-      if (!codigo) continue;
-      const sevCell = severidadeCol ? adapter.cell(sheet, severidadeCol, r) : undefined;
-      const respCell = responsavelCol ? adapter.cell(sheet, responsavelCol, r) : undefined;
-      map.set(codigo, {
-        severidade: sevCell ? String(sevCell.value).trim() : '',
-        responsavel: respCell ? String(respCell.value).trim() : ''
-      });
-    }
-    return map;
-  }
-
-  /** Cada upload ACUMULA no dicionário em vez de substituí-lo — um plano de
-   *  contas real costuma vir em mais de um arquivo (ex.: exportado em
-   *  partes), então enviar um segundo arquivo com "as demais contas" deve
-   *  somar ao que já foi carregado, não descartar o primeiro. */
-  async function handleDicionario(file) {
-    if (!file) return;
-    const ehPlanilha = /\.(xlsx|xlsm|xls)$/i.test(file.name);
-    const novasEntradas = ehPlanilha ? await parseDicionarioXlsx(file) : parseDicionarioCsv(await file.text());
-    if (!state.dicionario) state.dicionario = new Map();
-    novasEntradas.forEach((v, k) => state.dicionario.set(k, v));
-    state.dicionarioArquivos.push(file.name);
-    $('nome-dicionario').textContent = `${state.dicionarioArquivos.join(' + ')} (${state.dicionario.size} conta(s) mapeada(s))`;
-    populateFiltroSeveridade();
-    if (!$('dashboard').hidden) renderTabela();
-  }
-
-  function populateFiltroSeveridade() {
-    const sel = $('filtro-severidade');
-    if (!sel || !state.dicionario) return;
-    const severidades = new Set();
-    state.dicionario.forEach((v) => { if (v.severidade) severidades.add(v.severidade); });
-    sel.innerHTML = '<option value="">Todas as severidades</option>' +
-      [...severidades].sort().map((s) => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
-  }
-
   // ------------------------------------------------------------ exportação
 
   function toCsvValue(v) {
@@ -812,23 +657,19 @@
     const header = [
       'Competência', 'Previsão', 'Conta', 'Descrição',
       'Valor Folha', 'Valor Contábil', 'Diferença Recalculada',
-      'Alertas', 'Tipo', 'Nota do Contábil', 'Severidade', 'Responsável'
+      'Alertas', 'Tipo', 'Nota do Contábil'
     ];
-    const rows = linhas.map((r) => {
-      const dict = dictEntry(r.codigo) || {};
-      return [
-        r.competencia,
-        linhaEhPrevisao(r) ? 'Sim' : 'Não',
-        r.codigo, r.descricao,
-        numCsv(r.recalculado.statusFopag === 'verificado' ? r.recalculado.fopag : null),
-        numCsv(r.recalculado.statusContabil === 'verificado' ? r.recalculado.contabil : null),
-        numCsv(r.recalculado.diferenca),
-        r.alertas.length ? r.alertas.map(alertLabel).join(', ') : 'Nenhum',
-        tipoDivergencia(r),
-        contabilNota(r),
-        dict.severidade || '', dict.responsavel || ''
-      ];
-    });
+    const rows = linhas.map((r) => [
+      r.competencia,
+      linhaEhPrevisao(r) ? 'Sim' : 'Não',
+      r.codigo, r.descricao,
+      numCsv(r.recalculado.statusFopag === 'verificado' ? r.recalculado.fopag : null),
+      numCsv(r.recalculado.statusContabil === 'verificado' ? r.recalculado.contabil : null),
+      numCsv(r.recalculado.diferenca),
+      r.alertas.length ? r.alertas.map(alertLabel).join(', ') : 'Nenhum',
+      tipoDivergencia(r),
+      contabilNota(r)
+    ]);
     const csv = [header, ...rows].map((row) => row.map(toCsvValue).join(';')).join('\r\n');
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -927,8 +768,6 @@
     $('filtro-competencia-resumo').addEventListener('change', renderResumoFinanceiro);
     $('filtro-alerta').addEventListener('change', renderTabela);
     $('btn-exportar-csv').addEventListener('click', exportarCsv);
-    $('filtro-severidade').addEventListener('change', renderTabela);
-    $('input-dicionario').addEventListener('change', (e) => handleDicionario(e.target.files[0]));
 
     /** Cards do resumo financeiro filtram a tabela abaixo e rolam até ela —
      *  os dois totais (Folha/Contábil) limpam o filtro de alerta, já que

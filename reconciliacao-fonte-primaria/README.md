@@ -78,12 +78,12 @@ memorando técnico produzido antes deste projeto.
   houver ajuste do RAZÃO) quais lançamentos específicos compõem o Contábil,
   com valor individual de cada um.
 - **Colunas da tabela**: Competência, Conta, Descrição, Valor Folha, Valor
-  Contábil, Diferença Recalculada, Alertas, Tipo (e Severidade/Responsável
-  quando há dicionário carregado). Os valores de Folha e Contábil são os
-  recalculados direto da fonte primária (FOPAG/BALANCETE), não o que a CHECK
-  declara. "Tipo" classifica a causa: `Diferença de valor`, `Falta
-  lançamento contábil` (Folha tem valor, Contábil não), `Falta lançamento na
-  Folha` (o inverso), `Sem divergência` ou `Não verificável`.
+  Contábil, Diferença Recalculada, Alertas, Tipo. Os valores de Folha e
+  Contábil são os recalculados direto da fonte primária (FOPAG/BALANCETE),
+  não o que a CHECK declara. "Tipo" classifica a causa: `Diferença de
+  valor`, `Falta lançamento contábil` (Folha tem valor, Contábil não),
+  `Falta lançamento na Folha` (o inverso), `Sem divergência` ou `Não
+  verificável`.
 - **Resumo financeiro**: 5 cards interativos acima da tabela — Total da
   Folha (RH), Total Contábil, Divergências Folha, Divergências Contábil e
   Impacto Total (soma das diferenças financeiras confirmadas). Tem seletor
@@ -91,20 +91,10 @@ memorando técnico produzido antes deste projeto.
   todas, combinado). Clicar num card filtra a tabela abaixo pelas contas
   correspondentes (competência incluída) e rola até ela.
 - **Exportação CSV**: exporta a tabela de contas respeitando os filtros
-  ativos (competência, tipo de alerta, severidade), com as mesmas colunas de
-  valor/tipo da tabela, mais a nota sobre a origem do Contábil e o selo de
-  previsão — pra a planilha ficar utilizável sozinha, sem precisar abrir a
-  ferramenta de novo.
-- **Dicionário de contas**: upload opcional de um CSV
-  (`código;severidade;responsável`) ou XLSX que enriquece a tabela com
-  severidade e responsável sugerido, e habilita filtro por severidade. No
-  XLSX as colunas são achadas pelo cabeçalho da linha 1 (código ou
-  Classificação, severidade, responsável), não por posição fixa — aceita
-  tanto uma planilha simples quanto um plano de contas real exportado do
-  contábil (que não tem as colunas de severidade/responsável preenchidas,
-  mas mapeia os códigos normalmente). Cada upload **acumula** no dicionário
-  já carregado em vez de substituí-lo — um plano de contas exportado em
-  mais de um arquivo não perde o que já foi enviado antes.
+  ativos (competência, tipo de alerta), com as mesmas colunas de valor/tipo
+  da tabela, mais a nota sobre a origem do Contábil e o selo de previsão —
+  pra a planilha ficar utilizável sozinha, sem precisar abrir a ferramenta
+  de novo.
 - **Marca de previsão**: competências cujo BALANCETE tem "PREV" no nome
   (mês ainda não fechado, ex. "PREV. Balancete 052026") ganham um selo
   "previsão" no resumo, no filtro e em cada linha da tabela — sem isso, um
