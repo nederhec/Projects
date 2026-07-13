@@ -135,13 +135,14 @@
   .kpi.is-flag .value { color: var(--flag); }
   .kpi.is-neutral .value { color: var(--neutral); }
   .kpi.is-accent .value { color: var(--accent-text); }
-  .kpi-grid-resumo .kpi { text-align: center; }
-  .kpi-grid-resumo .value { font-size: 1.2rem; word-break: break-word; }
+  .kpi-grid-resumo .kpi { text-align: center; min-width: 0; }
+  .kpi-grid-resumo .value { font-size: 1.15rem; overflow-wrap: anywhere; word-break: break-word; }
   .kpi-click { cursor: pointer; transition: border-color .15s, background .15s; }
   .kpi-click:hover { background: var(--surface); border-color: var(--border-strong); }
   .kpi-click:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 
-  .filter-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filter-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+  .filter-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 700; }
   select { border: 1px solid var(--border-strong); border-radius: 7px; padding: 8px 10px; font-size: .84rem; background: var(--surface); color: var(--text); font-family: inherit; }
 
   .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
@@ -272,6 +273,7 @@
       <h2>Resumo financeiro</h2>
       <p class="card-note">Clique num card pra filtrar a tabela abaixo pelas contas correspondentes.</p>
       <div class="filter-row">
+        <label class="filter-label" for="filtro-competencia-resumo">Competência</label>
         <select id="filtro-competencia-resumo"><option value="">Todas as competências</option></select>
       </div>
       <div class="kpi-grid kpi-grid-resumo">
