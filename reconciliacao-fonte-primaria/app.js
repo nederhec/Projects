@@ -441,13 +441,16 @@
     const host = $('tabela-contas');
     if (!linhas.length) { host.innerHTML = '<p class="vazio">Nenhuma conta nesse filtro.</p>'; return; }
 
-    const colspan = 11;
+    const comDicionario = Boolean(state.dicionario && state.dicionario.size);
+    const colspan = comDicionario ? 11 : 9;
     const rowsHtml = linhas.map((r) => {
       const key = `${r.competencia}__${r.codigo}`;
       const dict = dictEntry(r.codigo);
       const previsao = linhaEhPrevisao(r);
       const tipo = tipoDivergencia(r);
-      const extraCols = `<td>${dict && dict.severidade ? `<span class="badge badge-${sevClass(dict.severidade)}">${escapeHtml(dict.severidade)}</span>` : '—'}</td><td>${escapeHtml((dict && dict.responsavel) || '—')}</td>`;
+      const extraCols = comDicionario
+        ? `<td>${dict && dict.severidade ? `<span class="badge badge-${sevClass(dict.severidade)}">${escapeHtml(dict.severidade)}</span>` : '—'}</td><td>${escapeHtml((dict && dict.responsavel) || '—')}</td>`
+        : '';
       return `
       <tr class="row-conta ${r.alertas.includes('financeiro') ? 'row-financeiro' : ''} ${r.alertas.includes('preenchimento') ? 'row-preenchimento' : ''}" data-key="${escapeHtml(key)}" tabindex="0" role="button" aria-expanded="false">
         <td><span class="expand-caret">▸</span></td>
@@ -470,7 +473,8 @@
           <thead><tr>
             <th></th><th>Competência</th><th>Conta</th><th>Descrição</th>
             <th class="num">Valor Folha</th><th class="num">Valor Contábil</th><th class="num">Diferença Recalculada</th>
-            <th>Alertas</th><th>Tipo</th><th>Severidade</th><th>Responsável</th>
+            <th>Alertas</th><th>Tipo</th>
+            ${comDicionario ? '<th>Severidade</th><th>Responsável</th>' : ''}
           </tr></thead>
           <tbody>${rowsHtml}</tbody>
         </table>
