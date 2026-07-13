@@ -135,6 +135,9 @@
   .kpi.is-flag .value { color: var(--flag); }
   .kpi.is-neutral .value { color: var(--neutral); }
   .kpi.is-accent .value { color: var(--accent-text); }
+  .kpi-click { cursor: pointer; transition: border-color .15s, background .15s; }
+  .kpi-click:hover { background: var(--surface); border-color: var(--border-strong); }
+  .kpi-click:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 
   .filter-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
   select { border: 1px solid var(--border-strong); border-radius: 7px; padding: 8px 10px; font-size: .84rem; background: var(--surface); color: var(--text); font-family: inherit; }
@@ -264,6 +267,18 @@
     </section>
 
     <section class="card">
+      <h2>Resumo financeiro</h2>
+      <p class="card-note">Clique num card pra filtrar a tabela abaixo pelas contas correspondentes.</p>
+      <div class="kpi-grid">
+        <div class="kpi is-accent kpi-click" id="card-total-folha" role="button" tabindex="0"><div class="label">Total da Folha (RH)</div><div class="value" id="kpi-total-folha">—</div><div class="sub">Soma verificada direto na FOPAG</div></div>
+        <div class="kpi is-accent kpi-click" id="card-total-contabil" role="button" tabindex="0"><div class="label">Total Contábil</div><div class="value" id="kpi-total-contabil">—</div><div class="sub">Soma verificada direto no BALANCETE</div></div>
+        <div class="kpi is-critical kpi-click" id="card-divergencias-folha" role="button" tabindex="0"><div class="label">Divergências Folha</div><div class="value" id="kpi-divergencias-folha">—</div><div class="sub">Lançamento ausente na Folha</div></div>
+        <div class="kpi is-critical kpi-click" id="card-divergencias-contabil" role="button" tabindex="0"><div class="label">Divergências Contábil</div><div class="value" id="kpi-divergencias-contabil">—</div><div class="sub">Lançamento ausente no Contábil</div></div>
+        <div class="kpi is-critical kpi-click" id="card-impacto-total" role="button" tabindex="0"><div class="label">Impacto Total</div><div class="value" id="kpi-impacto-total">—</div><div class="sub">Soma das diferenças financeiras confirmadas</div></div>
+      </div>
+    </section>
+
+    <section class="card">
       <h2>Dicionário de contas (opcional)</h2>
       <p class="card-note">CSV com <code>código;severidade;responsável</code> — enriquece a tabela abaixo e habilita o filtro por severidade. Sem upload, a tabela funciona normalmente.</p>
       <label class="btn" for="input-dicionario">Selecionar CSV</label>
@@ -271,9 +286,9 @@
       <span id="nome-dicionario" class="dict-status">Nenhum dicionário carregado</span>
     </section>
 
-    <section class="card">
+    <section class="card" id="secao-contas">
       <h2>Contas por competência</h2>
-      <p class="card-note">Diferença (CHECK) é o que a aba declara; Diferença (recalculada) é Folha × Contábil apurados direto da fonte, ignorando o que a CHECK diz. Clique numa linha pra ver a composição por rubrica.</p>
+      <p class="card-note">Valor Folha e Valor Contábil vêm recalculados direto da fonte primária (FOPAG/BALANCETE), ignorando o que a CHECK diz. Clique numa linha pra ver a composição por rubrica.</p>
       <div class="filter-row">
         <select id="filtro-competencia"><option value="">Todas as competências</option></select>
         <select id="filtro-alerta">
@@ -281,6 +296,8 @@
           <option value="financeiro">Só financeiro</option>
           <option value="preenchimento">Só preenchimento</option>
           <option value="limpas">Só sem alerta</option>
+          <option value="divergencia-folha">Só divergências Folha</option>
+          <option value="divergencia-contabil">Só divergências Contábil</option>
         </select>
         <select id="filtro-severidade"><option value="">Todas as severidades</option></select>
         <button class="btn" type="button" id="btn-exportar-csv">Exportar CSV</button>

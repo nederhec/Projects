@@ -308,11 +308,6 @@
     'financeiro-nao-verificado': ['warn', 'Financeiro (não verificado)']
   };
 
-  function badge(status) {
-    const [cls, label] = STATUS_MAP[status] || ['neutral', status || '—'];
-    return `<span class="badge badge-${cls}">${label}</span>`;
-  }
-
   function statusLabel(status) {
     return (STATUS_MAP[status] || [null, status || '—'])[1];
   }
@@ -342,6 +337,22 @@
     $('kpi-preenchimento').textContent = alertasPreenchimento.length;
     $('kpi-sem-fonte').textContent = semFonte.length;
     $('kpi-fantasmas').textContent = state.cobertura.contasFantasmas.length;
+
+    const totalFolha = state.resultados
+      .filter((r) => r.recalculado.statusFopag === 'verificado')
+      .reduce((s, r) => s + r.recalculado.fopag, 0);
+    const totalContabil = state.resultados
+      .filter((r) => r.recalculado.statusContabil === 'verificado')
+      .reduce((s, r) => s + r.recalculado.contabil, 0);
+    const divergenciasFolha = state.resultados.filter((r) => tipoDivergencia(r) === 'Falta lançamento na Folha');
+    const divergenciasContabil = state.resultados.filter((r) => tipoDivergencia(r) === 'Falta lançamento contábil');
+    const impactoTotal = alertasFinanceiro.reduce((s, r) => s + Math.abs(r.recalculado.diferenca), 0);
+
+    $('kpi-total-folha').textContent = money.format(totalFolha);
+    $('kpi-total-contabil').textContent = money.format(totalContabil);
+    $('kpi-divergencias-folha').textContent = divergenciasFolha.length;
+    $('kpi-divergencias-contabil').textContent = divergenciasContabil.length;
+    $('kpi-impacto-total').textContent = money.format(impactoTotal);
 
     populateFiltroCompetencia();
     renderTabela();
@@ -383,6 +394,8 @@
     if (alerta === 'financeiro') linhas = linhas.filter((r) => r.alertas.includes('financeiro') || r.alertas.includes('financeiro-nao-verificado'));
     if (alerta === 'preenchimento') linhas = linhas.filter((r) => r.alertas.includes('preenchimento'));
     if (alerta === 'limpas') linhas = linhas.filter((r) => r.alertas.length === 0);
+    if (alerta === 'divergencia-folha') linhas = linhas.filter((r) => tipoDivergencia(r) === 'Falta lançamento na Folha');
+    if (alerta === 'divergencia-contabil') linhas = linhas.filter((r) => tipoDivergencia(r) === 'Falta lançamento contábil');
     if (severidade) linhas = linhas.filter((r) => (dictEntry(r.codigo) || {}).severidade === severidade);
     return linhas;
   }
@@ -402,6 +415,7 @@
       const key = `${r.competencia}__${r.codigo}`;
       const dict = dictEntry(r.codigo);
       const previsao = linhaEhPrevisao(r);
+      const tipo = tipoDivergencia(r);
       const extraCols = comDicionario
         ? `<td>${dict && dict.severidade ? `<span class="badge badge-${sevClass(dict.severidade)}">${escapeHtml(dict.severidade)}</span>` : '—'}</td><td>${escapeHtml((dict && dict.responsavel) || '—')}</td>`
         : '';
@@ -411,11 +425,11 @@
         <td>${escapeHtml(r.competencia)}${previsao ? ' <span class="badge badge-neutral" title="Mês ainda não fechado — BALANCETE de previsão, não contábil final">previsão</span>' : ''}</td>
         <td class="mono">${escapeHtml(r.codigo)}</td>
         <td>${escapeHtml(r.descricao)}</td>
-        <td class="num">${money.format(r.declarado.diferenca)}</td>
+        <td class="num">${r.recalculado.statusFopag === 'verificado' ? money.format(r.recalculado.fopag) : '—'}</td>
+        <td class="num">${r.recalculado.statusContabil === 'verificado' ? money.format(r.recalculado.contabil) : '—'}</td>
         <td class="num">${r.recalculado.diferenca === null ? '—' : money.format(r.recalculado.diferenca)}</td>
-        <td>${badge(r.proveniencia.fopag)}</td>
-        <td>${badge(r.proveniencia.contabil)}</td>
         <td><div class="alertas-cell">${r.alertas.length ? r.alertas.map(alertBadge).join('') : '<span class="badge badge-ok">ok</span>'}${r.recalculado.ajusteRazao ? '<span class="badge badge-flag">ajuste RAZÃO</span>' : ''}</div></td>
+        <td><span class="badge badge-${tipoClass(tipo)}">${escapeHtml(tipo)}</span></td>
         ${extraCols}
       </tr>
       <tr class="row-detalhe" data-detail-for="${escapeHtml(key)}" hidden><td colspan="${colspan}">${renderDetalheConta(r)}</td></tr>`;
@@ -426,8 +440,8 @@
         <table>
           <thead><tr>
             <th></th><th>Competência</th><th>Conta</th><th>Descrição</th>
-            <th class="num">Diferença (CHECK)</th><th class="num">Diferença (recalculada)</th>
-            <th>Proveniência FOPAG</th><th>Proveniência Contábil</th><th>Alertas</th>
+            <th class="num">Valor Folha</th><th class="num">Valor Contábil</th><th class="num">Diferença Recalculada</th>
+            <th>Alertas</th><th>Tipo</th>
             ${comDicionario ? '<th>Severidade</th><th>Responsável</th>' : ''}
           </tr></thead>
           <tbody>${rowsHtml}</tbody>
@@ -501,64 +515,110 @@
     </div>`;
   }
 
-  /** Frase objetiva sobre QUAL lado (Folha ou Contábil) tem valor
-   *  confirmado direto na fonte primária e qual não tem — aponta de onde
-   *  vem o erro (falta de dado de um lado) em vez de deixar isso implícito
-   *  nos rótulos técnicos de proveniência. */
-  function origemDivergencia(r) {
+  /** Classifica a divergência num tipo curto (pro badge da tabela e pro
+   *  e-mail) — qual lado tem dado confirmado na fonte e qual não tem, ou se
+   *  os dois batem/divergem de verdade. */
+  function tipoDivergencia(r) {
     const temFopag = r.recalculado.statusFopag === 'verificado';
     const temContabil = r.recalculado.statusContabil === 'verificado';
-    const vFopag = temFopag ? money.format(r.recalculado.fopag) : null;
-    const vContabil = temContabil ? money.format(r.recalculado.contabil) : null;
-
-    if (temFopag && temContabil) {
-      return `Os dois lados têm valor confirmado direto na fonte — Folha (FOPAG): ${vFopag}; Contábil (BALANCETE): ${vContabil}. A diferença é real, não é falta de dado de nenhum dos dois lados.`;
-    }
-    if (temFopag && !temContabil) {
-      const motivo = r.recalculado.statusContabil === 'conta-nao-encontrada'
-        ? `a conta ${r.codigo} não foi encontrada no BALANCETE desta competência`
-        : 'o BALANCETE desta competência não pôde ser localizado/verificado';
-      return `O erro está do lado do CONTÁBIL: a Folha (FOPAG) tem valor confirmado (${vFopag}), mas ${motivo}.`;
-    }
-    if (!temFopag && temContabil) {
-      return `O erro está do lado da FOLHA: o Contábil (BALANCETE) tem valor confirmado (${vContabil}), mas a fórmula da CHECK para a Folha (FOPAG) não pôde ser recalculada com confiança nessa célula.`;
-    }
-    return `Nem Folha (FOPAG) nem Contábil (BALANCETE) puderam ser confirmados direto na fonte para a conta ${r.codigo} — não dá pra apontar de qual lado vem o erro sem revisão manual da planilha.`;
+    if (temFopag && temContabil) return r.alertas.includes('financeiro') ? 'Diferença de valor' : 'Sem divergência';
+    if (temFopag && !temContabil) return 'Falta lançamento contábil';
+    if (!temFopag && temContabil) return 'Falta lançamento na Folha';
+    return 'Não verificável';
   }
 
-  /** Monta um rascunho de e-mail (assunto + corpo) com o detalhamento da
-   *  divergência de uma conta, pra agilizar a validação com o responsável.
-   *  Nada é enviado — só preenche o painel para revisão manual. */
+  function tipoClass(tipo) {
+    const map = {
+      'Diferença de valor': 'critical',
+      'Falta lançamento contábil': 'critical',
+      'Falta lançamento na Folha': 'critical',
+      'Sem divergência': 'ok',
+      'Não verificável': 'neutral'
+    };
+    return map[tipo] || 'neutral';
+  }
+
+  /** Parágrafo de diagnóstico em linguagem direta pra quem vai ajustar —
+   *  qual lado está errado/faltando e por quanto, com direção (Folha maior
+   *  ou menor que o Contábil), não só o rótulo técnico do tipo. */
+  function diagnosticoNarrativa(r, tipo) {
+    if (tipo === 'Falta lançamento contábil') {
+      const motivo = r.recalculado.statusContabil === 'conta-nao-encontrada'
+        ? 'porém AUSENTE na contabilidade. Falta o lançamento contábil correspondente.'
+        : 'mas o Contábil desta competência não pôde ser localizado/verificado.';
+      return `Valor de ${money.format(r.recalculado.fopag)} lançado em Folha (RH), ${motivo}`;
+    }
+    if (tipo === 'Falta lançamento na Folha') {
+      return `Valor de ${money.format(r.recalculado.contabil)} lançado na contabilidade, porém AUSENTE na Folha (RH). Falta o lançamento correspondente na Folha, ou a fórmula da CHECK não pôde ser recalculada com confiança.`;
+    }
+    if (tipo === 'Diferença de valor') {
+      const diff = r.recalculado.diferenca;
+      const abs = money.format(Math.abs(diff));
+      return diff < 0
+        ? `Folha (RH) está MENOR que a contabilidade em ${abs}. Excesso de ${abs} na contabilidade (ou falta na base de Folha (RH)).`
+        : `Folha (RH) está MAIOR que a contabilidade em ${abs}. Excesso de ${abs} na Folha (RH) (ou falta na base contábil).`;
+    }
+    if (tipo === 'Sem divergência') {
+      return 'Folha e Contábil batem dentro da tolerância — não há divergência financeira real nesta conta.';
+    }
+    return `Nem Folha (RH) nem Contábil puderam ser confirmados direto na fonte para a conta ${r.codigo} — revisão manual necessária.`;
+  }
+
+  /** "Junho/2026" a partir da data real da competência (quando disponível),
+   *  em vez do rótulo bruto da aba ("JUNHO") — mais legível num e-mail. */
+  function competenciaLabel(r) {
+    const data = state.competenciaDatas.get(r.competencia);
+    if (!(data instanceof Date)) return r.competencia;
+    const mes = data.toLocaleDateString('pt-BR', { month: 'long' });
+    return `${mes.charAt(0).toUpperCase()}${mes.slice(1)}/${data.getFullYear()}`;
+  }
+
+  /** Linha "Evidência no razão", só quando a fórmula da CHECK compõe
+   *  BALANCETE + lançamento(s) do RAZÃO explicitamente — não é uma varredura
+   *  independente de todo o RAZÃO pela conta (o motor não faz isso hoje).
+   *  Sinal positivo tratado como débito e negativo como crédito, mesma
+   *  convenção usada no recálculo do BALANCETE (Débito − Crédito). */
+  function evidenciaRazao(r) {
+    const a = r.recalculado.ajusteRazao;
+    if (!a || !a.termos.length) return null;
+    const sheet = a.termos[0].sheet;
+    const debitos = a.termos.filter((t) => t.value >= 0).reduce((s, t) => s + t.value, 0);
+    const creditos = a.termos.filter((t) => t.value < 0).reduce((s, t) => s - t.value, 0);
+    return `Evidência no razão (${sheet}): ${a.termos.length} lançamento(s) — débitos ${money.format(debitos)}, créditos ${money.format(creditos)}`;
+  }
+
+  /** Monta um rascunho de e-mail (assunto + corpo) direcionado a quem vai
+   *  ajustar a divergência, pra agilizar a validação. Nada é enviado — só
+   *  preenche o painel para revisão manual. */
   function gerarEmailTexto(r) {
     const dict = dictEntry(r.codigo);
-    const subject = `Divergência de conciliação — ${r.competencia} — ${r.codigo} — ${r.descricao}`;
-    const fopagTermos = r.recalculado.fopagTermos || [];
+    const tipo = tipoDivergencia(r);
+    const comp = competenciaLabel(r);
+    const severidade = (dict && dict.severidade) || 'A definir';
+    const subject = `Divergência de conciliação — ${comp} — ${r.codigo} — ${r.descricao}`;
+    const evidencia = evidenciaRazao(r);
     const body = [
       'Prezado(a) [nome],',
       '',
-      `Na reconciliação da competência ${r.competencia} foi identificada a divergência abaixo, apurada direto das fontes primárias (FOPAG/BALANCETE). Segue o detalhamento para agilizar a validação.`,
+      `Na conciliação da competência ${comp} foi identificada a divergência abaixo. Segue o detalhamento por tópicos para agilizar a validação.`,
       '',
-      '1) CONTA',
-      `   • Competência: ${r.competencia}`,
-      `   • Conta: ${r.codigo} — ${r.descricao}`,
+      '1) CONTA / RUBRICA',
+      '   • Origem: Folha x Contábil',
+      `   • Conta/Categoria: ${r.codigo}`,
+      `   • Descrição: ${r.descricao}`,
       '',
       '2) VALORES',
-      `   • Diferença declarada na CHECK: ${money.format(r.declarado.diferenca)}`,
-      `   • Diferença recalculada (Folha × Contábil na fonte): ${r.recalculado.diferenca === null ? '—' : money.format(r.recalculado.diferenca)}`,
-      `   • Folha (FOPAG): ${r.recalculado.statusFopag === 'verificado' ? money.format(r.recalculado.fopag) : `— (${statusLabel(r.recalculado.statusFopag)})`}`,
-      `   • Contábil (BALANCETE): ${r.recalculado.statusContabil === 'verificado' ? money.format(r.recalculado.contabil) : `— (${statusLabel(r.recalculado.statusContabil)})`}`,
+      `   • Valor origem (Folha/RH): ${r.recalculado.statusFopag === 'verificado' ? money.format(r.recalculado.fopag) : `— (${statusLabel(r.recalculado.statusFopag)})`}`,
+      `   • Valor contábil: ${r.recalculado.statusContabil === 'verificado' ? money.format(r.recalculado.contabil) : `— (${statusLabel(r.recalculado.statusContabil)})`}`,
+      `   • Diferença: ${r.recalculado.diferenca === null ? '—' : money.format(r.recalculado.diferenca)}  (severidade: ${severidade})`,
       '',
-      '3) DE ONDE VEM O ERRO',
-      `   • ${origemDivergencia(r)}`,
-      `   • ${contabilNota(r)}`,
+      '3) DIAGNÓSTICO',
+      `   • Tipo: ${tipo}`,
+      `   • ${diagnosticoNarrativa(r, tipo)}`,
+      evidencia ? `   • ${evidencia}` : undefined,
       '',
-      '4) DIAGNÓSTICO',
-      `   • Alertas: ${r.alertas.length ? r.alertas.map(alertLabel).join(', ') : 'nenhum'}`,
-      fopagTermos.length ? '   • Composição da Folha (FOPAG):' : '   • Sem composição verificável (FOPAG sem fórmula reconhecida nessa célula).',
-      ...fopagTermos.map((t) => `     - ${t.rubrica}: ${money.format(t.value)}`),
-      '',
-      '5) RESPONSÁVEL',
-      `   • Severidade: ${(dict && dict.severidade) || 'A definir'}`,
+      '4) DECISÃO / PROPOSTA DE AJUSTE',
+      '   • Decisão estrutural: [definir: corrigir Folha / corrigir Contábil / reclassificar / aceitar]',
       `   • Responsável: ${(dict && dict.responsavel) || 'A definir'}`,
       '',
       'Solicito a validação da causa e o retorno com a tratativa para fechamento da competência.',
@@ -672,9 +732,8 @@
     if (!linhas.length) return;
     const header = [
       'Competência', 'Previsão', 'Conta', 'Descrição',
-      'Diferença (CHECK)', 'Diferença (recalculada)',
-      'Folha (FOPAG)', 'Status Folha', 'Contábil (BALANCETE)', 'Status Contábil',
-      'Alertas', 'Nota do Contábil', 'Severidade', 'Responsável'
+      'Valor Folha', 'Valor Contábil', 'Diferença Recalculada',
+      'Alertas', 'Tipo', 'Nota do Contábil', 'Severidade', 'Responsável'
     ];
     const rows = linhas.map((r) => {
       const dict = dictEntry(r.codigo) || {};
@@ -682,13 +741,11 @@
         r.competencia,
         linhaEhPrevisao(r) ? 'Sim' : 'Não',
         r.codigo, r.descricao,
-        numCsv(r.declarado.diferenca),
-        numCsv(r.recalculado.diferenca),
         numCsv(r.recalculado.statusFopag === 'verificado' ? r.recalculado.fopag : null),
-        statusLabel(r.recalculado.statusFopag),
         numCsv(r.recalculado.statusContabil === 'verificado' ? r.recalculado.contabil : null),
-        statusLabel(r.recalculado.statusContabil),
+        numCsv(r.recalculado.diferenca),
         r.alertas.length ? r.alertas.map(alertLabel).join(', ') : 'Nenhum',
+        tipoDivergencia(r),
         contabilNota(r),
         dict.severidade || '', dict.responsavel || ''
       ];
@@ -792,6 +849,28 @@
     $('btn-exportar-csv').addEventListener('click', exportarCsv);
     $('filtro-severidade').addEventListener('change', renderTabela);
     $('input-dicionario').addEventListener('change', (e) => handleDicionario(e.target.files[0]));
+
+    /** Cards do resumo financeiro filtram a tabela abaixo e rolam até ela —
+     *  os dois totais (Folha/Contábil) limpam o filtro de alerta, já que
+     *  representam a soma de todas as contas verificadas, não um subconjunto. */
+    const filtrosCard = {
+      'card-total-folha': '',
+      'card-total-contabil': '',
+      'card-divergencias-folha': 'divergencia-folha',
+      'card-divergencias-contabil': 'divergencia-contabil',
+      'card-impacto-total': 'financeiro'
+    };
+    Object.entries(filtrosCard).forEach(([id, valorFiltro]) => {
+      const card = $(id);
+      if (!card) return;
+      const ativar = () => {
+        $('filtro-alerta').value = valorFiltro;
+        renderTabela();
+        $('secao-contas').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+      card.addEventListener('click', ativar);
+      card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ativar(); } });
+    });
 
     $('btn-copy-email').addEventListener('click', async (e) => {
       const btn = e.currentTarget;
