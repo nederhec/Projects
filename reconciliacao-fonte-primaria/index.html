@@ -135,7 +135,7 @@
   .kpi.is-flag .value { color: var(--flag); }
   .kpi.is-neutral .value { color: var(--neutral); }
   .kpi.is-accent .value { color: var(--accent-text); }
-  .kpi-grid-resumo .kpi { text-align: center; min-width: 0; }
+  .kpi-grid .kpi { text-align: center; min-width: 0; }
   .kpi-grid-resumo .value { font-size: 1.15rem; overflow-wrap: anywhere; word-break: break-word; }
   .kpi-click { cursor: pointer; transition: border-color .15s, background .15s; }
   .kpi-click:hover { background: var(--surface); border-color: var(--border-strong); }
@@ -146,7 +146,8 @@
   select { border: 1px solid var(--border-strong); border-radius: 7px; padding: 8px 10px; font-size: .84rem; background: var(--surface); color: var(--text); font-family: inherit; }
 
   .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
-  table { width: 100%; border-collapse: collapse; font-size: .83rem; min-width: 900px; }
+  table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+  .table-wrap > table { min-width: 900px; }
   thead th { text-align: left; background: var(--surface-2); font-size: .68rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); padding: 9px 12px; white-space: nowrap; border-bottom: 1px solid var(--border-strong); }
   th.num { text-align: right; }
   tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
@@ -287,9 +288,9 @@
 
     <section class="card">
       <h2>Dicionário de contas (opcional)</h2>
-      <p class="card-note">CSV com <code>código;severidade;responsável</code> — enriquece a tabela abaixo e habilita o filtro por severidade. Sem upload, a tabela funciona normalmente.</p>
-      <label class="btn" for="input-dicionario">Selecionar CSV</label>
-      <input type="file" id="input-dicionario" accept=".csv" />
+      <p class="card-note">CSV (<code>código;severidade;responsável</code>) ou XLSX com colunas de código (ou Classificação), severidade e responsável — enriquece a tabela abaixo e habilita o filtro por severidade. Pode enviar mais de um arquivo (ex.: plano de contas exportado em partes) — cada envio soma ao dicionário já carregado. Sem upload, a tabela funciona normalmente.</p>
+      <label class="btn" for="input-dicionario">Selecionar CSV ou XLSX</label>
+      <input type="file" id="input-dicionario" accept=".csv,.xlsx,.xlsm,.xls" />
       <span id="nome-dicionario" class="dict-status">Nenhum dicionário carregado</span>
     </section>
 

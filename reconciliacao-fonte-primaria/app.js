@@ -13,7 +13,7 @@
   const state = {
     adapter: null, workbook: null, resultados: [], confiabilidade: null,
     cobertura: { contasFantasmas: [] }, competencias: [], competenciaDatas: new Map(),
-    razaoMap: {}
+    razaoMap: {}, dicionarioArquivos: []
   };
 
   // ------------------------------------------------------------ utilidades
@@ -735,11 +735,53 @@
     return map;
   }
 
+  /** Mesma ideia de findBalanceteColunas: acha "código" (ou "classificação",
+   *  termo já usado nas planilhas de BALANCETE deste cliente pro código
+   *  hierárquico da conta, ex. "3.1.01.001.001") pelo cabeçalho da linha 1,
+   *  não por posição fixa de coluna — um plano de contas exportado do
+   *  contábil não segue a mesma ordem de colunas do CSV manual. */
+  async function parseDicionarioXlsx(file) {
+    const map = new Map();
+    const buf = await file.arrayBuffer();
+    const exceljsWorkbook = new window.ExcelJS.Workbook();
+    await exceljsWorkbook.xlsx.load(buf);
+    const workbook = normalizeWorkbook(exceljsWorkbook);
+    const sheet = workbook.SheetNames[0];
+    if (!sheet) return map;
+    const adapter = makeAdapter(workbook);
+    const headerRow = 1;
+    const codigoCol = findColumnByHeader(adapter, sheet, ['classificacao', 'codigo'], headerRow, 40);
+    if (!codigoCol) return map;
+    const severidadeCol = findColumnByHeader(adapter, sheet, ['severidade'], headerRow, 40);
+    const responsavelCol = findColumnByHeader(adapter, sheet, ['responsavel'], headerRow, 40);
+    const total = adapter.usedRowCount(sheet) || 0;
+    for (let r = headerRow + 1; r <= total; r++) {
+      const codCell = adapter.cell(sheet, codigoCol, r);
+      if (!codCell) continue;
+      const codigo = String(codCell.value).trim();
+      if (!codigo) continue;
+      const sevCell = severidadeCol ? adapter.cell(sheet, severidadeCol, r) : undefined;
+      const respCell = responsavelCol ? adapter.cell(sheet, responsavelCol, r) : undefined;
+      map.set(codigo, {
+        severidade: sevCell ? String(sevCell.value).trim() : '',
+        responsavel: respCell ? String(respCell.value).trim() : ''
+      });
+    }
+    return map;
+  }
+
+  /** Cada upload ACUMULA no dicionário em vez de substituí-lo — um plano de
+   *  contas real costuma vir em mais de um arquivo (ex.: exportado em
+   *  partes), então enviar um segundo arquivo com "as demais contas" deve
+   *  somar ao que já foi carregado, não descartar o primeiro. */
   async function handleDicionario(file) {
     if (!file) return;
-    const text = await file.text();
-    state.dicionario = parseDicionarioCsv(text);
-    $('nome-dicionario').textContent = `${file.name} (${state.dicionario.size} conta(s) mapeada(s))`;
+    const ehPlanilha = /\.(xlsx|xlsm|xls)$/i.test(file.name);
+    const novasEntradas = ehPlanilha ? await parseDicionarioXlsx(file) : parseDicionarioCsv(await file.text());
+    if (!state.dicionario) state.dicionario = new Map();
+    novasEntradas.forEach((v, k) => state.dicionario.set(k, v));
+    state.dicionarioArquivos.push(file.name);
+    $('nome-dicionario').textContent = `${state.dicionarioArquivos.join(' + ')} (${state.dicionario.size} conta(s) mapeada(s))`;
     populateFiltroSeveridade();
     if (!$('dashboard').hidden) renderTabela();
   }
