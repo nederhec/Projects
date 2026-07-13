@@ -12,7 +12,8 @@
 
   const state = {
     adapter: null, workbook: null, resultados: [], confiabilidade: null,
-    cobertura: { contasFantasmas: [] }, competencias: [], competenciaDatas: new Map()
+    cobertura: { contasFantasmas: [] }, competencias: [], competenciaDatas: new Map(),
+    razaoMap: {}
   };
 
   // ------------------------------------------------------------ utilidades
@@ -99,6 +100,18 @@
       // largura fixa, então tornar o separador opcional não introduz
       // ambiguidade em nenhum dos três formatos.
       const m = name.match(/balancete\s*(\d{2})[.\-/]?(\d{4})/i);
+      if (m) map[`${m[2]}-${m[1]}`] = name;
+    }
+    return map;
+  }
+
+  /** Mesma ideia de findBalanceteMap, pra abas de RAZÃO ("Razão 012026",
+   *  "PREV. Razão 062026") — usado pra verificação independente de
+   *  lançamentos no rascunho de e-mail (ver evidenciaRazao). */
+  function findRazaoMap(workbook) {
+    const map = {};
+    for (const name of workbook.SheetNames) {
+      const m = name.match(/raz[aã]o\s*(\d{2})[.\-/]?(\d{4})/i);
       if (m) map[`${m[2]}-${m[1]}`] = name;
     }
     return map;
@@ -210,6 +223,7 @@
     }
     const blocks = detectBlocks(adapter, checkSheet, headerRow);
     const balanceteMap = findBalanceteMap(workbook);
+    const razaoMap = findRazaoMap(workbook);
 
     const resultados = [];
     const codigosNaCheck = new Set();
@@ -265,6 +279,7 @@
     state.cobertura = cobertura;
     state.competencias = [...new Set(competenciasAtivas)];
     state.competenciaDatas = new Map(blocksAtivos.map((b) => [b.competencia, b.data]));
+    state.razaoMap = razaoMap;
 
     renderMeta(fileName, checkSheet, blocksAtivos, balanceteMap);
     renderDashboard();
@@ -573,18 +588,27 @@
     return `${mes.charAt(0).toUpperCase()}${mes.slice(1)}/${data.getFullYear()}`;
   }
 
-  /** Linha "Evidência no razão", só quando a fórmula da CHECK compõe
-   *  BALANCETE + lançamento(s) do RAZÃO explicitamente — não é uma varredura
-   *  independente de todo o RAZÃO pela conta (o motor não faz isso hoje).
-   *  Sinal positivo tratado como débito e negativo como crédito, mesma
-   *  convenção usada no recálculo do BALANCETE (Débito − Crédito). */
+  /** Aba de RAZÃO do mesmo mês/ano da competência de r, se detectada. */
+  function razaoSheetPara(r) {
+    const data = state.competenciaDatas.get(r.competencia);
+    if (!(data instanceof Date)) return null;
+    const key = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
+    return state.razaoMap[key] || null;
+  }
+
+  /** Linha "Evidência no razão" — varredura independente do razão auxiliar
+   *  pela conta, via engine.lookupContaNoRazao. Diferente do `ajusteRazao`
+   *  (que só segue RAZÃO citado explicitamente na fórmula da CHECK), isto
+   *  não depende em nada do que a CHECK referencia: procura a conta direto
+   *  no razão do mês, exista ou não uma referência a ela na CHECK. Devolve
+   *  null quando a conta não aparece no razão desta competência — comum
+   *  (nem toda conta tem reclassificação manual). */
   function evidenciaRazao(r) {
-    const a = r.recalculado.ajusteRazao;
-    if (!a || !a.termos.length) return null;
-    const sheet = a.termos[0].sheet;
-    const debitos = a.termos.filter((t) => t.value >= 0).reduce((s, t) => s + t.value, 0);
-    const creditos = a.termos.filter((t) => t.value < 0).reduce((s, t) => s - t.value, 0);
-    return `Evidência no razão (${sheet}): ${a.termos.length} lançamento(s) — débitos ${money.format(debitos)}, créditos ${money.format(creditos)}`;
+    const sheet = razaoSheetPara(r);
+    if (!sheet) return null;
+    const achado = engine.lookupContaNoRazao(state.adapter, sheet, r.codigo);
+    if (!achado || !achado.count) return null;
+    return `Evidência no razão (${sheet}): ${achado.count} lançamento(s) — débitos ${money.format(achado.debitos)}, créditos ${money.format(achado.creditos)}`;
   }
 
   /** Monta um rascunho de e-mail (assunto + corpo) direcionado a quem vai

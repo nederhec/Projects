@@ -108,11 +108,14 @@ memorando técnico produzido antes deste projeto.
   o modelo de dados deste projeto. O DIAGNÓSTICO tem o Tipo (mesma
   classificação da tabela) e um parágrafo em linguagem direta apontando qual
   lado está errado/faltando e por quanto (ex.: "Valor de R$ X lançado em
-  Folha (RH), porém AUSENTE na contabilidade"), mais a evidência de
-  lançamentos do RAZÃO quando a própria fórmula da CHECK os compõe
-  explicitamente. Nada é enviado automaticamente — é só um rascunho pra
-  revisão manual, com botões de copiar e abrir no cliente de e-mail
-  (`mailto:`).
+  Folha (RH), porém AUSENTE na contabilidade"), mais uma linha "Evidência no
+  razão" com a contagem de lançamentos e os totais de débito/crédito da
+  conta no razão auxiliar daquele mês. Essa evidência é uma varredura
+  **independente** do razão — `engine.lookupContaNoRazao` procura a conta
+  direto na aba de RAZÃO (formato de blocos "Conta: N - X.X.XX.XXX.XXX ..."
+  até "Total conta:"), sem depender em nada do que a fórmula da CHECK
+  referencia. Nada é enviado automaticamente — é só um rascunho pra revisão
+  manual, com botões de copiar e abrir no cliente de e-mail (`mailto:`).
 
 ## Como rodar
 
@@ -363,6 +366,24 @@ dois lados). Os três têm teste de regressão automatizado (`engine.test.js`
 e `integration.test.js`, com uma fixture com layout de BALANCETE
 deliberadamente deslocado) — verificado que os testes falham sem a
 correção e passam com ela, não só que passam.
+
+**Verificação independente do razão auxiliar (`lookupContaNoRazao`)**:
+construída depois, ao notar que a linha "Evidência no razão" do e-mail só
+aparecia quando a própria fórmula da CHECK compunha BALANCETE + RAZÃO
+explicitamente — uma dependência estreita do que a CHECK referencia, o
+oposto do princípio do projeto. Agora `lookupContaNoRazao` varre a aba de
+RAZÃO de verdade, direto pelo código da conta, formato de blocos ("Conta:
+N - X.X.XX.XXX.XXX Nome" ... lançamentos ... "Total conta:", com os totais
+de Débito/Crédito já calculados na própria linha de fechamento). Achado
+real ao validar contra o arquivo do cliente: a paginação do razão original
+(exportado de um PDF) repete a linha de cabeçalho de coluna
+("Data | Histórico | ... | Débito | Crédito | ...") no meio do bloco de uma
+conta quando um lançamento atravessa uma quebra de página — essa linha tem
+texto ("Débito"/"Crédito") nas colunas de valor, não número, e sem filtrar
+por `Number.isFinite` ela conta como um lançamento a mais (39 lançamentos
+reais viravam 40). Teste de regressão em `engine.test.js` verificado (falha
+sem o filtro, passa com ele). Cobertura no arquivo real: 94 das 96
+contas×competência têm pelo menos um lançamento no razão do mês.
 
 ## Limitações conhecidas (v0.3)
 
