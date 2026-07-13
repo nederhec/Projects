@@ -13,7 +13,7 @@
   const state = {
     adapter: null, workbook: null, resultados: [], confiabilidade: null,
     cobertura: { contasFantasmas: [] }, competencias: [], competenciaDatas: new Map(),
-    razaoMap: {}
+    razaoMap: {}, dicionarioArquivos: []
   };
 
   // ------------------------------------------------------------ utilidades
@@ -770,11 +770,18 @@
     return map;
   }
 
+  /** Cada upload ACUMULA no dicionário em vez de substituí-lo — um plano de
+   *  contas real costuma vir em mais de um arquivo (ex.: exportado em
+   *  partes), então enviar um segundo arquivo com "as demais contas" deve
+   *  somar ao que já foi carregado, não descartar o primeiro. */
   async function handleDicionario(file) {
     if (!file) return;
     const ehPlanilha = /\.(xlsx|xlsm|xls)$/i.test(file.name);
-    state.dicionario = ehPlanilha ? await parseDicionarioXlsx(file) : parseDicionarioCsv(await file.text());
-    $('nome-dicionario').textContent = `${file.name} (${state.dicionario.size} conta(s) mapeada(s))`;
+    const novasEntradas = ehPlanilha ? await parseDicionarioXlsx(file) : parseDicionarioCsv(await file.text());
+    if (!state.dicionario) state.dicionario = new Map();
+    novasEntradas.forEach((v, k) => state.dicionario.set(k, v));
+    state.dicionarioArquivos.push(file.name);
+    $('nome-dicionario').textContent = `${state.dicionarioArquivos.join(' + ')} (${state.dicionario.size} conta(s) mapeada(s))`;
     populateFiltroSeveridade();
     if (!$('dashboard').hidden) renderTabela();
   }

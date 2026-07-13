@@ -102,7 +102,9 @@ memorando técnico produzido antes deste projeto.
   Classificação, severidade, responsável), não por posição fixa — aceita
   tanto uma planilha simples quanto um plano de contas real exportado do
   contábil (que não tem as colunas de severidade/responsável preenchidas,
-  mas mapeia os códigos normalmente).
+  mas mapeia os códigos normalmente). Cada upload **acumula** no dicionário
+  já carregado em vez de substituí-lo — um plano de contas exportado em
+  mais de um arquivo não perde o que já foi enviado antes.
 - **Marca de previsão**: competências cujo BALANCETE tem "PREV" no nome
   (mês ainda não fechado, ex. "PREV. Balancete 052026") ganham um selo
   "previsão" no resumo, no filtro e em cada linha da tabela — sem isso, um
