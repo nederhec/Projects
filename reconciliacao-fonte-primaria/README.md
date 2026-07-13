@@ -78,7 +78,11 @@ memorando técnico produzido antes deste projeto.
   houver ajuste do RAZÃO) quais lançamentos específicos compõem o Contábil,
   com valor individual de cada um.
 - **Exportação CSV**: exporta a tabela de contas respeitando os filtros
-  ativos (competência, tipo de alerta, severidade).
+  ativos (competência, tipo de alerta, severidade). Traz os valores reais de
+  Folha (FOPAG) e Contábil (BALANCETE) — não só a diferença —, status de
+  cada lado em texto legível (não o código interno), a nota sobre a origem
+  do Contábil e o selo de previsão, pra a planilha ficar utilizável sozinha,
+  sem precisar abrir a ferramenta de novo.
 - **Dicionário de contas**: upload opcional de um CSV
   (`código;severidade;responsável`) que enriquece a tabela com severidade e
   responsável sugerido, e habilita filtro por severidade.
@@ -93,7 +97,11 @@ memorando técnico produzido antes deste projeto.
   de e-mail (`mailto:`) e enviar ao responsável. Nada é enviado
   automaticamente — é só um rascunho pra revisão manual. Adaptado do painel
   de conciliação antigo (`painel-conciliacao-folha`), que tinha essa mesma
-  ideia só que sobre outra base de dados.
+  ideia só que sobre outra base de dados. O corpo aponta explicitamente qual
+  lado (Folha ou Contábil) tem valor confirmado direto na fonte e qual não
+  tem — "o erro está do lado do Contábil: a Folha tem valor confirmado
+  (R$ X), mas a conta não foi encontrada no BALANCETE" — em vez de deixar
+  isso implícito nos rótulos técnicos de proveniência.
 
 ## Como rodar
 

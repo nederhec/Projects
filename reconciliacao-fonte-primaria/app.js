@@ -353,9 +353,13 @@
    *  do cliente tem meses futuros como "PREV. Balancete 052026", e sem
    *  marcar isso na tela um alerta financeiro em cima de previsão parece
    *  divergência de livro fechado, quando não é. */
+  function linhaEhPrevisao(r) {
+    return Boolean(r.recalculado.fonteContabil && /prev/i.test(r.recalculado.fonteContabil));
+  }
+
   function competenciaEhPrevisao(competencia) {
     const r = state.resultados.find((x) => x.competencia === competencia);
-    return Boolean(r && r.recalculado.fonteContabil && /prev/i.test(r.recalculado.fonteContabil));
+    return Boolean(r && linhaEhPrevisao(r));
   }
 
   function populateFiltroCompetencia() {
@@ -397,7 +401,7 @@
     const rowsHtml = linhas.map((r) => {
       const key = `${r.competencia}__${r.codigo}`;
       const dict = dictEntry(r.codigo);
-      const previsao = r.recalculado.fonteContabil && /prev/i.test(r.recalculado.fonteContabil);
+      const previsao = linhaEhPrevisao(r);
       const extraCols = comDicionario
         ? `<td>${dict && dict.severidade ? `<span class="badge badge-${sevClass(dict.severidade)}">${escapeHtml(dict.severidade)}</span>` : '—'}</td><td>${escapeHtml((dict && dict.responsavel) || '—')}</td>`
         : '';
@@ -497,6 +501,31 @@
     </div>`;
   }
 
+  /** Frase objetiva sobre QUAL lado (Folha ou Contábil) tem valor
+   *  confirmado direto na fonte primária e qual não tem — aponta de onde
+   *  vem o erro (falta de dado de um lado) em vez de deixar isso implícito
+   *  nos rótulos técnicos de proveniência. */
+  function origemDivergencia(r) {
+    const temFopag = r.recalculado.statusFopag === 'verificado';
+    const temContabil = r.recalculado.statusContabil === 'verificado';
+    const vFopag = temFopag ? money.format(r.recalculado.fopag) : null;
+    const vContabil = temContabil ? money.format(r.recalculado.contabil) : null;
+
+    if (temFopag && temContabil) {
+      return `Os dois lados têm valor confirmado direto na fonte — Folha (FOPAG): ${vFopag}; Contábil (BALANCETE): ${vContabil}. A diferença é real, não é falta de dado de nenhum dos dois lados.`;
+    }
+    if (temFopag && !temContabil) {
+      const motivo = r.recalculado.statusContabil === 'conta-nao-encontrada'
+        ? `a conta ${r.codigo} não foi encontrada no BALANCETE desta competência`
+        : 'o BALANCETE desta competência não pôde ser localizado/verificado';
+      return `O erro está do lado do CONTÁBIL: a Folha (FOPAG) tem valor confirmado (${vFopag}), mas ${motivo}.`;
+    }
+    if (!temFopag && temContabil) {
+      return `O erro está do lado da FOLHA: o Contábil (BALANCETE) tem valor confirmado (${vContabil}), mas a fórmula da CHECK para a Folha (FOPAG) não pôde ser recalculada com confiança nessa célula.`;
+    }
+    return `Nem Folha (FOPAG) nem Contábil (BALANCETE) puderam ser confirmados direto na fonte para a conta ${r.codigo} — não dá pra apontar de qual lado vem o erro sem revisão manual da planilha.`;
+  }
+
   /** Monta um rascunho de e-mail (assunto + corpo) com o detalhamento da
    *  divergência de uma conta, pra agilizar a validação com o responsável.
    *  Nada é enviado — só preenche o painel para revisão manual. */
@@ -516,16 +545,19 @@
       '2) VALORES',
       `   • Diferença declarada na CHECK: ${money.format(r.declarado.diferenca)}`,
       `   • Diferença recalculada (Folha × Contábil na fonte): ${r.recalculado.diferenca === null ? '—' : money.format(r.recalculado.diferenca)}`,
-      `   • Proveniência FOPAG: ${statusLabel(r.proveniencia.fopag)}`,
-      `   • Proveniência Contábil: ${statusLabel(r.proveniencia.contabil)}`,
+      `   • Folha (FOPAG): ${r.recalculado.statusFopag === 'verificado' ? money.format(r.recalculado.fopag) : `— (${statusLabel(r.recalculado.statusFopag)})`}`,
+      `   • Contábil (BALANCETE): ${r.recalculado.statusContabil === 'verificado' ? money.format(r.recalculado.contabil) : `— (${statusLabel(r.recalculado.statusContabil)})`}`,
       '',
-      '3) DIAGNÓSTICO',
-      `   • Alertas: ${r.alertas.length ? r.alertas.map(alertLabel).join(', ') : 'nenhum'}`,
+      '3) DE ONDE VEM O ERRO',
+      `   • ${origemDivergencia(r)}`,
       `   • ${contabilNota(r)}`,
+      '',
+      '4) DIAGNÓSTICO',
+      `   • Alertas: ${r.alertas.length ? r.alertas.map(alertLabel).join(', ') : 'nenhum'}`,
       fopagTermos.length ? '   • Composição da Folha (FOPAG):' : '   • Sem composição verificável (FOPAG sem fórmula reconhecida nessa célula).',
       ...fopagTermos.map((t) => `     - ${t.rubrica}: ${money.format(t.value)}`),
       '',
-      '4) RESPONSÁVEL',
+      '5) RESPONSÁVEL',
       `   • Severidade: ${(dict && dict.severidade) || 'A definir'}`,
       `   • Responsável: ${(dict && dict.responsavel) || 'A definir'}`,
       '',
@@ -631,18 +663,33 @@
     return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   }
 
+  function numCsv(v) {
+    return v === null || v === undefined ? '' : v.toFixed(2).replace('.', ',');
+  }
+
   function exportarCsv() {
     const linhas = filteredResultados();
     if (!linhas.length) return;
-    const header = ['Competência', 'Conta', 'Descrição', 'Diferença (CHECK)', 'Diferença (recalculada)',
-      'Proveniência FOPAG', 'Proveniência Contábil', 'Alertas', 'Severidade', 'Responsável'];
+    const header = [
+      'Competência', 'Previsão', 'Conta', 'Descrição',
+      'Diferença (CHECK)', 'Diferença (recalculada)',
+      'Folha (FOPAG)', 'Status Folha', 'Contábil (BALANCETE)', 'Status Contábil',
+      'Alertas', 'Nota do Contábil', 'Severidade', 'Responsável'
+    ];
     const rows = linhas.map((r) => {
       const dict = dictEntry(r.codigo) || {};
       return [
-        r.competencia, r.codigo, r.descricao,
-        r.declarado.diferenca.toFixed(2).replace('.', ','),
-        r.recalculado.diferenca === null ? '' : r.recalculado.diferenca.toFixed(2).replace('.', ','),
-        r.proveniencia.fopag, r.proveniencia.contabil, r.alertas.join('|'),
+        r.competencia,
+        linhaEhPrevisao(r) ? 'Sim' : 'Não',
+        r.codigo, r.descricao,
+        numCsv(r.declarado.diferenca),
+        numCsv(r.recalculado.diferenca),
+        numCsv(r.recalculado.statusFopag === 'verificado' ? r.recalculado.fopag : null),
+        statusLabel(r.recalculado.statusFopag),
+        numCsv(r.recalculado.statusContabil === 'verificado' ? r.recalculado.contabil : null),
+        statusLabel(r.recalculado.statusContabil),
+        r.alertas.length ? r.alertas.map(alertLabel).join(', ') : 'Nenhum',
+        contabilNota(r),
         dict.severidade || '', dict.responsavel || ''
       ];
     });
