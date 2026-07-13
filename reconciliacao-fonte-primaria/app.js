@@ -402,7 +402,7 @@
         <td class="num">${r.recalculado.diferenca === null ? '—' : money.format(r.recalculado.diferenca)}</td>
         <td>${badge(r.proveniencia.fopag)}</td>
         <td>${badge(r.proveniencia.contabil)}</td>
-        <td>${r.alertas.length ? r.alertas.map(alertBadge).join(' ') : '<span class="badge badge-ok">ok</span>'}${r.recalculado.ajusteRazao ? ' <span class="badge badge-flag">ajuste RAZÃO</span>' : ''}</td>
+        <td><div class="alertas-cell">${r.alertas.length ? r.alertas.map(alertBadge).join('') : '<span class="badge badge-ok">ok</span>'}${r.recalculado.ajusteRazao ? '<span class="badge badge-flag">ajuste RAZÃO</span>' : ''}</div></td>
         ${extraCols}
       </tr>
       <tr class="row-detalhe" data-detail-for="${escapeHtml(key)}" hidden><td colspan="${colspan}">${renderDetalheConta(r)}</td></tr>`;
