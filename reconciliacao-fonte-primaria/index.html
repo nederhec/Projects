@@ -135,6 +135,8 @@
   .kpi.is-flag .value { color: var(--flag); }
   .kpi.is-neutral .value { color: var(--neutral); }
   .kpi.is-accent .value { color: var(--accent-text); }
+  .kpi-grid-resumo .kpi { text-align: center; }
+  .kpi-grid-resumo .value { font-size: 1.2rem; word-break: break-word; }
   .kpi-click { cursor: pointer; transition: border-color .15s, background .15s; }
   .kpi-click:hover { background: var(--surface); border-color: var(--border-strong); }
   .kpi-click:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
@@ -269,7 +271,10 @@
     <section class="card">
       <h2>Resumo financeiro</h2>
       <p class="card-note">Clique num card pra filtrar a tabela abaixo pelas contas correspondentes.</p>
-      <div class="kpi-grid">
+      <div class="filter-row">
+        <select id="filtro-competencia-resumo"><option value="">Todas as competências</option></select>
+      </div>
+      <div class="kpi-grid kpi-grid-resumo">
         <div class="kpi is-accent kpi-click" id="card-total-folha" role="button" tabindex="0"><div class="label">Total da Folha (RH)</div><div class="value" id="kpi-total-folha">—</div><div class="sub">Soma verificada direto na FOPAG</div></div>
         <div class="kpi is-accent kpi-click" id="card-total-contabil" role="button" tabindex="0"><div class="label">Total Contábil</div><div class="value" id="kpi-total-contabil">—</div><div class="sub">Soma verificada direto no BALANCETE</div></div>
         <div class="kpi is-critical kpi-click" id="card-divergencias-folha" role="button" tabindex="0"><div class="label">Divergências Folha</div><div class="value" id="kpi-divergencias-folha">—</div><div class="sub">Lançamento ausente na Folha</div></div>

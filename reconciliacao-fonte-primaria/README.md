@@ -86,8 +86,10 @@ memorando técnico produzido antes deste projeto.
   Folha` (o inverso), `Sem divergência` ou `Não verificável`.
 - **Resumo financeiro**: 5 cards interativos acima da tabela — Total da
   Folha (RH), Total Contábil, Divergências Folha, Divergências Contábil e
-  Impacto Total (soma das diferenças financeiras confirmadas). Clicar num
-  card filtra a tabela abaixo pelas contas correspondentes e rola até ela.
+  Impacto Total (soma das diferenças financeiras confirmadas). Tem seletor
+  de competência próprio — os 5 números recalculam pro mês escolhido (ou
+  todas, combinado). Clicar num card filtra a tabela abaixo pelas contas
+  correspondentes (competência incluída) e rola até ela.
 - **Exportação CSV**: exporta a tabela de contas respeitando os filtros
   ativos (competência, tipo de alerta, severidade), com as mesmas colunas de
   valor/tipo da tabela, mais a nota sobre a origem do Contábil e o selo de
