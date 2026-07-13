@@ -87,6 +87,13 @@ memorando técnico produzido antes deste projeto.
   "previsão" no resumo, no filtro e em cada linha da tabela — sem isso, um
   alerta financeiro em cima de dado projetado parece divergência de livro
   fechado, quando não é.
+- **Rascunho de e-mail**: botão "Gerar e-mail" na composição de cada conta
+  monta um rascunho (assunto + corpo) com competência, valores, proveniência,
+  alertas e composição da divergência, pronto pra copiar ou abrir no cliente
+  de e-mail (`mailto:`) e enviar ao responsável. Nada é enviado
+  automaticamente — é só um rascunho pra revisão manual. Adaptado do painel
+  de conciliação antigo (`painel-conciliacao-folha`), que tinha essa mesma
+  ideia só que sobre outra base de dados.
 
 ## Como rodar
 

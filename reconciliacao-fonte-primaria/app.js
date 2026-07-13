@@ -292,29 +292,38 @@
     $('meta-balancetes').textContent = Object.values(balanceteMap).join(', ') || 'nenhum encontrado';
   }
 
+  const STATUS_MAP = {
+    'formula-viva': ['ok', 'fórmula viva'],
+    'intra': ['ok', 'fórmula viva'],
+    'formula-quebrada': ['critical', 'fórmula quebrada'],
+    'valor-digitado': ['warn', 'valor digitado'],
+    'verificado': ['ok', 'verificado'],
+    'sem-fonte': ['neutral', 'sem fonte'],
+    'sem-verificacao': ['neutral', 'sem verificação'],
+    'conta-nao-encontrada': ['warn', 'conta não achada']
+  };
+  const ALERTA_MAP = {
+    financeiro: ['critical', 'Financeiro'],
+    preenchimento: ['flag', 'Preenchimento'],
+    'financeiro-nao-verificado': ['warn', 'Financeiro (não verificado)']
+  };
+
   function badge(status) {
-    const map = {
-      'formula-viva': ['ok', 'fórmula viva'],
-      'intra': ['ok', 'fórmula viva'],
-      'formula-quebrada': ['critical', 'fórmula quebrada'],
-      'valor-digitado': ['warn', 'valor digitado'],
-      'verificado': ['ok', 'verificado'],
-      'sem-fonte': ['neutral', 'sem fonte'],
-      'sem-verificacao': ['neutral', 'sem verificação'],
-      'conta-nao-encontrada': ['warn', 'conta não achada']
-    };
-    const [cls, label] = map[status] || ['neutral', status || '—'];
+    const [cls, label] = STATUS_MAP[status] || ['neutral', status || '—'];
     return `<span class="badge badge-${cls}">${label}</span>`;
   }
 
+  function statusLabel(status) {
+    return (STATUS_MAP[status] || [null, status || '—'])[1];
+  }
+
   function alertBadge(tipo) {
-    const map = {
-      financeiro: ['critical', 'Financeiro'],
-      preenchimento: ['flag', 'Preenchimento'],
-      'financeiro-nao-verificado': ['warn', 'Financeiro (não verificado)']
-    };
-    const [cls, label] = map[tipo] || ['neutral', tipo];
+    const [cls, label] = ALERTA_MAP[tipo] || ['neutral', tipo];
     return `<span class="badge badge-${cls}">${label}</span>`;
+  }
+
+  function alertLabel(tipo) {
+    return (ALERTA_MAP[tipo] || [null, tipo])[1];
   }
 
   function renderDashboard() {
@@ -433,12 +442,34 @@
       row.addEventListener('click', toggle);
       row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
     });
+
+    host.querySelectorAll('.btn-gerar-email').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const r = linhas.find((x) => `${x.competencia}__${x.codigo}` === btn.dataset.key);
+        if (r) gerarEmail(r);
+      });
+    });
   }
 
-  /** Painel de composição por rubrica (Folha) e por lançamento (ajuste do
-   *  Contábil) — o "drill-down" que aponta qual verba específica está
-   *  puxando a diferença, em vez de só o total da conta. */
+  /** Nota (texto puro) sobre a origem do Contábil recalculado — reutilizada
+   *  tanto no HTML do drill-down quanto no rascunho de e-mail. */
+  function contabilNota(r) {
+    if (r.recalculado.ajusteRazao) {
+      const a = r.recalculado.ajusteRazao;
+      return `Contábil = BALANCETE + ${a.termos.length} lançamento(s) do RAZÃO que a própria CHECK já reclassifica, totalizando ${money.format(a.valor)}.`;
+    }
+    if (r.recalculado.origemContabil === 'balancete-por-codigo') {
+      return 'Contábil recalculado direto no BALANCETE pelo código de conta (a fórmula da CHECK não pôde ser seguida com confiança).';
+    }
+    if (r.recalculado.statusContabil === 'sem-fonte') {
+      return 'Sem BALANCETE disponível para esta competência — não há como verificar o Contábil.';
+    }
+    return 'Contábil confirmado direto pela composição da própria fórmula da CHECK.';
+  }
+
   function renderDetalheConta(r) {
+    const key = `${r.competencia}__${r.codigo}`;
     const fopagTermos = r.recalculado.fopagTermos || [];
     const fopagHtml = fopagTermos.length
       ? `<table class="detail-table">
@@ -447,27 +478,72 @@
          </table>`
       : '<p class="vazio">Sem composição verificável (FOPAG sem fórmula reconhecida nessa célula).</p>';
 
-    let contabilHtml;
+    let contabilHtml = `<p class="detail-note">${escapeHtml(contabilNota(r))}</p>`;
     if (r.recalculado.ajusteRazao) {
       const a = r.recalculado.ajusteRazao;
-      contabilHtml = `
-        <p class="detail-note">Contábil = BALANCETE + ${a.termos.length} lançamento(s) do RAZÃO que a própria CHECK já reclassifica, totalizando ${money.format(a.valor)}:</p>
+      contabilHtml += `
         <table class="detail-table">
           <thead><tr><th>Origem</th><th class="num">Valor</th></tr></thead>
           <tbody>${a.termos.map((t) => `<tr><td class="mono">${escapeHtml(t.sheet)}!${escapeHtml(t.coluna || t.col)}${t.row}</td><td class="num">${money.format(t.value)}</td></tr>`).join('')}</tbody>
         </table>`;
-    } else if (r.recalculado.origemContabil === 'balancete-por-codigo') {
-      contabilHtml = `<p class="detail-note">Contábil recalculado direto no BALANCETE pelo código de conta (a fórmula da CHECK não pôde ser seguida com confiança).</p>`;
-    } else if (r.recalculado.statusContabil === 'sem-fonte') {
-      contabilHtml = `<p class="detail-note">Sem BALANCETE disponível para esta competência — não há como verificar o Contábil.</p>`;
-    } else {
-      contabilHtml = `<p class="detail-note">Contábil confirmado direto pela composição da própria fórmula da CHECK.</p>`;
     }
 
     return `<div class="detail-grid">
       <div><h4>Composição da Folha</h4>${fopagHtml}</div>
       <div><h4>Composição do Contábil</h4>${contabilHtml}</div>
+    </div>
+    <div class="email-cta">
+      <button type="button" class="btn-ghost btn-small btn-gerar-email" data-key="${escapeHtml(key)}">Gerar e-mail</button>
     </div>`;
+  }
+
+  /** Monta um rascunho de e-mail (assunto + corpo) com o detalhamento da
+   *  divergência de uma conta, pra agilizar a validação com o responsável.
+   *  Nada é enviado — só preenche o painel para revisão manual. */
+  function gerarEmailTexto(r) {
+    const dict = dictEntry(r.codigo);
+    const subject = `Divergência de conciliação — ${r.competencia} — ${r.codigo} — ${r.descricao}`;
+    const fopagTermos = r.recalculado.fopagTermos || [];
+    const body = [
+      'Prezado(a) [nome],',
+      '',
+      `Na reconciliação da competência ${r.competencia} foi identificada a divergência abaixo, apurada direto das fontes primárias (FOPAG/BALANCETE). Segue o detalhamento para agilizar a validação.`,
+      '',
+      '1) CONTA',
+      `   • Competência: ${r.competencia}`,
+      `   • Conta: ${r.codigo} — ${r.descricao}`,
+      '',
+      '2) VALORES',
+      `   • Diferença declarada na CHECK: ${money.format(r.declarado.diferenca)}`,
+      `   • Diferença recalculada (Folha × Contábil na fonte): ${r.recalculado.diferenca === null ? '—' : money.format(r.recalculado.diferenca)}`,
+      `   • Proveniência FOPAG: ${statusLabel(r.proveniencia.fopag)}`,
+      `   • Proveniência Contábil: ${statusLabel(r.proveniencia.contabil)}`,
+      '',
+      '3) DIAGNÓSTICO',
+      `   • Alertas: ${r.alertas.length ? r.alertas.map(alertLabel).join(', ') : 'nenhum'}`,
+      `   • ${contabilNota(r)}`,
+      fopagTermos.length ? '   • Composição da Folha (FOPAG):' : '   • Sem composição verificável (FOPAG sem fórmula reconhecida nessa célula).',
+      ...fopagTermos.map((t) => `     - ${t.rubrica}: ${money.format(t.value)}`),
+      '',
+      '4) RESPONSÁVEL',
+      `   • Severidade: ${(dict && dict.severidade) || 'A definir'}`,
+      `   • Responsável: ${(dict && dict.responsavel) || 'A definir'}`,
+      '',
+      'Solicito a validação da causa e o retorno com a tratativa para fechamento da competência.',
+      '',
+      'Atenciosamente,',
+      '[Seu nome]'
+    ].filter((line) => line !== undefined).join('\n');
+    return { subject, body };
+  }
+
+  function gerarEmail(r) {
+    const { subject, body } = gerarEmailTexto(r);
+    $('email-title').textContent = subject;
+    $('email-text').value = body;
+    $('email-placeholder').classList.add('is-hidden');
+    $('email-panel').classList.remove('is-hidden');
+    $('email-panel').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   function sevClass(severidade) {
@@ -669,6 +745,22 @@
     $('btn-exportar-csv').addEventListener('click', exportarCsv);
     $('filtro-severidade').addEventListener('change', renderTabela);
     $('input-dicionario').addEventListener('change', (e) => handleDicionario(e.target.files[0]));
+
+    $('btn-copy-email').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const value = $('email-text').value;
+      if (!value) return;
+      try { await navigator.clipboard.writeText(value); }
+      catch (_) { $('email-text').select(); document.execCommand('copy'); }
+      const original = btn.textContent;
+      btn.textContent = 'Copiado!';
+      setTimeout(() => { btn.textContent = original; }, 1500);
+    });
+    $('btn-mailto').addEventListener('click', () => {
+      const subject = $('email-title').textContent;
+      const body = $('email-text').value;
+      window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    });
   }
 
   document.addEventListener('DOMContentLoaded', init);
