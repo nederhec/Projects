@@ -315,6 +315,95 @@
     return { value: null, status: 'conta-nao-encontrada', row: null };
   }
 
+  /** Acha as colunas de Débito e Crédito de uma aba de RAZÃO pelo texto do
+   *  cabeçalho (linha "Data | Histórico | ... | Débito | Crédito | ...
+   *  | Saldo atual"), mesma ideia de findBalanceteColunas — não assume
+   *  posição fixa. */
+  function findRazaoColunas(adapter, razaoSheet, opts) {
+    const maxRow = (opts && opts.maxRow) || 6;
+    const maxCol = (opts && opts.maxCol) || 20;
+    for (let row = 1; row <= maxRow; row++) {
+      let debitoCol = null, creditoCol = null;
+      for (let c = 1; c <= maxCol; c++) {
+        const col = colIdxToLetter(c);
+        const cell = adapter.cell(razaoSheet, col, row);
+        if (!cell) continue;
+        const n = normalize(cell.value);
+        if (!debitoCol && n.includes('debito')) debitoCol = col;
+        if (!creditoCol && n.includes('credito')) creditoCol = col;
+      }
+      if (debitoCol && creditoCol) return { debitoCol, creditoCol };
+    }
+    return { debitoCol: 'F', creditoCol: 'G' };
+  }
+
+  /**
+   * Soma Débito/Crédito de uma conta específica direto numa aba de RAZÃO,
+   * no formato de blocos por conta (achado real: cada conta começa numa
+   * linha "Conta: N - X.X.XX.XXX.XXX Nome" e termina numa linha "Total
+   * conta:" com os totais já calculados — não precisa somar lançamento por
+   * lançamento, só ler o total e contar as linhas entre um marcador e
+   * outro). Verificação **independente de qualquer referência que a fórmula
+   * da CHECK faça** — ao contrário do `ajuste` de `recalcContabil` (que só
+   * segue RAZÃO explicitamente citado na fórmula), isto varre o razão
+   * auxiliar de verdade pela conta, exista ou não uma referência a ele na
+   * CHECK.
+   *
+   * Achado real: a paginação do razão original (PDF→planilha) repete a
+   * linha de cabeçalho ("Data | Histórico | ... | Débito | Crédito | ...")
+   * no meio do bloco de uma conta quando o lançamento atravessa uma quebra
+   * de página — essa linha tem texto ("Débito"/"Crédito") nas colunas de
+   * valor, não número, e sem filtrar por `Number.isFinite` ela conta como
+   * um lançamento a mais (contagem de 40 em vez dos 39 reais, verificado
+   * contra o arquivo real do cliente).
+   *
+   * Devolve `null` quando a conta não aparece no razão desta competência —
+   * comum e esperado (nem toda conta tem reclassificação manual), não é
+   * erro.
+   */
+  function lookupContaNoRazao(adapter, razaoSheet, contaCodigo, opts) {
+    if (!razaoSheet || !adapter.sheetNames.includes(razaoSheet)) return null;
+    const cfg = Object.assign(findRazaoColunas(adapter, razaoSheet), opts);
+    const rows = adapter.usedRowCount(razaoSheet);
+    const maxCol = (opts && opts.maxCol) || 20;
+    for (let r = 1; r <= rows; r++) {
+      const a = adapter.cell(razaoSheet, 'A', r);
+      if (isEmptyCell(a)) continue;
+      const cabecalho = String(a.value).match(/^Conta:\s*\d+\s*-\s*([\d.]+)/);
+      if (!cabecalho || cabecalho[1] !== contaCodigo) continue;
+
+      for (let r2 = r + 1; r2 <= rows; r2++) {
+        const a2 = adapter.cell(razaoSheet, 'A', r2);
+        if (a2 && /^Conta:/.test(String(a2.value))) return null; // bloco sem "Total conta:" — não confia em soma parcial
+
+        let ehLinhaTotal = false;
+        for (let c = 1; c <= maxCol; c++) {
+          const cell = adapter.cell(razaoSheet, colIdxToLetter(c), r2);
+          if (cell && /total\s*conta/i.test(String(cell.value))) { ehLinhaTotal = true; break; }
+        }
+        if (!ehLinhaTotal) continue;
+
+        const debitoTotal = adapter.cell(razaoSheet, cfg.debitoCol, r2);
+        const creditoTotal = adapter.cell(razaoSheet, cfg.creditoCol, r2);
+        let count = 0;
+        for (let rr = r + 1; rr < r2; rr++) {
+          const deb = adapter.cell(razaoSheet, cfg.debitoCol, rr);
+          const cred = adapter.cell(razaoSheet, cfg.creditoCol, rr);
+          const debNum = isEmptyCell(deb) ? 0 : toNumber(deb.value);
+          const credNum = isEmptyCell(cred) ? 0 : toNumber(cred.value);
+          if ((Number.isFinite(debNum) && debNum !== 0) || (Number.isFinite(credNum) && credNum !== 0)) count++;
+        }
+        return {
+          count,
+          debitos: isEmptyCell(debitoTotal) ? 0 : toNumber(debitoTotal.value) || 0,
+          creditos: isEmptyCell(creditoTotal) ? 0 : toNumber(creditoTotal.value) || 0
+        };
+      }
+      return null;
+    }
+    return null;
+  }
+
   /**
    * Recalcula o valor Contábil de uma conta. Duas fontes, nesta ordem:
    *   1. Se a célula CONTABIL da CHECK for uma referência direta e todos os
@@ -487,6 +576,8 @@
     recalcFopag,
     findBalanceteColunas,
     lookupContaNoBalancete,
+    findRazaoColunas,
+    lookupContaNoRazao,
     recalcContabil,
     reconcileConta,
     computeConfiabilidade,

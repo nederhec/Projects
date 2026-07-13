@@ -111,6 +111,79 @@ test('sem cabeçalho "Classificação" detectável, cai no padrão B/H/I (compor
   const colunas = engine.findBalanceteColunas(adapter, 'BALANCETE');
   assert.deepEqual(colunas, { codigoCol: 'B', debitoCol: 'H', creditoCol: 'I' });
 });
+console.log('lookupContaNoRazao — verificação independente no razão auxiliar (achado real: formato de blocos "Conta: N - X.X.XX.XXX.XXX" ... "Total conta:", com cabeçalho de coluna repetido por paginação no meio de um bloco)');
+test('acha o bloco da conta e lê o total já calculado na linha "Total conta:"', () => {
+  const adapter = makeAdapter({
+    RAZAO: {
+      A: {
+        1: { value: 'Data' },
+        10: { value: 'Conta: 283 - 3.1.01.004.001 INSS EMPRESA' },
+        11: { value: '30/06/2026' },
+        12: { value: '30/06/2026' }
+      },
+      D: { 13: { value: 'Total conta:' } },
+      F: { 1: { value: 'Débito' }, 11: { value: 2000 }, 12: { value: 500 }, 13: { value: 2500 } },
+      G: { 1: { value: 'Crédito' }, 11: { value: 0 }, 12: { value: 0 }, 13: { value: 0 } }
+    }
+  });
+  const result = engine.lookupContaNoRazao(adapter, 'RAZAO', '3.1.01.004.001');
+  assert.deepEqual(result, { count: 2, debitos: 2500, creditos: 0 });
+});
+test('linha de cabeçalho repetida por paginação (Débito/Crédito como texto, não número) não conta como lançamento', () => {
+  const adapter = makeAdapter({
+    RAZAO: {
+      A: {
+        10: { value: 'Conta: 283 - 3.1.01.004.001 INSS EMPRESA' },
+        11: { value: '30/06/2026' },
+        // linha 12 é o cabeçalho repetido pela paginação do razão original
+        12: { value: 'Data' },
+        13: { value: '30/06/2026' }
+      },
+      D: { 14: { value: 'Total conta:' } },
+      F: { 1: { value: 'Débito' }, 11: { value: 2000 }, 12: { value: 'Débito' }, 13: { value: 500 }, 14: { value: 2500 } },
+      G: { 1: { value: 'Crédito' }, 12: { value: 'Crédito' }, 14: { value: 0 } }
+    }
+  });
+  const result = engine.lookupContaNoRazao(adapter, 'RAZAO', '3.1.01.004.001');
+  // 2 lançamentos de verdade (linhas 11 e 13) — a linha 12 (cabeçalho repetido)
+  // não pode contar como um 3º, mesmo tendo texto nas colunas de Débito/Crédito.
+  assert.equal(result.count, 2);
+  assert.equal(result.debitos, 2500);
+});
+test('devolve null quando a conta não aparece no razão desta competência', () => {
+  const adapter = makeAdapter({
+    RAZAO: { A: { 10: { value: 'Conta: 283 - 3.1.01.004.001 INSS EMPRESA' } }, D: { 12: { value: 'Total conta:' } } }
+  });
+  const result = engine.lookupContaNoRazao(adapter, 'RAZAO', '9.9.99.999.999');
+  assert.equal(result, null);
+});
+test('devolve null quando a aba de RAZÃO não existe', () => {
+  const adapter = makeAdapter({});
+  const result = engine.lookupContaNoRazao(adapter, 'RAZAO-INEXISTENTE', '3.1.01.004.001');
+  assert.equal(result, null);
+});
+test('devolve null (não soma parcial) quando o bloco não tem uma linha "Total conta:" de fechamento', () => {
+  const adapter = makeAdapter({
+    RAZAO: {
+      A: {
+        10: { value: 'Conta: 283 - 3.1.01.004.001 INSS EMPRESA' },
+        11: { value: '30/06/2026' },
+        12: { value: 'Conta: 999 - 9.9.99.999.999 OUTRA CONTA' }
+      },
+      F: { 11: { value: 2000 } }
+    }
+  });
+  const result = engine.lookupContaNoRazao(adapter, 'RAZAO', '3.1.01.004.001');
+  assert.equal(result, null);
+});
+test('findRazaoColunas detecta Débito/Crédito em posição não-padrão pelo cabeçalho', () => {
+  const adapter = makeAdapter({
+    RAZAO: { J: { 3: { value: 'Débito' } }, K: { 3: { value: 'Crédito' } } }
+  });
+  const colunas = engine.findRazaoColunas(adapter, 'RAZAO');
+  assert.deepEqual(colunas, { debitoCol: 'J', creditoCol: 'K' });
+});
+
 test('recalcContabil ignora a referência quebrada da CHECK e busca a conta direto no BALANCETE', () => {
   const adapter = makeAdapter({
     CHECK: { D: { 5: { value: 0, formula: "'BALANCETE'!N136" } } },
