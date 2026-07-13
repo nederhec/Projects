@@ -77,12 +77,22 @@ memorando técnico produzido antes deste projeto.
   composição — quais colunas da FOPAG 2026 formam o valor de Folha, e (se
   houver ajuste do RAZÃO) quais lançamentos específicos compõem o Contábil,
   com valor individual de cada um.
+- **Colunas da tabela**: Competência, Conta, Descrição, Valor Folha, Valor
+  Contábil, Diferença Recalculada, Alertas, Tipo (e Severidade/Responsável
+  quando há dicionário carregado). Os valores de Folha e Contábil são os
+  recalculados direto da fonte primária (FOPAG/BALANCETE), não o que a CHECK
+  declara. "Tipo" classifica a causa: `Diferença de valor`, `Falta
+  lançamento contábil` (Folha tem valor, Contábil não), `Falta lançamento na
+  Folha` (o inverso), `Sem divergência` ou `Não verificável`.
+- **Resumo financeiro**: 5 cards interativos acima da tabela — Total da
+  Folha (RH), Total Contábil, Divergências Folha, Divergências Contábil e
+  Impacto Total (soma das diferenças financeiras confirmadas). Clicar num
+  card filtra a tabela abaixo pelas contas correspondentes e rola até ela.
 - **Exportação CSV**: exporta a tabela de contas respeitando os filtros
-  ativos (competência, tipo de alerta, severidade). Traz os valores reais de
-  Folha (FOPAG) e Contábil (BALANCETE) — não só a diferença —, status de
-  cada lado em texto legível (não o código interno), a nota sobre a origem
-  do Contábil e o selo de previsão, pra a planilha ficar utilizável sozinha,
-  sem precisar abrir a ferramenta de novo.
+  ativos (competência, tipo de alerta, severidade), com as mesmas colunas de
+  valor/tipo da tabela, mais a nota sobre a origem do Contábil e o selo de
+  previsão — pra a planilha ficar utilizável sozinha, sem precisar abrir a
+  ferramenta de novo.
 - **Dicionário de contas**: upload opcional de um CSV
   (`código;severidade;responsável`) que enriquece a tabela com severidade e
   responsável sugerido, e habilita filtro por severidade.
@@ -92,16 +102,17 @@ memorando técnico produzido antes deste projeto.
   alerta financeiro em cima de dado projetado parece divergência de livro
   fechado, quando não é.
 - **Rascunho de e-mail**: botão "Gerar e-mail" na composição de cada conta
-  monta um rascunho (assunto + corpo) com competência, valores, proveniência,
-  alertas e composição da divergência, pronto pra copiar ou abrir no cliente
-  de e-mail (`mailto:`) e enviar ao responsável. Nada é enviado
-  automaticamente — é só um rascunho pra revisão manual. Adaptado do painel
-  de conciliação antigo (`painel-conciliacao-folha`), que tinha essa mesma
-  ideia só que sobre outra base de dados. O corpo aponta explicitamente qual
-  lado (Folha ou Contábil) tem valor confirmado direto na fonte e qual não
-  tem — "o erro está do lado do Contábil: a Folha tem valor confirmado
-  (R$ X), mas a conta não foi encontrada no BALANCETE" — em vez de deixar
-  isso implícito nos rótulos técnicos de proveniência.
+  monta um rascunho direcionado a quem vai ajustar a divergência — formato
+  "CONTA/RUBRICA → VALORES → DIAGNÓSTICO → DECISÃO/PROPOSTA DE AJUSTE",
+  adaptado do painel de conciliação antigo (`painel-conciliacao-folha`) para
+  o modelo de dados deste projeto. O DIAGNÓSTICO tem o Tipo (mesma
+  classificação da tabela) e um parágrafo em linguagem direta apontando qual
+  lado está errado/faltando e por quanto (ex.: "Valor de R$ X lançado em
+  Folha (RH), porém AUSENTE na contabilidade"), mais a evidência de
+  lançamentos do RAZÃO quando a própria fórmula da CHECK os compõe
+  explicitamente. Nada é enviado automaticamente — é só um rascunho pra
+  revisão manual, com botões de copiar e abrir no cliente de e-mail
+  (`mailto:`).
 
 ## Como rodar
 
