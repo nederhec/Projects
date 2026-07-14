@@ -117,6 +117,7 @@
   .spinner { display: inline-block; width: 13px; height: 13px; margin-right: 7px; vertical-align: -2px; border: 2px solid var(--border-strong); border-top-color: var(--accent-text); border-radius: 50%; animation: girar .7s linear infinite; }
   @keyframes girar { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+  .status-msg { display: inline-block; margin-left: 10px; font-size: .82rem; color: var(--muted); }
   code { font-family: var(--mono); background: var(--surface-2); border-radius: 4px; padding: 1px 5px; font-size: .85em; }
 
   .aviso { background: var(--critical-bg); border: 1px solid var(--critical); color: var(--critical); border-radius: 8px; padding: 12px 14px; font-size: .88rem; }
@@ -297,6 +298,7 @@
           <option value="limpas">Só sem alerta</option>
           <option value="divergencia-folha">Só divergências Folha</option>
           <option value="divergencia-contabil">Só divergências Contábil</option>
+          <option value="todas-divergencias">Todas as Divergências</option>
         </select>
         <button class="btn" type="button" id="btn-exportar-csv">Exportar CSV</button>
       </div>
@@ -325,13 +327,23 @@
       <p class="card-note">Contas presentes no BALANCETE, na mesma família contábil que a CHECK já cobre, sem linha correspondente na CHECK.</p>
       <div id="lista-fantasmas"></div>
     </section>
+
+    <section class="card">
+      <h2>Relatório Gerencial (PDF)</h2>
+      <p class="card-note">Monta um PDF com os KPIs da competência mais recente e a evolução mês a mês (Custo Contábil, Custo de Pessoal por categoria, Divergências e Rescisões). Custo de Pessoal, Encargos e Benefícios são classificados por palavra-chave na descrição da conta — confira a legenda no próprio PDF antes de usar os números.</p>
+      <button class="btn" type="button" id="btn-gerar-relatorio">Gerar Relatório PDF</button>
+      <span id="status-relatorio" class="status-msg" hidden></span>
+    </section>
   </section>
 
   <footer class="note">Processamento 100% local no navegador — nenhum dado sai da máquina. Projeto independente do painel de conciliação existente.</footer>
 </div>
 
 <script src="vendor/exceljs.min.js"></script>
+<script src="vendor/chart.umd.min.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
 <script src="engine.js"></script>
 <script src="app.js"></script>
+<script src="report.js"></script>
 </body>
 </html>
