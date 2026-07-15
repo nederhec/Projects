@@ -13,6 +13,10 @@
 
   const BASELINE_PREFIX = 'reconciliacao-fonte-primaria:baseline-divergencias:';
   const charts = [];
+  /** Competência escolhida no seletor dos KPI cards ('' = todas, compilado).
+   *  Fica no módulo (não em `state`, que é do app.js) pra sobreviver a
+   *  re-renders (troca de tema, reabrir a aba) dentro da mesma sessão. */
+  let filtroCompetencia = '';
 
   // -------------------------------------------------------------- formatação
 
@@ -120,13 +124,18 @@
 
   // ------------------------------------------------------------------ KPIs
 
-  function computeKpisMes(state, competencia, tipoDivergencia, normalize, rescisoesPorCompetencia) {
-    const linhas = state.resultados.filter((r) => r.competencia === competencia);
+  /** Agrega os KPIs de uma ou mais competências (`competenciasAlvo`) — um
+   *  único array cobre tanto "um mês" (chamado com 1 elemento, pro gráfico
+   *  mensal e pro filtro de mês único) quanto "todas as competências
+   *  compiladas" (chamado com a lista inteira, pro modo agregado default
+   *  dos KPI cards). `competencia` no retorno só vem preenchida quando o
+   *  alvo é um único mês — null indica "vários meses agregados". */
+  function computeKpis(state, competenciasAlvo, tipoDivergencia, normalize, rescisoesPorCompetencia) {
+    const linhas = state.resultados.filter((r) => competenciasAlvo.includes(r.competencia));
     let custoContabil = 0;
     let diferencaLiquida = 0;
     let diferencaAbsoluta = 0;
     let conciliadas = 0;
-    let divergenciasAtuais = 0;
     const pessoal = { Salário: 0, Encargos: 0, Benefícios: 0 };
 
     linhas.forEach((r) => {
@@ -139,21 +148,33 @@
       if (fopagOk && contabilOk) conciliadas++;
       if (r.recalculado.diferenca !== null) diferencaLiquida += r.recalculado.diferenca;
       if (r.alertas.includes('financeiro')) diferencaAbsoluta += Math.abs(r.recalculado.diferenca);
-      if (r.alertas.length > 0 || tipoDivergencia(r) !== 'Sem divergência') divergenciasAtuais++;
     });
 
-    const data = state.competenciaDatas.get(competencia);
-    const divergenciasNoUpload = data ? lerOuGravarBaseline(chaveBaseline(data), divergenciasAtuais) : divergenciasAtuais;
+    // O baseline de divergências é gravado por competência individual — no
+    // modo agregado, soma o baseline (já congelado ou gravado agora) de
+    // cada mês que entra na seleção.
+    let divergenciasNoUpload = 0;
+    let divergenciasPendentes = 0;
+    competenciasAlvo.forEach((c) => {
+      const linhasDoMes = state.resultados.filter((r) => r.competencia === c);
+      const divergenciasDoMes = linhasDoMes.filter((r) => r.alertas.length > 0 || tipoDivergencia(r) !== 'Sem divergência').length;
+      divergenciasPendentes += divergenciasDoMes;
+      const data = state.competenciaDatas.get(c);
+      divergenciasNoUpload += data ? lerOuGravarBaseline(chaveBaseline(data), divergenciasDoMes) : divergenciasDoMes;
+    });
+
+    const rescisoesValores = competenciasAlvo.map((c) => rescisoesPorCompetencia.get(c)).filter((v) => v !== undefined);
+    const rescisoes = rescisoesValores.length ? rescisoesValores.reduce((a, b) => a + b, 0) : null;
 
     return {
-      competencia,
+      competencia: competenciasAlvo.length === 1 ? competenciasAlvo[0] : null,
       custoContabil, diferencaLiquida, diferencaAbsoluta,
       percConciliado: linhas.length ? (conciliadas / linhas.length) * 100 : 0,
       totalContas: linhas.length,
       pessoal,
-      rescisoes: rescisoesPorCompetencia.has(competencia) ? rescisoesPorCompetencia.get(competencia) : null,
+      rescisoes,
       divergenciasNoUpload,
-      divergenciasPendentes: divergenciasAtuais
+      divergenciasPendentes
     };
   }
 
@@ -194,6 +215,25 @@
     }, extra || {});
   }
 
+  /** Monta as options de um gráfico em cima de OPCOES_BASE. Não usa
+   *  `Object.assign({}, OPCOES_BASE, {plugins: {...}})` puro porque isso
+   *  substitui a chave `plugins` inteira em vez de mesclar — achado real:
+   *  todo gráfico de série única (Variação, Diferença Líquida, Exposição,
+   *  % Conciliado, Rescisões) que define `plugins.tooltip` acabava também
+   *  apagando o `legend: {display:false}` do OPCOES_BASE, e herdava a
+   *  legenda padrão do Chart.js — uma legenda redundante com o título do
+   *  card, empurrando o gráfico pra baixo e piorando a sobreposição do
+   *  tooltip. `caretSize: 0` tira o "caret" que fica solto/desconectado da
+   *  caixa quando o tooltip precisa deslocar pra não estourar o canvas. */
+  function opcoesGrafico(overrides) {
+    const overridePlugins = overrides.plugins || {};
+    return Object.assign({}, OPCOES_BASE, overrides, {
+      plugins: Object.assign({}, OPCOES_BASE.plugins, overridePlugins, {
+        tooltip: Object.assign({ caretSize: 0 }, overridePlugins.tooltip || {})
+      })
+    });
+  }
+
   // ------------------------------------------------------------------ render
 
   function render(ctx) {
@@ -202,23 +242,38 @@
 
     const competencias = [...state.competencias].sort((a, b) => state.competenciaDatas.get(a) - state.competenciaDatas.get(b));
     const rescisoesPorCompetencia = contarRescisoesPorCompetencia(state, normalize, colIdxToLetter);
-    const kpisPorMes = competencias.map((c) => computeKpisMes(state, c, tipoDivergencia, normalize, rescisoesPorCompetencia));
+    const kpisPorMes = competencias.map((c) => computeKpis(state, [c], tipoDivergencia, normalize, rescisoesPorCompetencia));
 
     const host = document.getElementById('custos-conteudo');
     if (!kpisPorMes.length) { host.innerHTML = '<p class="vazio">Sem dados suficientes pra montar o painel.</p>'; return; }
 
-    const ultima = kpisPorMes[kpisPorMes.length - 1];
-    const penultima = kpisPorMes.length > 1 ? kpisPorMes[kpisPorMes.length - 2] : null;
-    const variacaoValor = penultima ? ultima.custoContabil - penultima.custoContabil : null;
-    const variacaoPct = penultima && penultima.custoContabil ? (variacaoValor / penultima.custoContabil) * 100 : null;
-    const custoPessoalTotal = ultima.pessoal.Salário + ultima.pessoal.Encargos + ultima.pessoal.Benefícios;
-    const pctDoCusto = ultima.custoContabil ? (ultima.diferencaAbsoluta / Math.abs(ultima.custoContabil)) * 100 : 0;
-    const pendentesMelhorou = ultima.divergenciasPendentes <= ultima.divergenciasNoUpload;
+    // Se o mês antes escolhido não existe mais neste arquivo (troca de
+    // cliente, por exemplo), volta pro compilado em vez de mostrar vazio.
+    if (filtroCompetencia && !competencias.includes(filtroCompetencia)) filtroCompetencia = '';
+
+    const alvo = filtroCompetencia
+      ? kpisPorMes.find((k) => k.competencia === filtroCompetencia)
+      : computeKpis(state, competencias, tipoDivergencia, normalize, rescisoesPorCompetencia);
+    const idxSelecionado = filtroCompetencia ? competencias.indexOf(filtroCompetencia) : -1;
+    const anterior = idxSelecionado > 0 ? kpisPorMes[idxSelecionado - 1] : null;
+    const variacaoValor = anterior ? alvo.custoContabil - anterior.custoContabil : null;
+    const variacaoPct = anterior && anterior.custoContabil ? (variacaoValor / anterior.custoContabil) * 100 : null;
+    const custoPessoalTotal = alvo.pessoal.Salário + alvo.pessoal.Encargos + alvo.pessoal.Benefícios;
+    const pctDoCusto = alvo.custoContabil ? (alvo.diferencaAbsoluta / Math.abs(alvo.custoContabil)) * 100 : 0;
+    const pendentesMelhorou = alvo.divergenciasPendentes <= alvo.divergenciasNoUpload;
+    const rotuloCompetencia = filtroCompetencia || `Todas as competências (${competencias.length} meses, compilado)`;
 
     host.innerHTML = `
       <section class="card">
         <h2>Painel de Custos e Conciliação</h2>
-        <p class="card-note">Competência de referência: <strong>${escapeHtml(ultima.competencia)}</strong> — evolução calculada em cima das mesmas contas recalculadas da aba Conciliação, nada refeito aqui.</p>
+        <p class="card-note">Competência de referência: <strong>${escapeHtml(rotuloCompetencia)}</strong> — evolução calculada em cima das mesmas contas recalculadas da aba Conciliação, nada refeito aqui.</p>
+        <div class="filter-row">
+          <label class="filter-label" for="filtro-competencia-custos">Competência dos KPIs</label>
+          <select id="filtro-competencia-custos">
+            <option value="">Todas as competências (compilado)</option>
+            ${competencias.map((c) => `<option value="${escapeHtml(c)}"${c === filtroCompetencia ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}
+          </select>
+        </div>
         <div class="exec-summary">
           O painel separa <strong>custo</strong>, <strong>cobertura da conciliação</strong> e <strong>exposição a divergências</strong>.
           Custo de Pessoal, Encargos e Benefícios são classificados por palavra-chave na descrição da conta (sem fonte pronta com essa quebra no arquivo) — confira antes de usar os números.
@@ -226,35 +281,27 @@
           <button type="button" class="btn-ghost btn-small" id="btn-zerar-baseline" style="margin-left:8px;">Zerar baseline de divergências</button>
         </div>
         <div class="kpi-exec-grid">
-          ${kpiExecCard('Custo Contábil', moneyAbrev(ultima.custoContabil, money), [
-            penultima ? { texto: `Mês anterior ${moneyAbrev(penultima.custoContabil, money)}` } : null
+          ${kpiExecCard('Custo Contábil', moneyAbrev(alvo.custoContabil, money), [
+            anterior ? { texto: `Mês anterior ${moneyAbrev(anterior.custoContabil, money)}` } : null
           ])}
           ${kpiExecCard('Variação do Custo', variacaoValor === null ? '—' : moneyAbrev(variacaoValor, money), [
             variacaoPct === null ? null : { texto: `Variação % ${pctFmt(variacaoPct)}`, tom: variacaoValor >= 0 ? 'up' : 'down' }
           ])}
-          ${kpiExecCard('% Conciliado', `${ultima.percConciliado.toFixed(1).replace('.', ',')}%`, [
-            { texto: `${ultima.totalContas} conta(s) na competência` }
+          ${kpiExecCard('% Conciliado', `${alvo.percConciliado.toFixed(1).replace('.', ',')}%`, [
+            { texto: `${alvo.totalContas} conta(s) na seleção` }
           ])}
           ${kpiExecCard('Custo de Pessoal', moneyAbrev(custoPessoalTotal, money), [
             { texto: 'Salário + Encargos + Benefícios' }
           ])}
-          ${kpiExecCard('Diferença Líquida', moneyAbrev(ultima.diferencaLiquida, money), [
-            { texto: 'Saldo entre Folha e Contábil', tom: ultima.diferencaLiquida >= 0 ? 'up' : 'down' }
+          ${kpiExecCard('Diferença Líquida', moneyAbrev(alvo.diferencaLiquida, money), [
+            { texto: 'Saldo entre Folha e Contábil', tom: alvo.diferencaLiquida >= 0 ? 'up' : 'down' }
           ])}
-          ${kpiExecCard('Diferença Absoluta', moneyAbrev(ultima.diferencaAbsoluta, money), [
+          ${kpiExecCard('Diferença Absoluta', moneyAbrev(alvo.diferencaAbsoluta, money), [
             { texto: `% do custo ${pctDoCusto.toFixed(1).replace('.', ',')}%` }
           ])}
-          ${kpiExecCard('Divergências no Upload', String(ultima.divergenciasNoUpload), [
-            { texto: `Pendentes ${ultima.divergenciasPendentes}`, tom: pendentesMelhorou ? 'up' : 'down' }
+          ${kpiExecCard('Divergências no Upload', String(alvo.divergenciasNoUpload), [
+            { texto: `Pendentes ${alvo.divergenciasPendentes}`, tom: pendentesMelhorou ? 'up' : 'down' }
           ])}
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="chart-box">
-          <h3>Custo contábil e custo de pessoal por competência</h3>
-          <p class="chart-note">Ambos recalculados direto da fonte primária — Custo de Pessoal é a soma de Salário + Encargos + Benefícios classificados por palavra-chave.</p>
-          <div class="chart-canvas-wrap"><canvas id="chart-custo-linha"></canvas></div>
         </div>
       </section>
 
@@ -325,6 +372,14 @@
       });
     }
 
+    const selCompetencia = document.getElementById('filtro-competencia-custos');
+    if (selCompetencia) {
+      selCompetencia.addEventListener('change', () => {
+        filtroCompetencia = selCompetencia.value;
+        render(ctx);
+      });
+    }
+
     renderGraficos(kpisPorMes, money);
     renderTabelaCustos(kpisPorMes, money);
   }
@@ -352,20 +407,13 @@
     const corCritical = corTema('--critical', '#A23B2E');
     const corNeutral = corTema('--neutral', '#6B6455');
 
-    criarGrafico('chart-custo-linha', {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [
-          { label: 'Custo Contábil', data: kpisPorMes.map((k) => k.custoContabil), borderColor: corAccent, backgroundColor: `${corAccent}22`, fill: false, tension: 0.3, pointRadius: 3 },
-          { label: 'Custo de Pessoal', data: kpisPorMes.map((k) => k.pessoal.Salário + k.pessoal.Encargos + k.pessoal.Benefícios), borderColor: corFlag, backgroundColor: `${corFlag}22`, fill: false, tension: 0.3, pointRadius: 3 }
-        ]
-      },
-      options: Object.assign({}, OPCOES_BASE, {
-        plugins: { legend: { display: true, position: 'bottom', labels: { color: corTexto() } }, tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${money.format(c.parsed.y)}` } } },
-        scales: escalasPadrao({ y: { ticks: { color: corTexto(), callback: (v) => moneyAbrev(v, money) }, grid: { color: corGrade() } } })
-      })
-    });
+    // Nota: não existe um gráfico "Custo Contábil x Custo de Pessoal" aqui
+    // de propósito — Custo de Pessoal é definido como Salário+Encargos+
+    // Benefícios, e como toda conta que entra em custoContabil também cai
+    // em exatamente uma dessas 3 categorias (computeKpis soma os dois
+    // na mesma iteração), os dois valores são sempre idênticos por
+    // construção. Um gráfico de linha comparando os dois só mostraria uma
+    // linha sobre a outra — informação zero, e visualmente parece quebrado.
 
     criarGrafico('chart-composicao', {
       type: 'bar',
@@ -377,7 +425,7 @@
           { label: 'Benefícios', data: kpisPorMes.map((k) => k.pessoal.Benefícios), backgroundColor: corWarn }
         ]
       },
-      options: Object.assign({}, OPCOES_BASE, {
+      options: opcoesGrafico({
         plugins: { legend: { display: true, position: 'bottom', labels: { color: corTexto() } }, tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${money.format(c.parsed.y)}` } } },
         scales: escalasPadrao({
           x: { stacked: true, ticks: { color: corTexto(), font: { size: 11 } }, grid: { display: false } },
@@ -389,7 +437,7 @@
     criarGrafico('chart-conciliado', {
       type: 'line',
       data: { labels, datasets: [{ label: '% Conciliado', data: kpisPorMes.map((k) => k.percConciliado), borderColor: corOk, backgroundColor: `${corOk}22`, fill: true, tension: 0.3, pointRadius: 3 }] },
-      options: Object.assign({}, OPCOES_BASE, {
+      options: opcoesGrafico({
         plugins: { tooltip: { callbacks: { label: (c) => `% Conciliado: ${c.parsed.y.toFixed(1).replace('.', ',')}%` } } },
         scales: escalasPadrao({ y: { min: 0, max: 100, ticks: { color: corTexto(), callback: (v) => `${v}%` }, grid: { color: corGrade() } } })
       })
@@ -405,7 +453,7 @@
           backgroundColor: (c) => (c.raw >= 0 ? corOk : corCritical)
         }]
       },
-      options: Object.assign({}, OPCOES_BASE, {
+      options: opcoesGrafico({
         plugins: { tooltip: { callbacks: { label: (c) => `Variação: ${moneyAbrev(c.parsed.y, money)}` } } },
         scales: escalasPadrao({ y: { ticks: { color: corTexto(), callback: (v) => moneyAbrev(v, money) }, grid: { color: corGrade() } } })
       })
@@ -417,7 +465,7 @@
         labels,
         datasets: [{ label: 'Diferença Líquida', data: kpisPorMes.map((k) => k.diferencaLiquida), backgroundColor: (c) => (c.raw >= 0 ? corOk : corCritical) }]
       },
-      options: Object.assign({}, OPCOES_BASE, {
+      options: opcoesGrafico({
         plugins: { tooltip: { callbacks: { label: (c) => `Diferença Líquida: ${moneyAbrev(c.parsed.y, money)}` } } },
         scales: escalasPadrao({ y: { ticks: { color: corTexto(), callback: (v) => moneyAbrev(v, money) }, grid: { color: corGrade() } } })
       })
@@ -426,7 +474,7 @@
     criarGrafico('chart-exposicao', {
       type: 'line',
       data: { labels, datasets: [{ label: 'Exposição', data: kpisPorMes.map((k) => k.diferencaAbsoluta), borderColor: corCritical, backgroundColor: `${corCritical}22`, fill: true, tension: 0.3, pointRadius: 3 }] },
-      options: Object.assign({}, OPCOES_BASE, {
+      options: opcoesGrafico({
         plugins: { tooltip: { callbacks: { label: (c) => `Exposição: ${moneyAbrev(c.parsed.y, money)}` } } },
         scales: escalasPadrao({ y: { ticks: { color: corTexto(), callback: (v) => moneyAbrev(v, money) }, grid: { color: corGrade() } } })
       })
@@ -441,7 +489,7 @@
           { label: 'Pendentes', data: kpisPorMes.map((k) => k.divergenciasPendentes), borderColor: corCritical, backgroundColor: `${corCritical}22`, fill: false, tension: 0.25, pointRadius: 3 }
         ]
       },
-      options: Object.assign({}, OPCOES_BASE, {
+      options: opcoesGrafico({
         plugins: { legend: { display: true, position: 'bottom', labels: { color: corTexto() } } },
         scales: escalasPadrao({ y: { ticks: { color: corTexto(), precision: 0 }, grid: { color: corGrade() } } })
       })
@@ -450,7 +498,7 @@
     criarGrafico('chart-rescisoes', {
       type: 'bar',
       data: { labels, datasets: [{ label: 'Rescisões', data: kpisPorMes.map((k) => k.rescisoes ?? 0), backgroundColor: corFlag }] },
-      options: Object.assign({}, OPCOES_BASE, {
+      options: opcoesGrafico({
         plugins: { tooltip: { callbacks: { label: (c) => `Rescisões: ${c.parsed.y}` } } },
         scales: escalasPadrao({ y: { ticks: { color: corTexto(), precision: 0 }, grid: { color: corGrade() } } })
       })

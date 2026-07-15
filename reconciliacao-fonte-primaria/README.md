@@ -118,6 +118,13 @@ memorando técnico produzido antes deste projeto.
   até "Total conta:"), sem depender em nada do que a fórmula da CHECK
   referencia. Nada é enviado automaticamente — é só um rascunho pra revisão
   manual, com botões de copiar e abrir no cliente de e-mail (`mailto:`).
+  O mesmo achado (`lookupContaNoRazao`) também aparece no drill-down da
+  conta, na aba de Conciliação: um botão "Ver os N lançamento(s)" revela
+  uma tabela com cada lançamento individual (data, histórico, débito,
+  crédito) que compõe aquele total — pra conferir sem precisar abrir a
+  planilha original. Data/Histórico são detectados pelo cabeçalho da aba de
+  RAZÃO (mesma técnica de Débito/Crédito), com fallback pras colunas A/B
+  quando não detectável.
 - **Painel de Custos e Conciliação**: segunda aba do dashboard (`Painel de
   Custos`), implementada em `painel-custos.js`. Fica **bloqueada** (botão
   desabilitado, com cadeado) só até um arquivo ser carregado e lido — assim
@@ -134,24 +141,36 @@ memorando técnico produzido antes deste projeto.
     nesse momento, ele se reconstrói sozinho com os números atualizados, sem
     precisar trocar de aba pra "forçar" o refresh (mesmo helper usado pelo
     toggle de tema, que também precisa redesenhar os gráficos ao vivo).
-  - **KPIs** (cards no topo, competência mais recente): Custo Contábil,
-    Variação do Custo (mês a mês, R$ e %), % Conciliado, Custo de Pessoal
-    (Salário + Encargos + Benefícios), Diferença Líquida, Diferença
-    Absoluta e Divergências no Upload (com pill de quantas ainda estão
-    Pendentes). Tudo calculado em cima dos mesmos `state.resultados` que a
-    tabela de Conciliação usa — nada é recalculado aqui, só agregado por
-    competência.
+  - **KPIs** (7 cards centralizados): Custo Contábil, Variação do Custo (R$
+    e %), % Conciliado, Custo de Pessoal (Salário + Encargos + Benefícios),
+    Diferença Líquida, Diferença Absoluta e Divergências no Upload (com
+    pill de quantas ainda estão Pendentes). Por padrão mostram o
+    **compilado** (todas as competências agregadas) — um seletor
+    "Competência dos KPIs" permite trocar pra um mês específico, e nesse
+    caso a "Variação do Custo" compara contra o mês anterior de verdade na
+    linha do tempo (não contra outro mês escolhido no filtro). Os gráficos
+    abaixo continuam mostrando a evolução completa, independente do filtro
+    dos cards — só os cards de KPI reagem à seleção. Tudo calculado em cima
+    dos mesmos `state.resultados` que a tabela de Conciliação usa — nada é
+    recalculado aqui, só agregado por competência (ou pelo conjunto
+    selecionado).
   - **Gráficos** (Chart.js, `vendor/chart.umd.min.js`, vendorizado
     localmente via npm — CDNs como jsDelivr/unpkg são bloqueados pela
-    política de rede deste ambiente): evolução do Custo Contábil vs. Custo
-    de Pessoal, composição do Custo de Pessoal por categoria (empilhado),
-    % Conciliado ao longo do tempo, variação mensal do custo contábil
-    (barras verde/vermelho pelo sinal), Diferença Líquida por competência,
-    exposição (Diferença Absoluta), divergências identificadas vs.
-    pendentes, e Rescisões por competência. Diferente do antigo relatório
-    em PDF, os gráficos desenham direto num `<canvas>` visível na página —
-    sem exportação, sem canvas fora da tela, sem a bagunça de embutir PNG/JPEG
-    num arquivo (essa aba não gera PDF).
+    política de rede deste ambiente): composição do Custo de Pessoal por
+    categoria (empilhado), % Conciliado ao longo do tempo, variação mensal
+    do custo contábil (barras verde/vermelho pelo sinal), Diferença Líquida
+    por competência, exposição (Diferença Absoluta), divergências
+    identificadas vs. pendentes, e Rescisões por competência. Diferente do
+    antigo relatório em PDF, os gráficos desenham direto num `<canvas>`
+    visível na página — sem exportação, sem canvas fora da tela, sem a
+    bagunça de embutir PNG/JPEG num arquivo (essa aba não gera PDF).
+    **Não existe** um gráfico "Custo Contábil x Custo de Pessoal": como
+    Custo de Pessoal é definido como Salário+Encargos+Benefícios e toda
+    conta que entra em Custo Contábil cai em exatamente uma dessas 3
+    categorias, os dois valores são idênticos por construção — um gráfico
+    comparando os dois só mostraria uma linha sobre a outra (achado real:
+    a primeira versão tinha esse gráfico e ele sempre renderizava como se
+    estivesse quebrado, com as duas linhas perfeitamente sobrepostas).
   - **Custo de Pessoal, Encargos, Benefícios**: não há nenhuma aba no arquivo
     real do cliente com esse total já pronto (conferido: nem o BALANCETE, nem
     RESUMO FECHAMENTO FOPAG, nem a aba ENCARGOS trazem essa quebra) — por

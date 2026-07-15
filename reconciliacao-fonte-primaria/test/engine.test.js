@@ -127,7 +127,15 @@ test('acha o bloco da conta e lê o total já calculado na linha "Total conta:"'
     }
   });
   const result = engine.lookupContaNoRazao(adapter, 'RAZAO', '3.1.01.004.001');
-  assert.deepEqual(result, { count: 2, debitos: 2500, creditos: 0 });
+  assert.deepEqual(result, {
+    count: 2,
+    debitos: 2500,
+    creditos: 0,
+    lancamentos: [
+      { row: 11, data: '30/06/2026', historico: '', debito: 2000, credito: 0 },
+      { row: 12, data: '30/06/2026', historico: '', debito: 500, credito: 0 }
+    ]
+  });
 });
 test('linha de cabeçalho repetida por paginação (Débito/Crédito como texto, não número) não conta como lançamento', () => {
   const adapter = makeAdapter({
@@ -149,6 +157,7 @@ test('linha de cabeçalho repetida por paginação (Débito/Crédito como texto,
   // não pode contar como um 3º, mesmo tendo texto nas colunas de Débito/Crédito.
   assert.equal(result.count, 2);
   assert.equal(result.debitos, 2500);
+  assert.deepEqual(result.lancamentos.map((l) => l.row), [11, 13]);
 });
 test('devolve null quando a conta não aparece no razão desta competência', () => {
   const adapter = makeAdapter({
@@ -181,7 +190,7 @@ test('findRazaoColunas detecta Débito/Crédito em posição não-padrão pelo c
     RAZAO: { J: { 3: { value: 'Débito' } }, K: { 3: { value: 'Crédito' } } }
   });
   const colunas = engine.findRazaoColunas(adapter, 'RAZAO');
-  assert.deepEqual(colunas, { debitoCol: 'J', creditoCol: 'K' });
+  assert.deepEqual(colunas, { dataCol: 'A', historicoCol: 'B', debitoCol: 'J', creditoCol: 'K' });
 });
 
 test('recalcContabil ignora a referência quebrada da CHECK e busca a conta direto no BALANCETE', () => {
