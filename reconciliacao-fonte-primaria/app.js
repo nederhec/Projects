@@ -339,6 +339,29 @@
     renderResumoFinanceiro();
     renderTabela();
     renderFantasmas();
+    habilitarPainelCustos();
+  }
+
+  /** O Painel de Custos fica disponível assim que um arquivo é lido — ele
+   *  serve pra acompanhar custo e cobertura da conciliação, e nem sempre
+   *  a competência mais recente vai estar 100% sem divergências. */
+  function habilitarPainelCustos() {
+    const btn = $('tab-btn-custos');
+    btn.disabled = false;
+    btn.title = '';
+  }
+
+  function ativarAba(nome) {
+    const conciliacaoAtiva = nome === 'conciliacao';
+    $('tab-btn-conciliacao').classList.toggle('is-active', conciliacaoAtiva);
+    $('tab-btn-conciliacao').setAttribute('aria-selected', String(conciliacaoAtiva));
+    $('tab-btn-custos').classList.toggle('is-active', !conciliacaoAtiva);
+    $('tab-btn-custos').setAttribute('aria-selected', String(!conciliacaoAtiva));
+    $('aba-conciliacao').classList.toggle('is-hidden', !conciliacaoAtiva);
+    $('aba-custos').classList.toggle('is-hidden', conciliacaoAtiva);
+    if (!conciliacaoAtiva && window.PainelCustos) {
+      window.PainelCustos.render({ state, tipoDivergencia, money, normalize, colIdxToLetter, escapeHtml });
+    }
   }
 
   /** Recalcula os 5 KPIs do "Resumo financeiro", restrito à competência
@@ -713,6 +736,12 @@
       const proximo = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
       aplicar(proximo);
       try { localStorage.setItem(KEY, proximo); } catch (e) { /* sem storage disponível, tudo bem */ }
+      // Os gráficos do Painel de Custos leem a cor do tema no momento em que
+      // são desenhados — sem re-renderizar aqui, eles ficam com a paleta do
+      // tema anterior até a aba ser trocada e reaberta.
+      if ($('aba-custos') && !$('aba-custos').classList.contains('is-hidden') && window.PainelCustos) {
+        window.PainelCustos.render({ state, tipoDivergencia, money, normalize, colIdxToLetter, escapeHtml });
+      }
     });
 
     let temEscolhaSalva = false;
@@ -769,21 +798,8 @@
     $('filtro-competencia-resumo').addEventListener('change', renderResumoFinanceiro);
     $('filtro-alerta').addEventListener('change', renderTabela);
     $('btn-exportar-csv').addEventListener('click', exportarCsv);
-    $('btn-gerar-relatorio').addEventListener('click', async (e) => {
-      const btn = e.currentTarget;
-      const status = $('status-relatorio');
-      btn.disabled = true;
-      status.hidden = false;
-      status.textContent = 'Gerando relatório…';
-      try {
-        const nomeArquivo = await window.ReconReport.gerar({ state, tipoDivergencia, money, normalize, colIdxToLetter });
-        status.textContent = `Baixado: ${nomeArquivo}`;
-      } catch (err) {
-        status.textContent = `Não foi possível gerar o relatório: ${err.message}`;
-      } finally {
-        btn.disabled = false;
-      }
-    });
+    $('tab-btn-conciliacao').addEventListener('click', () => ativarAba('conciliacao'));
+    $('tab-btn-custos').addEventListener('click', () => { if (!$('tab-btn-custos').disabled) ativarAba('custos'); });
 
     /** Cards do resumo financeiro filtram a tabela abaixo e rolam até ela —
      *  os dois totais (Folha/Contábil) limpam o filtro de alerta, já que

@@ -118,26 +118,40 @@ memorando técnico produzido antes deste projeto.
   até "Total conta:"), sem depender em nada do que a fórmula da CHECK
   referencia. Nada é enviado automaticamente — é só um rascunho pra revisão
   manual, com botões de copiar e abrir no cliente de e-mail (`mailto:`).
-- **Relatório Gerencial (PDF)**: botão "Gerar Relatório PDF" monta um PDF com
-  os KPIs da competência mais recente e a evolução mês a mês — Custo
-  Contábil, Variação do Custo, % Conciliado, Custo de Pessoal (Salário +
-  Encargos + Benefícios), Rescisões, Diferença Líquida, Diferença Absoluta e
-  Divergências no Mês, mais gráficos (evolução do Custo Contábil, Custo de
-  Pessoal por categoria empilhado, Divergências e Rescisões por competência).
-  Tudo calculado em cima dos mesmos `state.resultados` que a tabela usa —
-  nada é recalculado aqui. Implementado em `report.js`, com Chart.js
-  (`vendor/chart.umd.min.js`) desenhando os gráficos em canvas fora da tela e
-  jsPDF (`vendor/jspdf.umd.min.js`) montando o arquivo — ambos vendorizados
-  localmente via npm, mesmo princípio do ExcelJS (CDNs como jsDelivr/unpkg
-  são bloqueados pela política de rede deste ambiente).
+- **Painel de Custos e Conciliação**: segunda aba do dashboard (`Painel de
+  Custos`), implementada em `painel-custos.js`. Fica **bloqueada** (botão
+  desabilitado, com cadeado) só até um arquivo ser carregado e lido — assim
+  que o dashboard aparece (`habilitarPainelCustos()` em `app.js`, chamada no
+  fim de `renderDashboard()`), a aba já fica disponível, **mesmo que a
+  competência mais recente ainda tenha divergências em aberto**: nem sempre
+  o mês vai estar 100% conferido, e o painel serve justamente pra
+  acompanhar custo e cobertura da conciliação enquanto isso, não só depois.
+  - **KPIs** (cards no topo, competência mais recente): Custo Contábil,
+    Variação do Custo (mês a mês, R$ e %), % Conciliado, Custo de Pessoal
+    (Salário + Encargos + Benefícios), Diferença Líquida, Diferença
+    Absoluta e Divergências no Upload (com pill de quantas ainda estão
+    Pendentes). Tudo calculado em cima dos mesmos `state.resultados` que a
+    tabela de Conciliação usa — nada é recalculado aqui, só agregado por
+    competência.
+  - **Gráficos** (Chart.js, `vendor/chart.umd.min.js`, vendorizado
+    localmente via npm — CDNs como jsDelivr/unpkg são bloqueados pela
+    política de rede deste ambiente): evolução do Custo Contábil vs. Custo
+    de Pessoal, composição do Custo de Pessoal por categoria (empilhado),
+    % Conciliado ao longo do tempo, variação mensal do custo contábil
+    (barras verde/vermelho pelo sinal), Diferença Líquida por competência,
+    exposição (Diferença Absoluta), divergências identificadas vs.
+    pendentes, e Rescisões por competência. Diferente do antigo relatório
+    em PDF, os gráficos desenham direto num `<canvas>` visível na página —
+    sem exportação, sem canvas fora da tela, sem a bagunça de embutir PNG/JPEG
+    num arquivo (essa aba não gera PDF).
   - **Custo de Pessoal, Encargos, Benefícios**: não há nenhuma aba no arquivo
     real do cliente com esse total já pronto (conferido: nem o BALANCETE, nem
     RESUMO FECHAMENTO FOPAG, nem a aba ENCARGOS trazem essa quebra) — por
     isso a classificação é uma **heurística por palavra-chave** na descrição
     da conta (Encargos: INSS/FGTS/PIS/GRRF; Benefícios: vale/assistência
     médica/seguro de vida/plano de saúde/auxílio; demais contas: Salário).
-    A legenda é impressa no próprio PDF pra quem for usar os números
-    conferir o critério antes.
+    O critério fica descrito no próprio painel pra quem for usar os números
+    conferir antes.
   - **Rescisões**: conta pessoas distintas (por NOME) na aba "Rescisoes" do
     arquivo, agrupadas pelo mês da coluna MÊS — mostra "—" (não 0) quando essa
     aba não existe no arquivo carregado, pra não parecer "zero rescisões"
@@ -146,17 +160,19 @@ memorando técnico produzido antes deste projeto.
     Contábil confirmados direto na fonte primária — mede cobertura da
     conciliação, não confiabilidade da CHECK (esse é o Score de
     Confiabilidade, KPI diferente já existente no dashboard).
-  - **Achado real (tamanho do PDF)**: embutir os gráficos como PNG
-    (`canvas.toDataURL('image/png')`) gerava um PDF de ~7,3MB pra só 4
-    gráficos simples — o jsPDF embute PNG praticamente sem compressão
-    adicional. Trocado pra JPEG (`toDataURL('image/jpeg', 0.92)`), que o
-    jsPDF sabe embutir de forma nativa (DCTDecode): o mesmo relatório caiu
-    pra ~150KB. Como JPEG não suporta transparência e o canvas do Chart.js é
-    transparente por padrão, um preenchimento branco manual antes de criar o
-    `Chart` não sobrevive — a própria lib limpa o canvas na inicialização.
-    Precisou de um plugin com hook `beforeDraw` (`PLUGIN_FUNDO_BRANCO` em
-    `report.js`) pra pintar o fundo branco dentro do ciclo de desenho do
-    Chart.js, depois da limpeza automática.
+  - **Divergências no Upload vs. Pendentes**: a contagem de divergências no
+    momento em que uma competência é vista pela primeira vez neste
+    navegador é gravada como "baseline" e nunca mais sobrescrita
+    automaticamente — ajustes feitos depois só reduzem o indicador de
+    Pendentes, não o de "no Upload". Isso deixa visível quanto trabalho de
+    conciliação já foi feito desde a entrega original do arquivo. O
+    armazenamento é `localStorage`, chave
+    `reconciliacao-fonte-primaria:baseline-divergencias:{AAAA-MM}`. **Limite
+    conhecido**: a chave é só pela competência (mês/ano), não pelo cliente
+    ou arquivo — trocar de arquivo de um cliente pra outro sem resetar pode
+    misturar baselines de competências com o mesmo rótulo. O botão "Zerar
+    baseline de divergências" no próprio painel limpa todas as chaves desse
+    prefixo, pra usar ao trocar de cliente.
 
 ## Como rodar
 
@@ -287,18 +303,25 @@ corretamente.
 ## Arquitetura
 
 ```
-index.html   — upload, dashboard, filtros, drill-down, exportação
-app.js       — glue: lê o XLSX via ExcelJS, detecta abas/colunas por
-               cabeçalho (não por posição fixa), monta o WorkbookAdapter
-               e orquestra o engine
-engine.js    — motor puro (sem dependência de biblioteca de planilha):
-               parser de fórmula, classificador de proveniência de célula,
-               recalculadores (Folha via FOPAG, Contábil via composição da
-               fórmula ou fallback por código no BALANCETE), reconciliação
-               3 vias, score de confiabilidade, cobertura de contas
-vendor/      — ExcelJS (exceljs.min.js), local — sem CDN externo
-test/        — unidade (fixtures em memória) + integração (fixture .xlsx
-               fictícia real, ver seção Testes)
+index.html       — upload, dashboard, abas (Conciliação / Painel de
+                    Custos), filtros, drill-down, exportação
+app.js            — glue: lê o XLSX via ExcelJS, detecta abas/colunas por
+                    cabeçalho (não por posição fixa), monta o
+                    WorkbookAdapter, orquestra o engine e controla o
+                    troca de abas / desbloqueio do Painel de Custos
+engine.js         — motor puro (sem dependência de biblioteca de planilha):
+                    parser de fórmula, classificador de proveniência de
+                    célula, recalculadores (Folha via FOPAG, Contábil via
+                    composição da fórmula ou fallback por código no
+                    BALANCETE), reconciliação 3 vias, score de
+                    confiabilidade, cobertura de contas
+painel-custos.js  — aba de KPIs e gráficos por competência, calculados em
+                    cima de `state.resultados` (nada recalculado); mantém
+                    o baseline de divergências no localStorage
+vendor/           — ExcelJS (exceljs.min.js) e Chart.js (chart.umd.min.js),
+                    locais — sem CDN externo
+test/             — unidade (fixtures em memória) + integração (fixture
+                    .xlsx fictícia real, ver seção Testes)
 ```
 
 `engine.js` recebe um **WorkbookAdapter** (`sheetNames`, `cell(sheet,col,row)`,
