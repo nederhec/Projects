@@ -154,12 +154,12 @@
   .exec-summary strong { color: var(--accent-text); }
 
   .kpi-exec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
-  .kpi-exec { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; text-align: left; min-width: 0; }
-  .kpi-exec .label-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .kpi-exec { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; text-align: center; min-width: 0; }
+  .kpi-exec .label-row { display: flex; align-items: flex-start; justify-content: center; gap: 6px; }
   .kpi-exec .label { font-size: .76rem; color: var(--text-2); font-weight: 700; }
   .kpi-exec .info-icon { width: 14px; height: 14px; color: var(--muted); flex: none; margin-top: 1px; }
   .kpi-exec .value { font-size: 1.5rem; font-weight: 800; margin-top: 6px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-  .kpi-exec .pill-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+  .kpi-exec .pill-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 9px; }
   .kpi-exec .pill { display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); color: var(--text-2); white-space: nowrap; }
   .kpi-exec .pill.is-up { background: var(--ok-bg); color: var(--ok); border-color: transparent; }
   .kpi-exec .pill.is-down { background: var(--critical-bg); color: var(--critical); border-color: transparent; }
@@ -168,7 +168,7 @@
   .chart-box { min-width: 0; }
   .chart-box h3 { font-size: .86rem; margin: 0 0 4px; font-weight: 700; }
   .chart-box .chart-note { font-size: .76rem; color: var(--muted); margin: 0 0 10px; }
-  .chart-box .chart-canvas-wrap { position: relative; height: 260px; }
+  .chart-box .chart-canvas-wrap { position: relative; height: 290px; }
   .chart-box canvas { width: 100% !important; height: 100% !important; }
 
   .delta-pos { color: var(--ok); }
@@ -201,6 +201,8 @@
   .detail-table td { padding: 6px 10px; border-top: 1px solid var(--border); }
   .detail-table td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); }
   .detail-note { font-size: .82rem; color: var(--text-2); margin: 0 0 8px; }
+  .razao-lancamentos { margin-top: 10px; max-height: 260px; overflow-y: auto; }
+  .razao-lancamentos.is-hidden { display: none; }
 
   .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
   .alertas-cell { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
@@ -230,6 +232,11 @@
     .brand-title { font-size: 1.3rem; }
     .card { padding: 16px; }
     .kpi-grid { grid-template-columns: 1fr 1fr; }
+    /* Cards do Resumo financeiro têm valores em R$ mais longos (ex.: "R$
+       1.640.591,79") — em 2 colunas eles não cabem numa linha e o
+       overflow-wrap:anywhere quebra o número no meio de forma feia (ex.:
+       "R$ 1.566.178" / ",24"). Uma coluna só dá largura suficiente. */
+    .kpi-grid-resumo { grid-template-columns: 1fr; }
     .filter-row { flex-direction: column; align-items: stretch; }
     .filter-row select, .filter-row .btn { width: 100%; }
   }

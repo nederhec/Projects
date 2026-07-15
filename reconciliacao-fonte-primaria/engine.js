@@ -315,15 +315,17 @@
     return { value: null, status: 'conta-nao-encontrada', row: null };
   }
 
-  /** Acha as colunas de Débito e Crédito de uma aba de RAZÃO pelo texto do
-   *  cabeçalho (linha "Data | Histórico | ... | Débito | Crédito | ...
-   *  | Saldo atual"), mesma ideia de findBalanceteColunas — não assume
-   *  posição fixa. */
+  /** Acha as colunas de Data, Histórico, Débito e Crédito de uma aba de
+   *  RAZÃO pelo texto do cabeçalho (linha "Data | Histórico | ... | Débito
+   *  | Crédito | ... | Saldo atual"), mesma ideia de findBalanceteColunas —
+   *  não assume posição fixa. Data/Histórico caem no fallback A/B quando o
+   *  cabeçalho não é detectável — só usados pra exibição (ver lancamentos
+   *  em lookupContaNoRazao), nunca pra somar valor. */
   function findRazaoColunas(adapter, razaoSheet, opts) {
     const maxRow = (opts && opts.maxRow) || 6;
     const maxCol = (opts && opts.maxCol) || 20;
     for (let row = 1; row <= maxRow; row++) {
-      let debitoCol = null, creditoCol = null;
+      let debitoCol = null, creditoCol = null, dataCol = null, historicoCol = null;
       for (let c = 1; c <= maxCol; c++) {
         const col = colIdxToLetter(c);
         const cell = adapter.cell(razaoSheet, col, row);
@@ -331,10 +333,12 @@
         const n = normalize(cell.value);
         if (!debitoCol && n.includes('debito')) debitoCol = col;
         if (!creditoCol && n.includes('credito')) creditoCol = col;
+        if (!dataCol && n === 'data') dataCol = col;
+        if (!historicoCol && n === 'historico') historicoCol = col;
       }
-      if (debitoCol && creditoCol) return { debitoCol, creditoCol };
+      if (debitoCol && creditoCol) return { dataCol: dataCol || 'A', historicoCol: historicoCol || 'B', debitoCol, creditoCol };
     }
-    return { debitoCol: 'F', creditoCol: 'G' };
+    return { dataCol: 'A', historicoCol: 'B', debitoCol: 'F', creditoCol: 'G' };
   }
 
   /**
@@ -360,6 +364,11 @@
    * Devolve `null` quando a conta não aparece no razão desta competência —
    * comum e esperado (nem toda conta tem reclassificação manual), não é
    * erro.
+   *
+   * `lancamentos` traz cada linha individual do bloco (data/histórico/
+   * débito/crédito) que compõe `count`/`debitos`/`creditos` — pra quem for
+   * revisar poder ver exatamente quais lançamentos formam aquele total, sem
+   * precisar abrir a planilha original.
    */
   function lookupContaNoRazao(adapter, razaoSheet, contaCodigo, opts) {
     if (!razaoSheet || !adapter.sheetNames.includes(razaoSheet)) return null;
@@ -385,18 +394,29 @@
 
         const debitoTotal = adapter.cell(razaoSheet, cfg.debitoCol, r2);
         const creditoTotal = adapter.cell(razaoSheet, cfg.creditoCol, r2);
-        let count = 0;
+        const lancamentos = [];
         for (let rr = r + 1; rr < r2; rr++) {
           const deb = adapter.cell(razaoSheet, cfg.debitoCol, rr);
           const cred = adapter.cell(razaoSheet, cfg.creditoCol, rr);
           const debNum = isEmptyCell(deb) ? 0 : toNumber(deb.value);
           const credNum = isEmptyCell(cred) ? 0 : toNumber(cred.value);
-          if ((Number.isFinite(debNum) && debNum !== 0) || (Number.isFinite(credNum) && credNum !== 0)) count++;
+          if ((Number.isFinite(debNum) && debNum !== 0) || (Number.isFinite(credNum) && credNum !== 0)) {
+            const dataCell = adapter.cell(razaoSheet, cfg.dataCol, rr);
+            const historicoCell = adapter.cell(razaoSheet, cfg.historicoCol, rr);
+            lancamentos.push({
+              row: rr,
+              data: isEmptyCell(dataCell) ? null : dataCell.value,
+              historico: isEmptyCell(historicoCell) ? '' : String(historicoCell.value),
+              debito: Number.isFinite(debNum) ? debNum : 0,
+              credito: Number.isFinite(credNum) ? credNum : 0
+            });
+          }
         }
         return {
-          count,
+          count: lancamentos.length,
           debitos: isEmptyCell(debitoTotal) ? 0 : toNumber(debitoTotal.value) || 0,
-          creditos: isEmptyCell(creditoTotal) ? 0 : toNumber(creditoTotal.value) || 0
+          creditos: isEmptyCell(creditoTotal) ? 0 : toNumber(creditoTotal.value) || 0,
+          lancamentos
         };
       }
       return null;

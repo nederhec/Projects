@@ -500,6 +500,17 @@
         if (r) gerarEmail(r);
       });
     });
+
+    host.querySelectorAll('.btn-ver-lancamentos').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const painel = btn.nextElementSibling;
+        const aberto = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!aberto));
+        painel.classList.toggle('is-hidden', aberto);
+        btn.textContent = aberto ? btn.dataset.labelFechado : btn.dataset.labelAberto;
+      });
+    });
   }
 
   /** Nota (texto puro) sobre a origem do Contábil recalculado — reutilizada
@@ -538,13 +549,47 @@
         </table>`;
     }
 
+    const razaoHtml = renderRazaoBlock(r, key);
+
     return `<div class="detail-grid">
       <div><h4>Composição da Folha</h4>${fopagHtml}</div>
       <div><h4>Composição do Contábil</h4>${contabilHtml}</div>
+      ${razaoHtml}
     </div>
     <div class="email-cta">
       <button type="button" class="btn-ghost btn-small btn-gerar-email" data-key="${escapeHtml(key)}">Gerar e-mail</button>
     </div>`;
+  }
+
+  /** Bloco "Evidência no razão" do drill-down — mesma varredura independente
+   *  usada no rascunho de e-mail, mas aqui com um botão que revela a lista
+   *  de lançamentos individuais que compõem o total (débitos/créditos),
+   *  pra quem for conferir não precisar abrir a planilha original. Devolve
+   *  string vazia quando a conta não aparece no razão desta competência. */
+  function renderRazaoBlock(r, key) {
+    const a = achadoRazao(r);
+    if (!a) return '';
+    const linhasHtml = a.lancamentos.map((l) => `
+      <tr>
+        <td>${escapeHtml(formatDataRazao(l.data))}</td>
+        <td>${escapeHtml(l.historico || '—')}</td>
+        <td class="num">${l.debito ? money.format(l.debito) : '—'}</td>
+        <td class="num">${l.credito ? money.format(l.credito) : '—'}</td>
+      </tr>`).join('');
+    const labelFechado = `Ver os ${a.count} lançamento(s)`;
+    const labelAberto = 'Ocultar lançamentos';
+    return `
+      <div>
+        <h4>Evidência no razão</h4>
+        <p class="detail-note">${escapeHtml(`Evidência no razão (${a.sheet}): ${a.count} lançamento(s) — débitos ${money.format(a.debitos)}, créditos ${money.format(a.creditos)}`)}</p>
+        <button type="button" class="btn-ghost btn-small btn-ver-lancamentos" data-key="${escapeHtml(key)}" aria-expanded="false" data-label-fechado="${escapeHtml(labelFechado)}" data-label-aberto="${escapeHtml(labelAberto)}">${escapeHtml(labelFechado)}</button>
+        <div class="razao-lancamentos is-hidden">
+          <table class="detail-table">
+            <thead><tr><th>Data</th><th>Histórico</th><th class="num">Débito</th><th class="num">Crédito</th></tr></thead>
+            <tbody>${linhasHtml}</tbody>
+          </table>
+        </div>
+      </div>`;
   }
 
   /** Classifica a divergência num tipo curto (pro badge da tabela e pro
@@ -613,19 +658,35 @@
     return state.razaoMap[key] || null;
   }
 
-  /** Linha "Evidência no razão" — varredura independente do razão auxiliar
-   *  pela conta, via engine.lookupContaNoRazao. Diferente do `ajusteRazao`
-   *  (que só segue RAZÃO citado explicitamente na fórmula da CHECK), isto
-   *  não depende em nada do que a CHECK referencia: procura a conta direto
-   *  no razão do mês, exista ou não uma referência a ela na CHECK. Devolve
-   *  null quando a conta não aparece no razão desta competência — comum
-   *  (nem toda conta tem reclassificação manual). */
-  function evidenciaRazao(r) {
+  /** Varredura independente do razão auxiliar pela conta, via
+   *  engine.lookupContaNoRazao. Diferente do `ajusteRazao` (que só segue
+   *  RAZÃO citado explicitamente na fórmula da CHECK), isto não depende em
+   *  nada do que a CHECK referencia: procura a conta direto no razão do
+   *  mês, exista ou não uma referência a ela na CHECK. Devolve null quando
+   *  a conta não aparece no razão desta competência — comum (nem toda
+   *  conta tem reclassificação manual). */
+  function achadoRazao(r) {
     const sheet = razaoSheetPara(r);
     if (!sheet) return null;
     const achado = engine.lookupContaNoRazao(state.adapter, sheet, r.codigo);
     if (!achado || !achado.count) return null;
-    return `Evidência no razão (${sheet}): ${achado.count} lançamento(s) — débitos ${money.format(achado.debitos)}, créditos ${money.format(achado.creditos)}`;
+    return { sheet, ...achado };
+  }
+
+  /** Linha "Evidência no razão" em texto puro — usada no rascunho de
+   *  e-mail. Ver achadoRazao para os lançamentos individuais (drill-down). */
+  function evidenciaRazaoTexto(r) {
+    const a = achadoRazao(r);
+    if (!a) return null;
+    return `Evidência no razão (${a.sheet}): ${a.count} lançamento(s) — débitos ${money.format(a.debitos)}, créditos ${money.format(a.creditos)}`;
+  }
+
+  /** "30/06/2026" a partir do valor bruto da célula de data no razão — pode
+   *  vir como Date (ExcelJS já converte data de verdade) ou como texto
+   *  solto (planilhas exportadas de PDF às vezes trazem data como string). */
+  function formatDataRazao(data) {
+    if (data instanceof Date) return data.toLocaleDateString('pt-BR');
+    return data === null || data === undefined || data === '' ? '—' : String(data);
   }
 
   /** Monta um rascunho de e-mail (assunto + corpo) direcionado a quem vai
@@ -635,7 +696,7 @@
     const tipo = tipoDivergencia(r);
     const comp = competenciaLabel(r);
     const subject = `Divergência de conciliação — ${comp} — ${r.codigo} — ${r.descricao}`;
-    const evidencia = evidenciaRazao(r);
+    const evidencia = evidenciaRazaoTexto(r);
     const body = [
       'Prezado(a) [nome],',
       '',
