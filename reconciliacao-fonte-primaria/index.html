@@ -237,6 +237,15 @@
        overflow-wrap:anywhere quebra o número no meio de forma feia (ex.:
        "R$ 1.566.178" / ",24"). Uma coluna só dá largura suficiente. */
     .kpi-grid-resumo { grid-template-columns: 1fr; }
+    /* .chart-grid força minmax(380px, 1fr) — numa tela de ~390px de largura
+       (menos padding da página e do card), a área disponível fica em
+       ~330px, menor que o mínimo de 380px. O grid não recua: mantém a
+       coluna em 380px e estoura a largura da página inteira, forçando
+       scroll horizontal (achado real: viewport 390px, mas
+       document.scrollWidth ficava em 411px) — os gráficos "flutuavam" fora
+       da tela em vez de se ajustarem. Uma coluna sem largura mínima deixa
+       o Chart.js (responsive:true) encolher pro que realmente cabe. */
+    .chart-grid { grid-template-columns: 1fr; }
     .filter-row { flex-direction: column; align-items: stretch; }
     .filter-row select, .filter-row .btn { width: 100%; }
   }
