@@ -103,6 +103,15 @@
   .card h2 { font-size: 1rem; margin: 0 0 4px; }
   .card .card-note { color: var(--muted); font-size: .84rem; margin: 0 0 14px; max-width: 70ch; }
 
+  .tab-bar { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .tab-btn { appearance: none; border: none; background: none; font: inherit; font-weight: 700; font-size: .88rem; color: var(--muted); padding: 10px 16px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; display: inline-flex; align-items: center; gap: 7px; }
+  .tab-btn:hover:not(:disabled) { color: var(--text); }
+  .tab-btn.is-active { color: var(--accent-text); border-bottom-color: var(--accent-strong); }
+  .tab-btn:disabled { cursor: not-allowed; opacity: .55; }
+  .tab-btn .tab-lock { width: 13px; height: 13px; flex: none; }
+  .tab-btn:not(:disabled) .tab-lock { display: none; }
+  .tab-panel.is-hidden { display: none; }
+
   #dropzone { border: 1.5px dashed var(--border-strong); border-radius: 10px; padding: 26px; text-align: center; transition: border-color .15s, background .15s; }
   #dropzone.is-dragover { border-color: var(--accent); background: var(--accent-soft); }
   #dropzone p { margin: 0 0 12px; color: var(--text-2); font-size: .92rem; }
@@ -140,6 +149,30 @@
   .kpi-click { cursor: pointer; transition: border-color .15s, background .15s; }
   .kpi-click:hover { background: var(--surface); border-color: var(--border-strong); }
   .kpi-click:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+
+  .exec-summary { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 8px; padding: 12px 14px; font-size: .84rem; color: var(--text-2); margin-bottom: 18px; }
+  .exec-summary strong { color: var(--accent-text); }
+
+  .kpi-exec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+  .kpi-exec { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; text-align: left; min-width: 0; }
+  .kpi-exec .label-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .kpi-exec .label { font-size: .76rem; color: var(--text-2); font-weight: 700; }
+  .kpi-exec .info-icon { width: 14px; height: 14px; color: var(--muted); flex: none; margin-top: 1px; }
+  .kpi-exec .value { font-size: 1.5rem; font-weight: 800; margin-top: 6px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .kpi-exec .pill-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+  .kpi-exec .pill { display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); color: var(--text-2); white-space: nowrap; }
+  .kpi-exec .pill.is-up { background: var(--ok-bg); color: var(--ok); border-color: transparent; }
+  .kpi-exec .pill.is-down { background: var(--critical-bg); color: var(--critical); border-color: transparent; }
+
+  .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 18px; margin-top: 4px; }
+  .chart-box { min-width: 0; }
+  .chart-box h3 { font-size: .86rem; margin: 0 0 4px; font-weight: 700; }
+  .chart-box .chart-note { font-size: .76rem; color: var(--muted); margin: 0 0 10px; }
+  .chart-box .chart-canvas-wrap { position: relative; height: 260px; }
+  .chart-box canvas { width: 100% !important; height: 100% !important; }
+
+  .delta-pos { color: var(--ok); }
+  .delta-neg { color: var(--critical); }
 
   .filter-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
   .filter-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 700; }
@@ -244,6 +277,15 @@
   </section>
 
   <section id="dashboard" hidden>
+    <div class="tab-bar" role="tablist">
+      <button type="button" class="tab-btn is-active" id="tab-btn-conciliacao" role="tab" aria-selected="true" aria-controls="aba-conciliacao">Conciliação</button>
+      <button type="button" class="tab-btn" id="tab-btn-custos" role="tab" aria-selected="false" aria-controls="aba-custos" disabled>
+        <svg class="tab-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        Painel de Custos
+      </button>
+    </div>
+
+    <div id="aba-conciliacao" class="tab-panel">
     <section class="card">
       <h2>Base carregada</h2>
       <dl class="meta-grid">
@@ -327,13 +369,11 @@
       <p class="card-note">Contas presentes no BALANCETE, na mesma família contábil que a CHECK já cobre, sem linha correspondente na CHECK.</p>
       <div id="lista-fantasmas"></div>
     </section>
+    </div>
 
-    <section class="card">
-      <h2>Relatório Gerencial (PDF)</h2>
-      <p class="card-note">Monta um PDF com os KPIs da competência mais recente e a evolução mês a mês (Custo Contábil, Custo de Pessoal por categoria, Divergências e Rescisões). Custo de Pessoal, Encargos e Benefícios são classificados por palavra-chave na descrição da conta — confira a legenda no próprio PDF antes de usar os números.</p>
-      <button class="btn" type="button" id="btn-gerar-relatorio">Gerar Relatório PDF</button>
-      <span id="status-relatorio" class="status-msg" hidden></span>
-    </section>
+    <div id="aba-custos" class="tab-panel is-hidden">
+      <div id="custos-conteudo"></div>
+    </div>
   </section>
 
   <footer class="note">Processamento 100% local no navegador — nenhum dado sai da máquina. Projeto independente do painel de conciliação existente.</footer>
@@ -341,9 +381,8 @@
 
 <script src="vendor/exceljs.min.js"></script>
 <script src="vendor/chart.umd.min.js"></script>
-<script src="vendor/jspdf.umd.min.js"></script>
 <script src="engine.js"></script>
 <script src="app.js"></script>
-<script src="report.js"></script>
+<script src="painel-custos.js"></script>
 </body>
 </html>
