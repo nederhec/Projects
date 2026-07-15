@@ -126,6 +126,14 @@ memorando técnico produzido antes deste projeto.
   competência mais recente ainda tenha divergências em aberto**: nem sempre
   o mês vai estar 100% conferido, e o painel serve justamente pra
   acompanhar custo e cobertura da conciliação enquanto isso, não só depois.
+  - **Atualização em tempo real conforme divergências são sanadas**: como o
+    app não tem edição manual de conta — o único jeito de sanar uma
+    divergência é corrigir a fonte primária (FOPAG/BALANCETE) e recarregar o
+    arquivo —, `renderDashboard()` chama `renderPainelCustosSeVisivel()` toda
+    vez que um arquivo é processado. Se o Painel de Custos já estiver aberto
+    nesse momento, ele se reconstrói sozinho com os números atualizados, sem
+    precisar trocar de aba pra "forçar" o refresh (mesmo helper usado pelo
+    toggle de tema, que também precisa redesenhar os gráficos ao vivo).
   - **KPIs** (cards no topo, competência mais recente): Custo Contábil,
     Variação do Custo (mês a mês, R$ e %), % Conciliado, Custo de Pessoal
     (Salário + Encargos + Benefícios), Diferença Líquida, Diferença

@@ -340,6 +340,11 @@
     renderTabela();
     renderFantasmas();
     habilitarPainelCustos();
+    // Divergências só mudam quando o arquivo-fonte é corrigido e recarregado
+    // (não há ajuste manual dentro do app) — se o Painel de Custos já estiver
+    // aberto nesse momento, atualiza ele junto, em vez de deixar números
+    // antigos até o usuário trocar de aba manualmente.
+    renderPainelCustosSeVisivel();
   }
 
   /** O Painel de Custos fica disponível assim que um arquivo é lido — ele
@@ -351,6 +356,12 @@
     btn.title = '';
   }
 
+  function renderPainelCustosSeVisivel() {
+    if ($('aba-custos') && !$('aba-custos').classList.contains('is-hidden') && window.PainelCustos) {
+      window.PainelCustos.render({ state, tipoDivergencia, money, normalize, colIdxToLetter, escapeHtml });
+    }
+  }
+
   function ativarAba(nome) {
     const conciliacaoAtiva = nome === 'conciliacao';
     $('tab-btn-conciliacao').classList.toggle('is-active', conciliacaoAtiva);
@@ -359,9 +370,7 @@
     $('tab-btn-custos').setAttribute('aria-selected', String(!conciliacaoAtiva));
     $('aba-conciliacao').classList.toggle('is-hidden', !conciliacaoAtiva);
     $('aba-custos').classList.toggle('is-hidden', conciliacaoAtiva);
-    if (!conciliacaoAtiva && window.PainelCustos) {
-      window.PainelCustos.render({ state, tipoDivergencia, money, normalize, colIdxToLetter, escapeHtml });
-    }
+    renderPainelCustosSeVisivel();
   }
 
   /** Recalcula os 5 KPIs do "Resumo financeiro", restrito à competência
@@ -739,9 +748,7 @@
       // Os gráficos do Painel de Custos leem a cor do tema no momento em que
       // são desenhados — sem re-renderizar aqui, eles ficam com a paleta do
       // tema anterior até a aba ser trocada e reaberta.
-      if ($('aba-custos') && !$('aba-custos').classList.contains('is-hidden') && window.PainelCustos) {
-        window.PainelCustos.render({ state, tipoDivergencia, money, normalize, colIdxToLetter, escapeHtml });
-      }
+      renderPainelCustosSeVisivel();
     });
 
     let temEscolhaSalva = false;
