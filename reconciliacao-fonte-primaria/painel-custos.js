@@ -415,6 +415,18 @@
     // construção. Um gráfico de linha comparando os dois só mostraria uma
     // linha sobre a outra — informação zero, e visualmente parece quebrado.
 
+    // Benefícios pode ser negativo num mês pontual (estorno/reversão de
+    // valor lançado como benefício) — achado real no arquivo do cliente.
+    // Sem um `min` explícito, o Chart.js arredonda o eixo Y pro próximo
+    // "degrau" redondo abaixo de zero (ex.: -R$500 mil pra acomodar um
+    // valor de -R$16 mil), deixando uma faixa vazia enorme embaixo das
+    // barras — parece as barras estarem "flutuando" longe da base. Limita
+    // a extensão negativa ao que os dados realmente pedem, com uma folga
+    // de 30%, em vez de aceitar o degrau padrão do Chart.js.
+    const minNegativoComposicao = Math.min(0, ...kpisPorMes.map((k) =>
+      Math.min(k.pessoal.Salário, 0) + Math.min(k.pessoal.Encargos, 0) + Math.min(k.pessoal.Benefícios, 0)
+    ));
+
     criarGrafico('chart-composicao', {
       type: 'bar',
       data: {
@@ -429,7 +441,11 @@
         plugins: { legend: { display: true, position: 'bottom', labels: { color: corTexto() } }, tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${money.format(c.parsed.y)}` } } },
         scales: escalasPadrao({
           x: { stacked: true, ticks: { color: corTexto(), font: { size: 11 } }, grid: { display: false } },
-          y: { stacked: true, ticks: { color: corTexto(), callback: (v) => moneyAbrev(v, money) }, grid: { color: corGrade() } }
+          y: {
+            stacked: true,
+            min: minNegativoComposicao < 0 ? minNegativoComposicao * 1.3 : undefined,
+            ticks: { color: corTexto(), callback: (v) => moneyAbrev(v, money) }, grid: { color: corGrade() }
+          }
         })
       })
     });
@@ -480,13 +496,20 @@
       })
     });
 
+    // Enquanto nenhuma divergência foi sanada desde o upload (comum: nada
+    // muda até o arquivo-fonte ser corrigido e recarregado), Identificadas
+    // e Pendentes têm os mesmos valores mês a mês — as duas linhas caem
+    // exatamente uma sobre a outra e só a de cima fica visível. Em vez de
+    // fingir que existe uma diferença, as duas continuam com os valores
+    // reais, mas com estilo visual distinto (preenchimento vs. tracejado)
+    // pra ficar claro que são duas séries sobrepostas, não uma só.
     criarGrafico('chart-pendencias', {
       type: 'line',
       data: {
         labels,
         datasets: [
-          { label: 'Identificadas', data: kpisPorMes.map((k) => k.divergenciasNoUpload), borderColor: corNeutral, backgroundColor: `${corNeutral}22`, fill: false, tension: 0.25, pointRadius: 3 },
-          { label: 'Pendentes', data: kpisPorMes.map((k) => k.divergenciasPendentes), borderColor: corCritical, backgroundColor: `${corCritical}22`, fill: false, tension: 0.25, pointRadius: 3 }
+          { label: 'Identificadas', data: kpisPorMes.map((k) => k.divergenciasNoUpload), borderColor: corNeutral, backgroundColor: `${corNeutral}22`, fill: true, tension: 0.25, pointRadius: 3 },
+          { label: 'Pendentes', data: kpisPorMes.map((k) => k.divergenciasPendentes), borderColor: corCritical, backgroundColor: `${corCritical}22`, fill: false, borderDash: [7, 4], tension: 0.25, pointRadius: 4, pointStyle: 'rectRot' }
         ]
       },
       options: opcoesGrafico({
