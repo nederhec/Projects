@@ -10,6 +10,8 @@
     "fixtures:build": "node test/fixtures/build-synthetic-fixture.js"
   },
   "devDependencies": {
-    "exceljs": "^4.4.0"
+    "chart.js": "^4.5.1",
+    "exceljs": "^4.4.0",
+    "jspdf": "^4.2.1"
   }
 }

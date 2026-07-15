@@ -83,7 +83,10 @@ memorando técnico produzido antes deste projeto.
   não o que a CHECK declara. "Tipo" classifica a causa: `Diferença de
   valor`, `Falta lançamento contábil` (Folha tem valor, Contábil não),
   `Falta lançamento na Folha` (o inverso), `Sem divergência` ou `Não
-  verificável`.
+  verificável`. O filtro de alertas tem uma opção "Todas as Divergências" —
+  mostra tudo, exceto contas com alerta "ok" **e** tipo "Sem divergência" ao
+  mesmo tempo (ou seja, mantém qualquer conta com algum alerta, mesmo que o
+  tipo seja "Sem divergência").
 - **Resumo financeiro**: 5 cards interativos acima da tabela — Total da
   Folha (RH), Total Contábil, Divergências Folha, Divergências Contábil e
   Impacto Total (soma das diferenças financeiras confirmadas). Tem seletor
@@ -115,6 +118,45 @@ memorando técnico produzido antes deste projeto.
   até "Total conta:"), sem depender em nada do que a fórmula da CHECK
   referencia. Nada é enviado automaticamente — é só um rascunho pra revisão
   manual, com botões de copiar e abrir no cliente de e-mail (`mailto:`).
+- **Relatório Gerencial (PDF)**: botão "Gerar Relatório PDF" monta um PDF com
+  os KPIs da competência mais recente e a evolução mês a mês — Custo
+  Contábil, Variação do Custo, % Conciliado, Custo de Pessoal (Salário +
+  Encargos + Benefícios), Rescisões, Diferença Líquida, Diferença Absoluta e
+  Divergências no Mês, mais gráficos (evolução do Custo Contábil, Custo de
+  Pessoal por categoria empilhado, Divergências e Rescisões por competência).
+  Tudo calculado em cima dos mesmos `state.resultados` que a tabela usa —
+  nada é recalculado aqui. Implementado em `report.js`, com Chart.js
+  (`vendor/chart.umd.min.js`) desenhando os gráficos em canvas fora da tela e
+  jsPDF (`vendor/jspdf.umd.min.js`) montando o arquivo — ambos vendorizados
+  localmente via npm, mesmo princípio do ExcelJS (CDNs como jsDelivr/unpkg
+  são bloqueados pela política de rede deste ambiente).
+  - **Custo de Pessoal, Encargos, Benefícios**: não há nenhuma aba no arquivo
+    real do cliente com esse total já pronto (conferido: nem o BALANCETE, nem
+    RESUMO FECHAMENTO FOPAG, nem a aba ENCARGOS trazem essa quebra) — por
+    isso a classificação é uma **heurística por palavra-chave** na descrição
+    da conta (Encargos: INSS/FGTS/PIS/GRRF; Benefícios: vale/assistência
+    médica/seguro de vida/plano de saúde/auxílio; demais contas: Salário).
+    A legenda é impressa no próprio PDF pra quem for usar os números
+    conferir o critério antes.
+  - **Rescisões**: conta pessoas distintas (por NOME) na aba "Rescisoes" do
+    arquivo, agrupadas pelo mês da coluna MÊS — mostra "—" (não 0) quando essa
+    aba não existe no arquivo carregado, pra não parecer "zero rescisões"
+    quando na verdade é "sem como verificar".
+  - **% Conciliado**: percentual de contas da competência com Folha **e**
+    Contábil confirmados direto na fonte primária — mede cobertura da
+    conciliação, não confiabilidade da CHECK (esse é o Score de
+    Confiabilidade, KPI diferente já existente no dashboard).
+  - **Achado real (tamanho do PDF)**: embutir os gráficos como PNG
+    (`canvas.toDataURL('image/png')`) gerava um PDF de ~7,3MB pra só 4
+    gráficos simples — o jsPDF embute PNG praticamente sem compressão
+    adicional. Trocado pra JPEG (`toDataURL('image/jpeg', 0.92)`), que o
+    jsPDF sabe embutir de forma nativa (DCTDecode): o mesmo relatório caiu
+    pra ~150KB. Como JPEG não suporta transparência e o canvas do Chart.js é
+    transparente por padrão, um preenchimento branco manual antes de criar o
+    `Chart` não sobrevive — a própria lib limpa o canvas na inicialização.
+    Precisou de um plugin com hook `beforeDraw` (`PLUGIN_FUNDO_BRANCO` em
+    `report.js`) pra pintar o fundo branco dentro do ciclo de desenho do
+    Chart.js, depois da limpeza automática.
 
 ## Como rodar
 

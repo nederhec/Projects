@@ -408,6 +408,7 @@
     if (alerta === 'limpas') linhas = linhas.filter((r) => r.alertas.length === 0);
     if (alerta === 'divergencia-folha') linhas = linhas.filter((r) => tipoDivergencia(r) === 'Falta lançamento na Folha');
     if (alerta === 'divergencia-contabil') linhas = linhas.filter((r) => tipoDivergencia(r) === 'Falta lançamento contábil');
+    if (alerta === 'todas-divergencias') linhas = linhas.filter((r) => r.alertas.length > 0 || tipoDivergencia(r) !== 'Sem divergência');
     return linhas;
   }
 
@@ -768,6 +769,21 @@
     $('filtro-competencia-resumo').addEventListener('change', renderResumoFinanceiro);
     $('filtro-alerta').addEventListener('change', renderTabela);
     $('btn-exportar-csv').addEventListener('click', exportarCsv);
+    $('btn-gerar-relatorio').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const status = $('status-relatorio');
+      btn.disabled = true;
+      status.hidden = false;
+      status.textContent = 'Gerando relatório…';
+      try {
+        const nomeArquivo = await window.ReconReport.gerar({ state, tipoDivergencia, money, normalize, colIdxToLetter });
+        status.textContent = `Baixado: ${nomeArquivo}`;
+      } catch (err) {
+        status.textContent = `Não foi possível gerar o relatório: ${err.message}`;
+      } finally {
+        btn.disabled = false;
+      }
+    });
 
     /** Cards do resumo financeiro filtram a tabela abaixo e rolam até ela —
      *  os dois totais (Folha/Contábil) limpam o filtro de alerta, já que
