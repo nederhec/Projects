@@ -130,7 +130,9 @@
   // ------------------------------------------------------------ recálculo
 
   /** Soma uma fonte via SUMIFS reimplementado sobre o adapter. Devolve também
-   *  o valor por termo (por rubrica/coluna), pra alimentar o drill-down. */
+   *  o valor por termo (por rubrica/coluna) e a lista de funcionários que
+   *  compõem cada termo (nome + valor, só linhas não-zero), pra alimentar o
+   *  drill-down — tanto o total por rubrica quanto quem está por trás dele. */
   function evaluateSumifsTerms(adapter, terms, criteriaSheet) {
     let total = 0;
     let resolvable = true;
@@ -141,33 +143,53 @@
       const criteriaCell = criteriaRefParsed && adapter.cell(criteriaSheet, criteriaRefParsed.col, criteriaRefParsed.row);
       if (isEmptyCell(criteriaCell)) { resolvable = false; continue; }
       const rows = adapter.usedRowCount(term.sheet);
+      const headerRow = findColumnHeaderRow(adapter, term.sheet, term.valueCol);
+      let nomeCol = null;
+      if (headerRow) {
+        for (let c = 1; c <= 40; c++) {
+          const col = colIdxToLetter(c);
+          const headerCell = adapter.cell(term.sheet, col, headerRow);
+          if (headerCell && normalize(headerCell.value) === 'nome') { nomeCol = col; break; }
+        }
+      }
       let subtotal = 0;
+      const funcionarios = [];
       for (let r = 1; r <= rows; r++) {
         const crit = adapter.cell(term.sheet, term.criteriaCol, r);
         if (isEmptyCell(crit) || !sameCriteria(crit.value, criteriaCell.value)) continue;
         const val = adapter.cell(term.sheet, term.valueCol, r);
-        if (!isEmptyCell(val)) subtotal += toNumber(val.value) || 0;
+        if (isEmptyCell(val)) continue;
+        const num = toNumber(val.value) || 0;
+        subtotal += num;
+        if (num !== 0) {
+          const nomeCell = nomeCol ? adapter.cell(term.sheet, nomeCol, r) : null;
+          funcionarios.push({ nome: nomeCell && !isEmptyCell(nomeCell) ? String(nomeCell.value).trim() : `linha ${r}`, valor: num });
+        }
       }
-      termos.push({ sheet: term.sheet, coluna: term.valueCol, rubrica: findColumnLabel(adapter, term.sheet, term.valueCol) || term.valueCol, value: subtotal });
+      termos.push({ sheet: term.sheet, coluna: term.valueCol, rubrica: findColumnLabel(adapter, term.sheet, term.valueCol) || term.valueCol, value: subtotal, funcionarios });
       total += subtotal;
     }
     return { value: total, resolvable, termos };
   }
 
-  /** Acha o rótulo de uma coluna pro drill-down sem assumir que o cabeçalho
-   *  está na linha 1 — planilhas reais têm o cabeçalho em linhas diferentes
-   *  (achado real: a FOPAG 2026 do arquivo do cliente tem cabeçalho na
-   *  linha 3; sem isso, o drill-down mostrava letra de coluna em vez do
-   *  nome da rubrica mesmo nas contas corretas). Cabeçalho é texto; linhas
-   *  de dado acima dele (título, célula solta) tendem a ser vazias ou
-   *  numéricas — por isso pega a primeira célula de texto encontrada.
-   */
-  function findColumnLabel(adapter, sheet, col, maxRow) {
+  /** Acha a linha de cabeçalho de uma coluna (primeira célula de texto,
+   *  varrendo de cima pra baixo) sem assumir que está na linha 1 — planilhas
+   *  reais têm o cabeçalho em linhas diferentes (achado real: a FOPAG 2026
+   *  do arquivo do cliente tem cabeçalho na linha 3). Linhas de dado acima
+   *  dele (título, célula solta) tendem a ser vazias ou numéricas — por
+   *  isso pega a primeira célula de texto encontrada. */
+  function findColumnHeaderRow(adapter, sheet, col, maxRow) {
     for (let r = 1; r <= (maxRow || 8); r++) {
       const cell = adapter.cell(sheet, col, r);
-      if (cell && typeof cell.value === 'string' && cell.value.trim()) return cell.value.trim();
+      if (cell && typeof cell.value === 'string' && cell.value.trim()) return r;
     }
     return null;
+  }
+
+  /** Rótulo de uma coluna pro drill-down — ver findColumnHeaderRow. */
+  function findColumnLabel(adapter, sheet, col, maxRow) {
+    const row = findColumnHeaderRow(adapter, sheet, col, maxRow);
+    return row === null ? null : adapter.cell(sheet, col, row).value.trim();
   }
 
   /** Confere se as referências diretas de uma fórmula apontam para células

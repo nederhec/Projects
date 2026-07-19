@@ -493,6 +493,19 @@
       row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
     });
 
+    host.querySelectorAll('.row-rubrica').forEach((row) => {
+      const toggle = () => {
+        const rubricaKey = row.dataset.rubricaKey;
+        const detail = host.querySelector(`.row-funcionarios[data-funcionarios-for="${CSS.escape(rubricaKey)}"]`);
+        const expanded = row.getAttribute('aria-expanded') === 'true';
+        row.setAttribute('aria-expanded', String(!expanded));
+        row.querySelector('.expand-caret').textContent = expanded ? '▸' : '▾';
+        if (detail) detail.hidden = expanded;
+      };
+      row.addEventListener('click', toggle);
+      row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+    });
+
     host.querySelectorAll('.btn-gerar-email').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -534,8 +547,8 @@
     const fopagTermos = r.recalculado.fopagTermos || [];
     const fopagHtml = fopagTermos.length
       ? `<table class="detail-table">
-          <thead><tr><th>Rubrica (FOPAG 2026)</th><th class="num">Valor</th></tr></thead>
-          <tbody>${fopagTermos.map((t) => `<tr><td>${escapeHtml(t.rubrica)}</td><td class="num">${money.format(t.value)}</td></tr>`).join('')}</tbody>
+          <thead><tr><th></th><th>Rubrica (FOPAG 2026)</th><th class="num">Valor</th></tr></thead>
+          <tbody>${fopagTermos.map((t, idx) => renderRubricaLinhas(t, key, idx)).join('')}</tbody>
          </table>`
       : '<p class="vazio">Sem composição verificável (FOPAG sem fórmula reconhecida nessa célula).</p>';
 
@@ -559,6 +572,39 @@
     <div class="email-cta">
       <button type="button" class="btn-ghost btn-small btn-gerar-email" data-key="${escapeHtml(key)}">Gerar e-mail</button>
     </div>`;
+  }
+
+  /** Uma rubrica do FOPAG (linha "SALÁRIO MENSALISTA: R$X", já somada entre
+   *  todos os funcionários) + a linha expansível com quem está por trás
+   *  daquele total, direto na "Folha de pagamento" (mesma fonte que o
+   *  SUMIFS da própria CHECK já soma — nada recalculado, só desagregado por
+   *  pessoa). Sem funcionário identificado (coluna "Nome" não detectada, ou
+   *  valor zerado em todas as linhas), a linha fica sem o toggle. */
+  function renderRubricaLinhas(t, key, idx) {
+    const rubricaKey = `${key}__fopag${idx}`;
+    const funcionarios = t.funcionarios || [];
+    if (!funcionarios.length) {
+      return `<tr><td></td><td>${escapeHtml(t.rubrica)}</td><td class="num">${money.format(t.value)}</td></tr>`;
+    }
+    const linhasHtml = funcionarios
+      .slice().sort((a, b) => b.valor - a.valor)
+      .map((f) => `<tr><td>${escapeHtml(f.nome)}</td><td class="num">${money.format(f.valor)}</td></tr>`).join('');
+    return `
+      <tr class="row-rubrica" data-rubrica-key="${escapeHtml(rubricaKey)}" tabindex="0" role="button" aria-expanded="false">
+        <td><span class="expand-caret">▸</span></td>
+        <td>${escapeHtml(t.rubrica)}</td>
+        <td class="num">${money.format(t.value)}</td>
+      </tr>
+      <tr class="row-funcionarios" data-funcionarios-for="${escapeHtml(rubricaKey)}" hidden>
+        <td colspan="3">
+          <div class="detail-table-nested-wrap">
+            <table class="detail-table detail-table-nested">
+              <thead><tr><th>Funcionário</th><th class="num">Valor</th></tr></thead>
+              <tbody>${linhasHtml}</tbody>
+            </table>
+          </div>
+        </td>
+      </tr>`;
   }
 
   /** Bloco "Evidência no razão" do drill-down — mesma varredura independente
