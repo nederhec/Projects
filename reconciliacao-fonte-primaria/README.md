@@ -77,6 +77,15 @@ memorando técnico produzido antes deste projeto.
   composição — quais colunas da FOPAG 2026 formam o valor de Folha, e (se
   houver ajuste do RAZÃO) quais lançamentos específicos compõem o Contábil,
   com valor individual de cada um.
+- **Drill-down por funcionário**: cada rubrica da composição da Folha (ex.
+  "SALÁRIO MENSALISTA") é, por sua vez, expansível — clicar nela revela
+  quem está por trás daquele total, direto na aba "Folha de pagamento"
+  (mesma fonte que o SUMIFS da própria CHECK já soma pra chegar no valor da
+  rubrica; nada recalculado, só desagregado por pessoa, ordenado do maior
+  pro menor valor). Isso é o que permite, numa divergência financeira real,
+  ver na hora qual funcionário está puxando o número errado sem precisar
+  abrir a planilha original. Rubricas sem coluna "Nome" detectável na
+  aba de origem, ou sem nenhum lançamento não-zero, ficam sem esse toggle.
 - **Colunas da tabela**: Competência, Conta, Descrição, Valor Folha, Valor
   Contábil, Diferença Recalculada, Alertas, Tipo. Os valores de Folha e
   Contábil são os recalculados direto da fonte primária (FOPAG/BALANCETE),
